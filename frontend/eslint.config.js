@@ -20,4 +20,35 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
+  {
+    files: ['src/routes/**/*.{ts,tsx}'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
+  {
+    files: ['src/components/ui/**/*.{ts,tsx}'],
+    rules: {
+      'react-refresh/only-export-components': [
+        'warn',
+        {
+          allowExportNames: [
+            'badgeVariants',
+            'buttonVariants',
+            'navigationMenuTriggerStyle',
+            'useMouseEnter',
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['src/components/ui/3d-card.tsx'],
+    rules: {
+      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      'react-hooks/immutability': 'off',
+      'react-hooks/exhaustive-deps': 'off',
+    },
+  },
 ])

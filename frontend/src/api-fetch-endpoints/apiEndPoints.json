@@ -1,0 +1,882 @@
+{
+  "configuration": {
+    "details": {
+      "method": "GET",
+      "db_name": "configuration",
+      "api": "https://api.themoviedb.org/3/configuration",
+      "comment": "No extra params required"
+    },
+    "countries": {
+      "method": "GET",
+      "db_name": "countries",
+      "api": "https://api.themoviedb.org/3/configuration/countries",
+      "comment": "?language=en-US"
+    },
+    "jobs": {
+      "method": "GET",
+      "db_name": "jobs",
+      "api": "https://api.themoviedb.org/3/configuration/jobs"
+    },
+    "languages": {
+      "method": "GET",
+      "db_name": "languages",
+      "api": "https://api.themoviedb.org/3/configuration/languages"
+    },
+    "primary_translations": {
+      "method": "GET",
+      "db_name": "primary_translations",
+      "api": "https://api.themoviedb.org/3/configuration/primary-translations"
+    },
+    "timezones": {
+      "method": "GET",
+      "db_name": "timezones",
+      "api": "https://api.themoviedb.org/3/configuration/timezones"
+    }
+  },
+
+  "authentication": {
+    "create_request_token": {
+      "method": "GET",
+      "db_name": "create_request_token",
+      "api": "https://api.themoviedb.org/3/authentication/token/new"
+    },
+    "create_session": {
+      "method": "POST",
+      "db_name": "create_session",
+      "api": "https://api.themoviedb.org/3/authentication/session"
+    },
+    "create_guest_session": {
+      "method": "GET",
+      "db_name": "create_guest_session",
+      "api": "https://api.themoviedb.org/3/authentication/guest_session/new"
+    },
+    "delete_session": {
+      "method": "DELETE",
+      "db_name": "delete_session",
+      "api": "https://api.themoviedb.org/3/authentication/session"
+    }
+  },
+
+  "trending": {
+    "all_day": {
+      "method": "GET",
+      "db_name": "trending_all_day",
+      "api": "https://api.themoviedb.org/3/trending/all/day",
+      "comment": "?language=en-US&page=1"
+    },
+    "all_week": {
+      "method": "GET",
+      "db_name": "trending_all_week",
+      "api": "https://api.themoviedb.org/3/trending/all/week",
+      "comment": "?language=en-US&page=1"
+    },
+    "movies_day": {
+      "method": "GET",
+      "db_name": "trending_movies_day",
+      "api": "https://api.themoviedb.org/3/trending/movie/day",
+      "comment": "?language=en-US&page=1"
+    },
+    "movies_week": {
+      "method": "GET",
+      "db_name": "trending_movies_week",
+      "api": "https://api.themoviedb.org/3/trending/movie/week",
+      "comment": "?language=en-US&page=1"
+    },
+    "tv_day": {
+      "method": "GET",
+      "db_name": "trending_tv_day",
+      "api": "https://api.themoviedb.org/3/trending/tv/day",
+      "comment": "?language=en-US&page=1"
+    },
+    "tv_week": {
+      "method": "GET",
+      "db_name": "trending_tv_week",
+      "api": "https://api.themoviedb.org/3/trending/tv/week",
+      "comment": "?language=en-US&page=1"
+    },
+    "people_day": {
+      "method": "GET",
+      "db_name": "trending_people_day",
+      "api": "https://api.themoviedb.org/3/trending/person/day",
+      "comment": "?language=en-US&page=1"
+    },
+    "people_week": {
+      "method": "GET",
+      "db_name": "trending_people_week",
+      "api": "https://api.themoviedb.org/3/trending/person/week",
+      "comment": "?language=en-US&page=1"
+    }
+  },
+
+  "discover": {
+    "movies": {
+      "method": "GET",
+      "db_name": "discover_movies",
+      "api": "https://api.themoviedb.org/3/discover/movie",
+      "comment": "Many filters: ?language=en-US&page=1&sort_by=popularity.desc&with_genres=..."
+    },
+    "tv": {
+      "method": "GET",
+      "db_name": "discover_tv",
+      "api": "https://api.themoviedb.org/3/discover/tv",
+      "comment": "?language=en-US&page=1&sort_by=popularity.desc"
+    }
+  },
+
+  "movies": {
+    "now_playing": {
+      "method": "GET",
+      "db_name": "now_playing_movies",
+      "api": "https://api.themoviedb.org/3/movie/now_playing",
+      "comment": "?language=en-US&page=1"
+    },
+    "popular": {
+      "method": "GET",
+      "db_name": "popular_movies",
+      "api": "https://api.themoviedb.org/3/movie/popular",
+      "comment": "?language=en-US&page=1"
+    },
+    "top_rated": {
+      "method": "GET",
+      "db_name": "top_rated_movies",
+      "api": "https://api.themoviedb.org/3/movie/top_rated",
+      "comment": "?language=en-US&page=1"
+    },
+    "upcoming": {
+      "method": "GET",
+      "db_name": "upcoming_movies",
+      "api": "https://api.themoviedb.org/3/movie/upcoming",
+      "comment": "?language=en-US&page=1"
+    },
+
+    "details": {
+      "method": "GET",
+      "db_name": "movie_details",
+      "api": "https://api.themoviedb.org/3/movie/{movie_id}",
+      "comment": "?language=en-US&append_to_response=credits,images,videos,watch/providers,keywords,release_dates"
+    },
+    "account_states": {
+      "method": "GET",
+      "db_name": "movie_account_states",
+      "api": "https://api.themoviedb.org/3/movie/{movie_id}/account/states"
+    },
+    "alternative_titles": {
+      "method": "GET",
+      "db_name": "movie_alternative_titles",
+      "api": "https://api.themoviedb.org/3/movie/{movie_id}/alternative_titles"
+    },
+    "changes": {
+      "method": "GET",
+      "db_name": "movie_changes",
+      "api": "https://api.themoviedb.org/3/movie/{movie_id}/changes"
+    },
+    "credits": {
+      "method": "GET",
+      "db_name": "movie_credits",
+      "api": "https://api.themoviedb.org/3/movie/{movie_id}/credits"
+    },
+    "external_ids": {
+      "method": "GET",
+      "db_name": "movie_external_ids",
+      "api": "https://api.themoviedb.org/3/movie/{movie_id}/external_ids"
+    },
+    "images": {
+      "method": "GET",
+      "db_name": "movie_images",
+      "api": "https://api.themoviedb.org/3/movie/{movie_id}/images"
+    },
+    "keywords": {
+      "method": "GET",
+      "db_name": "movie_keywords",
+      "api": "https://api.themoviedb.org/3/movie/{movie_id}/keywords"
+    },
+    "lists": {
+      "method": "GET",
+      "db_name": "movie_lists",
+      "api": "https://api.themoviedb.org/3/movie/{movie_id}/lists"
+    },
+    "recommendations": {
+      "method": "GET",
+      "db_name": "movie_recommendations",
+      "api": "https://api.themoviedb.org/3/movie/{movie_id}/recommendations",
+      "comment": "?language=en-US&page=1"
+    },
+    "release_dates": {
+      "method": "GET",
+      "db_name": "movie_release_dates",
+      "api": "https://api.themoviedb.org/3/movie/{movie_id}/release_dates"
+    },
+    "reviews": {
+      "method": "GET",
+      "db_name": "movie_reviews",
+      "api": "https://api.themoviedb.org/3/movie/{movie_id}/reviews"
+    },
+    "similar": {
+      "method": "GET",
+      "db_name": "similar_movies",
+      "api": "https://api.themoviedb.org/3/movie/{movie_id}/similar"
+    },
+    "translations": {
+      "method": "GET",
+      "db_name": "movie_translations",
+      "api": "https://api.themoviedb.org/3/movie/{movie_id}/translations"
+    },
+    "videos": {
+      "method": "GET",
+      "db_name": "movie_videos",
+      "api": "https://api.themoviedb.org/3/movie/{movie_id}/videos"
+    },
+    "watch_providers": {
+      "method": "GET",
+      "db_name": "movie_watch_providers",
+      "api": "https://api.themoviedb.org/3/movie/{movie_id}/watch/providers"
+    },
+
+    "latest": {
+      "method": "GET",
+      "db_name": "latest_movie",
+      "api": "https://api.themoviedb.org/3/movie/latest"
+    },
+
+    "rating_add": {
+      "method": "POST",
+      "db_name": "add_movie_rating",
+      "api": "https://api.themoviedb.org/3/movie/{movie_id}/rating"
+    },
+    "rating_delete": {
+      "method": "DELETE",
+      "db_name": "delete_movie_rating",
+      "api": "https://api.themoviedb.org/3/movie/{movie_id}/rating"
+    }
+  },
+
+  "tv": {
+    "airing_today": {
+      "method": "GET",
+      "db_name": "tv_airing_today",
+      "api": "https://api.themoviedb.org/3/tv/airing_today",
+      "comment": "?language=en-US&page=1"
+    },
+    "on_the_air": {
+      "method": "GET",
+      "db_name": "tv_on_the_air",
+      "api": "https://api.themoviedb.org/3/tv/on_the_air",
+      "comment": "?language=en-US&page=1"
+    },
+    "popular": {
+      "method": "GET",
+      "db_name": "popular_tv",
+      "api": "https://api.themoviedb.org/3/tv/popular",
+      "comment": "?language=en-US&page=1"
+    },
+    "top_rated": {
+      "method": "GET",
+      "db_name": "top_rated_tv",
+      "api": "https://api.themoviedb.org/3/tv/top_rated",
+      "comment": "?language=en-US&page=1"
+    },
+
+    "details": {
+      "method": "GET",
+      "db_name": "tv_details",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}",
+      "comment": "?language=en-US&append_to_response=credits,images,videos,watch/providers,aggregate_credits"
+    },
+    "account_states": {
+      "method": "GET",
+      "db_name": "tv_account_states",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/account/states"
+    },
+    "aggregate_credits": {
+      "method": "GET",
+      "db_name": "tv_aggregate_credits",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/aggregate_credits"
+    },
+    "alternative_titles": {
+      "method": "GET",
+      "db_name": "tv_alternative_titles",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/alternative_titles"
+    },
+    "changes": {
+      "method": "GET",
+      "db_name": "tv_changes",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/changes"
+    },
+    "content_ratings": {
+      "method": "GET",
+      "db_name": "tv_content_ratings",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/content_ratings"
+    },
+    "credits": {
+      "method": "GET",
+      "db_name": "tv_credits",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/credits"
+    },
+    "episode_groups": {
+      "method": "GET",
+      "db_name": "tv_episode_groups",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/episode_groups"
+    },
+    "external_ids": {
+      "method": "GET",
+      "db_name": "tv_external_ids",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/external_ids"
+    },
+    "images": {
+      "method": "GET",
+      "db_name": "tv_images",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/images"
+    },
+    "keywords": {
+      "method": "GET",
+      "db_name": "tv_keywords",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/keywords"
+    },
+    "lists": {
+      "method": "GET",
+      "db_name": "tv_lists",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/lists"
+    },
+    "recommendations": {
+      "method": "GET",
+      "db_name": "tv_recommendations",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/recommendations"
+    },
+    "reviews": {
+      "method": "GET",
+      "db_name": "tv_reviews",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/reviews"
+    },
+    "screened_theatrically": {
+      "method": "GET",
+      "db_name": "tv_screened_theatrically",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/screened_theatrically"
+    },
+    "similar": {
+      "method": "GET",
+      "db_name": "similar_tv",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/similar"
+    },
+    "translations": {
+      "method": "GET",
+      "db_name": "tv_translations",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/translations"
+    },
+    "videos": {
+      "method": "GET",
+      "db_name": "tv_videos",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/videos"
+    },
+    "watch_providers": {
+      "method": "GET",
+      "db_name": "tv_watch_providers",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/watch/providers"
+    },
+
+    "latest": {
+      "method": "GET",
+      "db_name": "latest_tv",
+      "api": "https://api.themoviedb.org/3/tv/latest"
+    },
+
+    "rating_add": {
+      "method": "POST",
+      "db_name": "add_tv_rating",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/rating"
+    },
+    "rating_delete": {
+      "method": "DELETE",
+      "db_name": "delete_tv_rating",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/rating"
+    }
+  },
+
+  "tv_seasons": {
+    "details": {
+      "method": "GET",
+      "db_name": "tv_season_details",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/season/{season_number}",
+      "comment": "?language=en-US"
+    },
+    "account_states": {
+      "method": "GET",
+      "db_name": "tv_season_account_states",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/season/{season_number}/account/states"
+    },
+    "aggregate_credits": {
+      "method": "GET",
+      "db_name": "tv_season_aggregate_credits",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/season/{season_number}/aggregate_credits"
+    },
+    "changes": {
+      "method": "GET",
+      "db_name": "tv_season_changes",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/season/{season_number}/changes"
+    },
+    "credits": {
+      "method": "GET",
+      "db_name": "tv_season_credits",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/season/{season_number}/credits"
+    },
+    "external_ids": {
+      "method": "GET",
+      "db_name": "tv_season_external_ids",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/season/{season_number}/external_ids"
+    },
+    "images": {
+      "method": "GET",
+      "db_name": "tv_season_images",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/season/{season_number}/images"
+    },
+    "translations": {
+      "method": "GET",
+      "db_name": "tv_season_translations",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/season/{season_number}/translations"
+    },
+    "videos": {
+      "method": "GET",
+      "db_name": "tv_season_videos",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/season/{season_number}/videos"
+    },
+    "watch_providers": {
+      "method": "GET",
+      "db_name": "tv_season_watch_providers",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/season/{season_number}/watch/providers"
+    }
+  },
+
+  "tv_episodes": {
+    "details": {
+      "method": "GET",
+      "db_name": "tv_episode_details",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/season/{season_number}/episode/{episode_number}",
+      "comment": "?language=en-US"
+    },
+    "account_states": {
+      "method": "GET",
+      "db_name": "tv_episode_account_states",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/season/{season_number}/episode/{episode_number}/account/states"
+    },
+    "changes": {
+      "method": "GET",
+      "db_name": "tv_episode_changes",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/season/{season_number}/episode/{episode_number}/changes"
+    },
+    "credits": {
+      "method": "GET",
+      "db_name": "tv_episode_credits",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/season/{season_number}/episode/{episode_number}/credits"
+    },
+    "external_ids": {
+      "method": "GET",
+      "db_name": "tv_episode_external_ids",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/season/{season_number}/episode/{episode_number}/external_ids"
+    },
+    "images": {
+      "method": "GET",
+      "db_name": "tv_episode_images",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/season/{season_number}/episode/{episode_number}/images"
+    },
+    "translations": {
+      "method": "GET",
+      "db_name": "tv_episode_translations",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/season/{season_number}/episode/{episode_number}/translations"
+    },
+    "videos": {
+      "method": "GET",
+      "db_name": "tv_episode_videos",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/season/{season_number}/episode/{episode_number}/videos"
+    },
+
+    "rating_add": {
+      "method": "POST",
+      "db_name": "add_tv_episode_rating",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/season/{season_number}/episode/{episode_number}/rating"
+    },
+    "rating_delete": {
+      "method": "DELETE",
+      "db_name": "delete_tv_episode_rating",
+      "api": "https://api.themoviedb.org/3/tv/{series_id}/season/{season_number}/episode/{episode_number}/rating"
+    }
+  },
+
+  "tv_episode_groups": {
+    "details": {
+      "method": "GET",
+      "db_name": "tv_episode_group_details",
+      "api": "https://api.themoviedb.org/3/tv/episode_group/{group_id}"
+    }
+  },
+
+  "collections": {
+    "details": {
+      "method": "GET",
+      "db_name": "collection_details",
+      "api": "https://api.themoviedb.org/3/collection/{collection_id}"
+    },
+    "images": {
+      "method": "GET",
+      "db_name": "collection_images",
+      "api": "https://api.themoviedb.org/3/collection/{collection_id}/images"
+    },
+    "translations": {
+      "method": "GET",
+      "db_name": "collection_translations",
+      "api": "https://api.themoviedb.org/3/collection/{collection_id}/translations"
+    }
+  },
+
+  "companies": {
+    "details": {
+      "method": "GET",
+      "db_name": "company_details",
+      "api": "https://api.themoviedb.org/3/company/{company_id}"
+    },
+    "alternative_names": {
+      "method": "GET",
+      "db_name": "company_alternative_names",
+      "api": "https://api.themoviedb.org/3/company/{company_id}/alternative_names"
+    },
+    "images": {
+      "method": "GET",
+      "db_name": "company_images",
+      "api": "https://api.themoviedb.org/3/company/{company_id}/images"
+    }
+  },
+
+  "networks": {
+    "details": {
+      "method": "GET",
+      "db_name": "network_details",
+      "api": "https://api.themoviedb.org/3/network/{network_id}"
+    },
+    "alternative_names": {
+      "method": "GET",
+      "db_name": "network_alternative_names",
+      "api": "https://api.themoviedb.org/3/network/{network_id}/alternative_names"
+    },
+    "images": {
+      "method": "GET",
+      "db_name": "network_images",
+      "api": "https://api.themoviedb.org/3/network/{network_id}/images"
+    }
+  },
+
+  "keywords": {
+    "details": {
+      "method": "GET",
+      "db_name": "keyword_details",
+      "api": "https://api.themoviedb.org/3/keyword/{keyword_id}"
+    },
+    "movies": {
+      "method": "GET",
+      "db_name": "keyword_movies",
+      "api": "https://api.themoviedb.org/3/keyword/{keyword_id}/movies"
+    }
+  },
+
+  "person": {
+    "details": {
+      "method": "GET",
+      "db_name": "person_details",
+      "api": "https://api.themoviedb.org/3/person/{person_id}",
+      "comment": "?language=en-US&append_to_response=combined_credits,images"
+    },
+    "popular": {
+      "method": "GET",
+      "db_name": "popular_people",
+      "api": "https://api.themoviedb.org/3/person/popular",
+      "comment": "?language=en-US&page=1"
+    },
+    "combined_credits": {
+      "method": "GET",
+      "db_name": "person_combined_credits",
+      "api": "https://api.themoviedb.org/3/person/{person_id}/combined_credits"
+    },
+    "movie_credits": {
+      "method": "GET",
+      "db_name": "person_movie_credits",
+      "api": "https://api.themoviedb.org/3/person/{person_id}/movie_credits"
+    },
+    "tv_credits": {
+      "method": "GET",
+      "db_name": "person_tv_credits",
+      "api": "https://api.themoviedb.org/3/person/{person_id}/tv_credits"
+    },
+    "images": {
+      "method": "GET",
+      "db_name": "person_images",
+      "api": "https://api.themoviedb.org/3/person/{person_id}/images"
+    },
+    "external_ids": {
+      "method": "GET",
+      "db_name": "person_external_ids",
+      "api": "https://api.themoviedb.org/3/person/{person_id}/external_ids"
+    },
+    "tagged_images": {
+      "method": "GET",
+      "db_name": "person_tagged_images",
+      "api": "https://api.themoviedb.org/3/person/{person_id}/tagged_images"
+    },
+    "translations": {
+      "method": "GET",
+      "db_name": "person_translations",
+      "api": "https://api.themoviedb.org/3/person/{person_id}/translations"
+    },
+    "changes": {
+      "method": "GET",
+      "db_name": "person_changes",
+      "api": "https://api.themoviedb.org/3/person/{person_id}/changes"
+    },
+    "latest": {
+      "method": "GET",
+      "db_name": "latest_person",
+      "api": "https://api.themoviedb.org/3/person/latest"
+    }
+  },
+
+  "account": {
+    "details": {
+      "method": "GET",
+      "db_name": "account_details",
+      "api": "https://api.themoviedb.org/3/account/{account_id}"
+    },
+    "favorite_movies": {
+      "method": "GET",
+      "db_name": "account_favorite_movies",
+      "api": "https://api.themoviedb.org/3/account/{account_id}/favorite/movies"
+    },
+    "favorite_tv": {
+      "method": "GET",
+      "db_name": "account_favorite_tv",
+      "api": "https://api.themoviedb.org/3/account/{account_id}/favorite/tv"
+    },
+    "add_favorite": {
+      "method": "POST",
+      "db_name": "account_add_favorite",
+      "api": "https://api.themoviedb.org/3/account/{account_id}/favorite"
+    },
+    "watchlist_movies": {
+      "method": "GET",
+      "db_name": "account_watchlist_movies",
+      "api": "https://api.themoviedb.org/3/account/{account_id}/watchlist/movies"
+    },
+    "watchlist_tv": {
+      "method": "GET",
+      "db_name": "account_watchlist_tv",
+      "api": "https://api.themoviedb.org/3/account/{account_id}/watchlist/tv"
+    },
+    "add_watchlist": {
+      "method": "POST",
+      "db_name": "account_add_watchlist",
+      "api": "https://api.themoviedb.org/3/account/{account_id}/watchlist"
+    },
+    "rated_movies": {
+      "method": "GET",
+      "db_name": "account_rated_movies",
+      "api": "https://api.themoviedb.org/3/account/{account_id}/rated/movies"
+    },
+    "rated_tv": {
+      "method": "GET",
+      "db_name": "account_rated_tv",
+      "api": "https://api.themoviedb.org/3/account/{account_id}/rated/tv"
+    },
+    "rated_tv_episodes": {
+      "method": "GET",
+      "db_name": "account_rated_tv_episodes",
+      "api": "https://api.themoviedb.org/3/account/{account_id}/rated/tv/episodes"
+    },
+    "lists": {
+      "method": "GET",
+      "db_name": "account_lists",
+      "api": "https://api.themoviedb.org/3/account/{account_id}/lists"
+    }
+  },
+
+  "guest_sessions": {
+    "rated_movies": {
+      "method": "GET",
+      "db_name": "guest_rated_movies",
+      "api": "https://api.themoviedb.org/3/guest_session/{guest_session_id}/rated/movies"
+    },
+    "rated_tv": {
+      "method": "GET",
+      "db_name": "guest_rated_tv",
+      "api": "https://api.themoviedb.org/3/guest_session/{guest_session_id}/rated/tv"
+    },
+    "rated_tv_episodes": {
+      "method": "GET",
+      "db_name": "guest_rated_tv_episodes",
+      "api": "https://api.themoviedb.org/3/guest_session/{guest_session_id}/rated/tv/episodes"
+    }
+  },
+
+  "lists": {
+    "create": {
+      "method": "POST",
+      "db_name": "create_list",
+      "api": "https://api.themoviedb.org/3/list"
+    },
+    "details": {
+      "method": "GET",
+      "db_name": "list_details",
+      "api": "https://api.themoviedb.org/3/list/{list_id}"
+    },
+    "item_status": {
+      "method": "GET",
+      "db_name": "list_item_status",
+      "api": "https://api.themoviedb.org/3/list/{list_id}/item_status"
+    },
+    "add_item": {
+      "method": "POST",
+      "db_name": "list_add_item",
+      "api": "https://api.themoviedb.org/3/list/{list_id}/add_item"
+    },
+    "remove_item": {
+      "method": "POST",
+      "db_name": "list_remove_item",
+      "api": "https://api.themoviedb.org/3/list/{list_id}/remove_item"
+    },
+    "clear": {
+      "method": "POST",
+      "db_name": "list_clear",
+      "api": "https://api.themoviedb.org/3/list/{list_id}/clear"
+    },
+    "delete": {
+      "method": "DELETE",
+      "db_name": "delete_list",
+      "api": "https://api.themoviedb.org/3/list/{list_id}"
+    }
+  },
+
+  "search": {
+    "movie": {
+      "method": "GET",
+      "db_name": "search_movie",
+      "api": "https://api.themoviedb.org/3/search/movie",
+      "comment": "?query=...&language=en-US&page=1"
+    },
+    "tv": {
+      "method": "GET",
+      "db_name": "search_tv",
+      "api": "https://api.themoviedb.org/3/search/tv",
+      "comment": "?query=...&language=en-US&page=1"
+    },
+    "person": {
+      "method": "GET",
+      "db_name": "search_person",
+      "api": "https://api.themoviedb.org/3/search/person",
+      "comment": "?query=...&language=en-US&page=1"
+    },
+    "multi": {
+      "method": "GET",
+      "db_name": "search_multi",
+      "api": "https://api.themoviedb.org/3/search/multi",
+      "comment": "?query=...&language=en-US&page=1"
+    },
+    "collection": {
+      "method": "GET",
+      "db_name": "search_collection",
+      "api": "https://api.themoviedb.org/3/search/collection"
+    },
+    "company": {
+      "method": "GET",
+      "db_name": "search_company",
+      "api": "https://api.themoviedb.org/3/search/company"
+    },
+    "keyword": {
+      "method": "GET",
+      "db_name": "search_keyword",
+      "api": "https://api.themoviedb.org/3/search/keyword"
+    }
+  },
+
+  "genres": {
+    "movie": {
+      "method": "GET",
+      "db_name": "movie_genres",
+      "api": "https://api.themoviedb.org/3/genre/movie/list",
+      "comment": "?language=en-US"
+    },
+    "tv": {
+      "method": "GET",
+      "db_name": "tv_genres",
+      "api": "https://api.themoviedb.org/3/genre/tv/list",
+      "comment": "?language=en-US"
+    }
+  },
+
+  "certifications": {
+    "movie": {
+      "method": "GET",
+      "db_name": "movie_certifications",
+      "api": "https://api.themoviedb.org/3/certification/movie/list"
+    },
+    "tv": {
+      "method": "GET",
+      "db_name": "tv_certifications",
+      "api": "https://api.themoviedb.org/3/certification/tv/list"
+    }
+  },
+
+  "changes": {
+    "movies": {
+      "method": "GET",
+      "db_name": "movie_changes",
+      "api": "https://api.themoviedb.org/3/movie/changes"
+    },
+    "tv": {
+      "method": "GET",
+      "db_name": "tv_changes",
+      "api": "https://api.themoviedb.org/3/tv/changes"
+    },
+    "people": {
+      "method": "GET",
+      "db_name": "person_changes",
+      "api": "https://api.themoviedb.org/3/person/changes"
+    }
+  },
+
+  "watch_providers": {
+    "regions": {
+      "method": "GET",
+      "db_name": "watch_providers_regions",
+      "api": "https://api.themoviedb.org/3/watch/providers/regions"
+    },
+    "movie": {
+      "method": "GET",
+      "db_name": "watch_providers_movie",
+      "api": "https://api.themoviedb.org/3/watch/providers/movie"
+    },
+    "tv": {
+      "method": "GET",
+      "db_name": "watch_providers_tv",
+      "api": "https://api.themoviedb.org/3/watch/providers/tv"
+    }
+  },
+
+  "credits": {
+    "details": {
+      "method": "GET",
+      "db_name": "credit_details",
+      "api": "https://api.themoviedb.org/3/credit/{credit_id}"
+    }
+  },
+
+  "reviews": {
+    "details": {
+      "method": "GET",
+      "db_name": "review_details",
+      "api": "https://api.themoviedb.org/3/review/{review_id}"
+    }
+  },
+
+  "find": {
+    "by_external_id": {
+      "method": "GET",
+      "db_name": "find_by_external_id",
+      "api": "https://api.themoviedb.org/3/find/{external_id}",
+      "comment": "?external_source=imdb_id"
+    }
+  }
+}
