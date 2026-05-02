@@ -33,7 +33,7 @@ export function CardInfo({
   return (
     <Card
       className={cn(
-        "relative isolate overflow-hidden rounded-lg border-white/10 bg-[#050505] bg-cover bg-center py-0 text-white shadow-xl shadow-black/20 ring-white/10",
+        "relative isolate @container/card-info overflow-hidden rounded-lg border-white/10 bg-[#050505] bg-cover bg-center py-0 text-white shadow-xl shadow-black/20 ring-white/10",
         className
       )}
       style={{ backgroundImage: `url(${backdropImage})` }}
@@ -41,7 +41,7 @@ export function CardInfo({
       <div className="absolute inset-0 -z-10 bg-gradient-to-r from-black via-black/75 to-black/35" />
       <div className="absolute inset-0 -z-10 bg-black/20" />
 
-      <CardContent className="grid gap-4 p-4 sm:grid-cols-[140px_1fr] lg:grid-cols-[160px_1fr]">
+      <CardContent className="grid gap-3 p-3 @[28rem]/card-info:grid-cols-[7.25rem_1fr] @[42rem]/card-info:grid-cols-[8.5rem_1fr] @[58rem]/card-info:grid-cols-[10rem_1fr] @[28rem]/card-info:p-4">
         <CardContainer
           containerClassName="w-full justify-start py-0"
           className="w-full"
@@ -63,10 +63,10 @@ export function CardInfo({
 
         <div className="flex min-w-0 flex-col justify-center gap-3 py-1 sm:py-2">
           <div className="space-y-2">
-            <h3 className="line-clamp-2 text-2xl leading-tight font-bold">
+            <h3 className="line-clamp-2 text-xl leading-tight font-bold @[42rem]/card-info:text-2xl">
               {title}
             </h3>
-            <Badge className="border-white/10 bg-white/12 px-3 py-1 text-sm text-white hover:bg-white/16">
+            <Badge className="border-white/10 bg-white/12 px-2.5 py-1 text-xs text-white hover:bg-white/16 @[42rem]/card-info:text-sm">
               {mediaType}
             </Badge>
           </div>
@@ -77,7 +77,7 @@ export function CardInfo({
                 <Badge
                   key={genre}
                   variant="secondary"
-                  className="min-w-20 border border-lime-700 bg-white/80 px-3 py-1 text-center text-sm font-medium text-black hover:bg-white/90"
+                  className="min-w-0 border border-lime-700 bg-white/80 px-2.5 py-1 text-center text-xs font-medium text-black hover:bg-white/90 @[42rem]/card-info:min-w-20 @[42rem]/card-info:text-sm"
                 >
                   {genre}
                 </Badge>
@@ -85,15 +85,15 @@ export function CardInfo({
             </div>
           )}
 
-          <p className="line-clamp-3 max-w-3xl text-base leading-7 text-white/95">
+          <p className="line-clamp-3 max-w-3xl text-sm leading-6 text-white/95 @[42rem]/card-info:text-base @[42rem]/card-info:leading-7">
             {description}
           </p>
 
           {(rating || releaseDate) && (
-            <div className="flex flex-wrap items-center gap-3 text-base text-white">
+            <div className="flex flex-wrap items-center gap-2 text-sm text-white @[42rem]/card-info:gap-3 @[42rem]/card-info:text-base">
               {rating && (
                 <span className="inline-flex items-center gap-2">
-                  <Star className="h-5 w-5 fill-yellow-300 text-yellow-300" />
+                  <Star className="h-4 w-4 fill-yellow-300 text-yellow-300 @[42rem]/card-info:h-5 @[42rem]/card-info:w-5" />
                   {rating}
                 </span>
               )}
@@ -102,7 +102,7 @@ export function CardInfo({
               )}
               {releaseDate && (
                 <span className="inline-flex items-center gap-2">
-                  <CalendarDays className="h-5 w-5 text-white/75" />
+                  <CalendarDays className="h-4 w-4 text-white/75 @[42rem]/card-info:h-5 @[42rem]/card-info:w-5" />
                   {releaseDate}
                 </span>
               )}

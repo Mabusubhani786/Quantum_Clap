@@ -1,9 +1,631 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import {
+  CalendarDays,
+  Clapperboard,
+  Film,
+  Flame,
+  Loader2,
+  Radio,
+  Star,
+  Trophy,
+} from "lucide-react"
+import { Link, createFileRoute } from "@tanstack/react-router"
 
-export const Route = createFileRoute('/__mainLayout/home')({
+import apiEndPoints from "@/api-fetch-endpoints/apiEndPoints.json"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import {
+  type CarouselApi,
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { fetchApiData } from "@/service/fetchApiData"
+
+export const Route = createFileRoute("/__mainLayout/home")({
   component: RouteComponent,
 })
 
+type EndpointConfig = {
+  method: "GET"
+  api: string
+}
+
+type ApiEndpoints = {
+  trending: {
+    all_day: EndpointConfig
+    all_week: EndpointConfig
+    movies_day: EndpointConfig
+    movies_week: EndpointConfig
+    tv_day: EndpointConfig
+    tv_week: EndpointConfig
+  }
+  movies: {
+    upcoming: EndpointConfig
+    top_rated: EndpointConfig
+  }
+  tv: {
+    on_the_air: EndpointConfig
+  }
+}
+
+type MediaType = "movie" | "tv"
+type TrendingMediaFilter = "all" | "movie" | "tv"
+type TrendingWindowFilter = "day" | "week"
+
+type TmdbMediaItem = {
+  id: number
+  title?: string
+  name?: string
+  overview: string
+  poster_path: string | null
+  backdrop_path: string | null
+  media_type?: MediaType
+  vote_average: number
+  release_date?: string
+  first_air_date?: string
+}
+
+type TmdbListResponse = {
+  page: number
+  total_pages: number
+  results: TmdbMediaItem[]
+}
+
+type HomeSection = {
+  id: string
+  title: string
+  description: string
+  endpoint: EndpointConfig
+  mediaType?: MediaType
+  badge: string
+  icon: typeof Flame
+  viewAllTo: "/movie" | "/series"
+}
+
+type SectionState = {
+  items: TmdbMediaItem[]
+  page: number
+  loading: boolean
+  loadingMore: boolean
+  error: boolean
+  hasMore: boolean
+}
+
+const endpoints = apiEndPoints as ApiEndpoints
+const imageBaseUrl = "https://image.tmdb.org/t/p/w500"
+const fallbackImage =
+  "https://image.tmdb.org/t/p/w500/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg"
+
+const emptySectionState: SectionState = {
+  items: [],
+  page: 0,
+  loading: true,
+  loadingMore: false,
+  error: false,
+  hasMore: true,
+}
+
+function getTrendingEndpoint(
+  mediaFilter: TrendingMediaFilter,
+  windowFilter: TrendingWindowFilter
+) {
+  if (mediaFilter === "movie") {
+    return windowFilter === "day"
+      ? endpoints.trending.movies_day
+      : endpoints.trending.movies_week
+  }
+
+  if (mediaFilter === "tv") {
+    return windowFilter === "day"
+      ? endpoints.trending.tv_day
+      : endpoints.trending.tv_week
+  }
+
+  return windowFilter === "day"
+    ? endpoints.trending.all_day
+    : endpoints.trending.all_week
+}
+
+function getTitle(item: TmdbMediaItem) {
+  return item.title ?? item.name ?? "Untitled"
+}
+
+function getMediaType(item: TmdbMediaItem, fallback?: MediaType) {
+  return item.media_type ?? fallback ?? (item.title ? "movie" : "tv")
+}
+
+function getReleaseYear(item: TmdbMediaItem) {
+  const date = item.release_date ?? item.first_air_date
+
+  if (!date) {
+    return "TBA"
+  }
+
+  return new Date(date).getFullYear().toString()
+}
+
+function getPosterUrl(item: TmdbMediaItem) {
+  return item.poster_path ? `${imageBaseUrl}${item.poster_path}` : fallbackImage
+}
+
+function formatRating(rating: number) {
+  return rating > 0 ? rating.toFixed(1) : "NR"
+}
+
+function mergeUniqueItems(
+  currentItems: TmdbMediaItem[],
+  nextItems: TmdbMediaItem[]
+) {
+  const seenItems = new Set(currentItems.map((item) => item.id))
+  const uniqueNextItems = nextItems.filter((item) => {
+    if (seenItems.has(item.id)) {
+      return false
+    }
+
+    seenItems.add(item.id)
+    return true
+  })
+
+  return [...currentItems, ...uniqueNextItems]
+}
+
+function MediaCard({
+  item,
+  mediaType,
+  rank,
+}: {
+  item: TmdbMediaItem
+  mediaType?: MediaType
+  rank: number
+}) {
+  const resolvedMediaType = getMediaType(item, mediaType)
+  const MediaIcon = resolvedMediaType === "movie" ? Film : Clapperboard
+
+  return (
+    <Card className="h-full rounded-lg py-0">
+      <div className="relative aspect-[2/3] overflow-hidden rounded-t-lg bg-muted">
+        <img
+          src={getPosterUrl(item)}
+          alt={`${getTitle(item)} poster`}
+          className="h-full w-full object-cover transition-transform duration-300 group-hover/card:scale-105"
+          loading="lazy"
+        />
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/45 to-transparent p-3 text-white">
+          <Badge className="rounded-md bg-white text-black hover:bg-white">
+            #{rank}
+          </Badge>
+        </div>
+      </div>
+
+      <CardHeader className="gap-2">
+        <CardTitle className="line-clamp-1">{getTitle(item)}</CardTitle>
+        <CardDescription className="line-clamp-2 min-h-10">
+          {item.overview || "No description available yet."}
+        </CardDescription>
+        <CardAction>
+          <Badge variant="secondary" className="gap-1 rounded-md">
+            <Star className="h-3.5 w-3.5 fill-current" />
+            {formatRating(item.vote_average)}
+          </Badge>
+        </CardAction>
+      </CardHeader>
+
+      <CardContent className="pb-4">
+        <div className="flex flex-wrap gap-2">
+          <Badge variant="secondary" className="gap-1 rounded-md">
+            <MediaIcon className="h-3.5 w-3.5" />
+            {resolvedMediaType === "movie" ? "Movie" : "Series"}
+          </Badge>
+          <Badge variant="secondary" className="gap-1 rounded-md">
+            <CalendarDays className="h-3.5 w-3.5" />
+            {getReleaseYear(item)}
+          </Badge>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function LoadingCarousel() {
+  return (
+    <div className="grid grid-cols-1 gap-4 overflow-hidden min-[420px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
+      {Array.from({ length: 5 }).map((_, index) => (
+        <Card
+          key={index}
+            className="h-[26rem] rounded-lg bg-muted/50 sm:h-[29rem]"
+        />
+      ))}
+    </div>
+  )
+}
+
+function SectionCarousel({
+  section,
+  state,
+  onLoadMore,
+}: {
+  section: HomeSection
+  state: SectionState
+  onLoadMore: (section: HomeSection) => void
+}) {
+  const [carouselApi, setCarouselApi] = useState<CarouselApi>()
+  const wheelDeltaRef = useRef(0)
+
+  useEffect(() => {
+    if (!carouselApi) {
+      return
+    }
+
+    const handleSelect = () => {
+      if (!carouselApi.canScrollNext()) {
+        onLoadMore(section)
+      }
+    }
+
+    carouselApi.on("select", handleSelect)
+    carouselApi.on("settle", handleSelect)
+
+    return () => {
+      carouselApi.off("select", handleSelect)
+      carouselApi.off("settle", handleSelect)
+    }
+  }, [carouselApi, onLoadMore, section])
+
+  const handleWheel = useCallback(
+    (event: React.WheelEvent<HTMLDivElement>) => {
+      if (!carouselApi) {
+        return
+      }
+
+      const wheelDelta =
+        Math.abs(event.deltaX) > Math.abs(event.deltaY)
+          ? event.deltaX
+          : event.deltaY
+
+      if (Math.abs(wheelDelta) < 8) {
+        return
+      }
+
+      event.preventDefault()
+      wheelDeltaRef.current += wheelDelta
+
+      if (Math.abs(wheelDeltaRef.current) < 80) {
+        return
+      }
+
+      if (wheelDeltaRef.current > 0) {
+        if (carouselApi.canScrollNext()) {
+          carouselApi.scrollNext()
+        } else {
+          onLoadMore(section)
+        }
+      } else if (carouselApi.canScrollPrev()) {
+        carouselApi.scrollPrev()
+      }
+
+      wheelDeltaRef.current = 0
+    },
+    [carouselApi, onLoadMore, section]
+  )
+
+  return (
+    <Carousel
+      setApi={setCarouselApi}
+      opts={{ align: "start", dragFree: true }}
+      className="relative"
+      onWheel={handleWheel}
+    >
+      <CarouselContent className="-ml-4">
+        {state.items.map((item, index) => (
+          <CarouselItem
+            key={`${section.id}-${item.id}`}
+            className="basis-[82%] pl-4 min-[420px]:basis-[58%] sm:basis-[42%] md:basis-[31%] lg:basis-[23%] 2xl:basis-[18%]"
+          >
+            <MediaCard
+              item={item}
+              mediaType={section.mediaType}
+              rank={index + 1}
+            />
+          </CarouselItem>
+        ))}
+
+        {state.loadingMore && (
+          <CarouselItem className="basis-[82%] pl-4 min-[420px]:basis-[58%] sm:basis-[42%] md:basis-[31%] lg:basis-[23%] 2xl:basis-[18%]">
+            <Card className="flex h-full min-h-[29rem] items-center justify-center rounded-lg bg-muted/50">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </Card>
+          </CarouselItem>
+        )}
+      </CarouselContent>
+
+      <div className="mt-4 flex justify-end gap-2">
+        <CarouselPrevious className="static translate-0 rounded-md" />
+        <CarouselNext className="static translate-0 rounded-md" />
+      </div>
+    </Carousel>
+  )
+}
+
+function TrendingFilters({
+  mediaFilter,
+  windowFilter,
+  onMediaFilterChange,
+  onWindowFilterChange,
+}: {
+  mediaFilter: TrendingMediaFilter
+  windowFilter: TrendingWindowFilter
+  onMediaFilterChange: (value: TrendingMediaFilter) => void
+  onWindowFilterChange: (value: TrendingWindowFilter) => void
+}) {
+  return (
+    <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap">
+      <Select value={mediaFilter} onValueChange={onMediaFilterChange}>
+        <SelectTrigger className="h-9 w-full rounded-md bg-background sm:w-36">
+          <SelectValue placeholder="All" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">All</SelectItem>
+          <SelectItem value="movie">Movies</SelectItem>
+          <SelectItem value="tv">Series</SelectItem>
+        </SelectContent>
+      </Select>
+
+      <Select value={windowFilter} onValueChange={onWindowFilterChange}>
+        <SelectTrigger className="h-9 w-full rounded-md bg-background sm:w-32">
+          <SelectValue placeholder="Week" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="day">Today</SelectItem>
+          <SelectItem value="week">Week</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+  )
+}
+
+function MediaSection({
+  section,
+  state,
+  onLoadMore,
+  trendingFilters,
+}: {
+  section: HomeSection
+  state: SectionState
+  onLoadMore: (section: HomeSection) => void
+  trendingFilters?: React.ReactNode
+}) {
+  const Icon = section.icon
+
+  return (
+    <section className="space-y-4">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div className="space-y-1">
+          <Badge variant="secondary" className="gap-2 rounded-md px-3 py-1">
+            <Icon className="h-4 w-4" />
+            {section.badge}
+          </Badge>
+          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            {section.title}
+          </h2>
+          <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
+            {section.description}
+          </p>
+        </div>
+
+        <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center lg:w-auto lg:justify-end">
+          {trendingFilters}
+          <Button asChild variant="outline" className="w-full sm:w-auto">
+            <Link to={section.viewAllTo}>View all</Link>
+          </Button>
+        </div>
+      </div>
+
+      {state.loading ? (
+        <LoadingCarousel />
+      ) : state.error || state.items.length === 0 ? (
+        <Card className="rounded-lg">
+          <CardHeader>
+            <CardTitle>Unable to load this section</CardTitle>
+            <CardDescription>
+              Check the TMDB authorization env value and try again.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      ) : (
+        <SectionCarousel
+          section={section}
+          state={state}
+          onLoadMore={onLoadMore}
+        />
+      )}
+    </section>
+  )
+}
+
 function RouteComponent() {
-  return <div>Hello "/__mainLayout/home"!</div>
+  const [trendingMediaFilter, setTrendingMediaFilter] =
+    useState<TrendingMediaFilter>("all")
+  const [trendingWindowFilter, setTrendingWindowFilter] =
+    useState<TrendingWindowFilter>("week")
+  const [sectionsState, setSectionsState] = useState<
+    Record<string, SectionState>
+  >({
+    trending: emptySectionState,
+    upcoming: emptySectionState,
+    "on-the-air": emptySectionState,
+    "top-rated": emptySectionState,
+  })
+
+  const trendingSection = useMemo<HomeSection>(
+    () => ({
+      id: "trending",
+      title: "Trending Movies & Series",
+      description: "The titles people are watching and talking about right now.",
+      endpoint: getTrendingEndpoint(trendingMediaFilter, trendingWindowFilter),
+      mediaType: trendingMediaFilter === "all" ? undefined : trendingMediaFilter,
+      badge: trendingWindowFilter === "day" ? "Today" : "This week",
+      icon: Flame,
+      viewAllTo: trendingMediaFilter === "tv" ? "/series" : "/movie",
+    }),
+    [trendingMediaFilter, trendingWindowFilter]
+  )
+
+  const staticSections = useMemo<HomeSection[]>(
+    () => [
+      {
+        id: "upcoming",
+        title: "Upcoming Movies",
+        description: "Fresh releases coming soon to theaters and watchlists.",
+        endpoint: endpoints.movies.upcoming,
+        mediaType: "movie",
+        badge: "Coming soon",
+        icon: CalendarDays,
+        viewAllTo: "/movie",
+      },
+      {
+        id: "on-the-air",
+        title: "On The Air Series",
+        description: "Series currently airing, updated with active TV picks.",
+        endpoint: endpoints.tv.on_the_air,
+        mediaType: "tv",
+        badge: "Live seasons",
+        icon: Radio,
+        viewAllTo: "/series",
+      },
+      {
+        id: "top-rated",
+        title: "Top Rated Movies",
+        description: "Highly rated movie picks with strong audience scores.",
+        endpoint: endpoints.movies.top_rated,
+        mediaType: "movie",
+        badge: "Best rated",
+        icon: Trophy,
+        viewAllTo: "/movie",
+      },
+    ],
+    []
+  )
+
+  const homeSections = useMemo<HomeSection[]>(
+    () => [trendingSection, ...staticSections],
+    [staticSections, trendingSection]
+  )
+
+  const loadSectionPage = useCallback(
+    async (section: HomeSection, page: number, mode: "replace" | "append") => {
+      setSectionsState((current) => ({
+        ...current,
+        [section.id]: {
+          ...(current[section.id] ?? emptySectionState),
+          loading: mode === "replace",
+          loadingMore: mode === "append",
+          error: false,
+        },
+      }))
+
+      const response = await fetchApiData<TmdbListResponse>({
+        endpoint: section.endpoint.api,
+        method: section.endpoint.method,
+        params: {
+          language: "en-US",
+          page,
+        },
+      })
+
+      setSectionsState((current) => {
+        const previousState = current[section.id] ?? emptySectionState
+
+        return {
+          ...current,
+          [section.id]: {
+            items: response
+              ? mode === "append"
+                ? mergeUniqueItems(previousState.items, response.results)
+                : response.results
+              : mode === "append"
+                ? previousState.items
+                : [],
+            page: response?.page ?? previousState.page,
+            loading: false,
+            loadingMore: false,
+            error: !response && mode === "replace",
+            hasMore: response ? response.page < response.total_pages : false,
+          },
+        }
+      })
+    },
+    []
+  )
+
+  const loadMoreSection = useCallback(
+    (section: HomeSection) => {
+      const state = sectionsState[section.id]
+
+      if (!state || state.loading || state.loadingMore || !state.hasMore) {
+        return
+      }
+
+      void loadSectionPage(section, state.page + 1, "append")
+    },
+    [loadSectionPage, sectionsState]
+  )
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      void loadSectionPage(trendingSection, 1, "replace")
+    }, 0)
+
+    return () => window.clearTimeout(timer)
+  }, [loadSectionPage, trendingSection])
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      staticSections.forEach((section) => {
+        void loadSectionPage(section, 1, "replace")
+      })
+    }, 0)
+
+    return () => window.clearTimeout(timer)
+  }, [loadSectionPage, staticSections])
+
+  return (
+    <div className="mx-auto w-full space-y-10 py-8 sm:py-10">
+      {homeSections.map((section) => (
+        <MediaSection
+          key={section.id}
+          section={section}
+          state={sectionsState[section.id] ?? emptySectionState}
+          onLoadMore={loadMoreSection}
+          trendingFilters={
+            section.id === "trending" ? (
+              <TrendingFilters
+                mediaFilter={trendingMediaFilter}
+                windowFilter={trendingWindowFilter}
+                onMediaFilterChange={setTrendingMediaFilter}
+                onWindowFilterChange={setTrendingWindowFilter}
+              />
+            ) : undefined
+          }
+        />
+      ))}
+    </div>
+  )
 }

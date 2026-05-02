@@ -1,5 +1,6 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router"
 
+import { HeroSection } from "@/components/HeroSection"
 import { HeaderLayout } from "@/layout/headerLayout"
 
 export const Route = createFileRoute("/__mainLayout")({
@@ -8,9 +9,10 @@ export const Route = createFileRoute("/__mainLayout")({
 
 function RouteComponent() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen overflow-x-hidden bg-background text-foreground">
       <HeaderLayout />
-      <main className="px-2 sm:px-3">
+      <HeroSection />
+      <main className="w-full min-w-0 px-2 pt-6 sm:px-3">
         <Outlet />
       </main>
     </div>
