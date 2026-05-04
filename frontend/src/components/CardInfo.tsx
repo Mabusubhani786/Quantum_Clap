@@ -1,4 +1,5 @@
 import { CalendarDays, Star } from "lucide-react"
+import { Link } from "@tanstack/react-router"
 
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
@@ -15,6 +16,7 @@ type CardInfoProps = {
   genres?: string[]
   rating?: string
   releaseDate?: string
+  detailTo?: string
   className?: string
 }
 
@@ -28,12 +30,13 @@ export function CardInfo({
   genres = [],
   rating,
   releaseDate,
+  detailTo,
   className,
 }: CardInfoProps) {
-  return (
+  const card = (
     <Card
       className={cn(
-        "relative isolate @container/card-info overflow-hidden rounded-lg border-white/10 bg-[#050505] bg-cover bg-center py-0 text-white shadow-xl shadow-black/20 ring-white/10",
+        "relative isolate @container/card-info h-full overflow-hidden rounded-lg border-white/10 bg-[#050505] bg-cover bg-center py-0 text-white shadow-xl shadow-black/20 ring-white/10 transition duration-300 hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-black/30",
         className
       )}
       style={{ backgroundImage: `url(${backdropImage})` }}
@@ -111,5 +114,15 @@ export function CardInfo({
         </div>
       </CardContent>
     </Card>
+  )
+
+  if (!detailTo) {
+    return card
+  }
+
+  return (
+    <Link to={detailTo} className="block h-full min-w-0">
+      {card}
+    </Link>
   )
 }

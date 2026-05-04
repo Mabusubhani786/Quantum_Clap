@@ -4,7 +4,6 @@ import {
   Clapperboard,
   Film,
   Flame,
-  Loader2,
   Radio,
   Star,
   Trophy,
@@ -37,6 +36,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Skeleton } from "@/components/ui/skeleton"
 import { fetchApiData } from "@/service/fetchApiData"
 
 export const Route = createFileRoute("/__mainLayout/home")({
@@ -198,49 +198,52 @@ function MediaCard({
 }) {
   const resolvedMediaType = getMediaType(item, mediaType)
   const MediaIcon = resolvedMediaType === "movie" ? Film : Clapperboard
+  const detailTo = `/${resolvedMediaType === "movie" ? "movie" : "series"}/${item.id}`
 
   return (
-    <Card className="h-full rounded-lg py-0">
-      <div className="relative aspect-[2/3] overflow-hidden rounded-t-lg bg-muted">
-        <img
-          src={getPosterUrl(item)}
-          alt={`${getTitle(item)} poster`}
-          className="h-full w-full object-cover transition-transform duration-300 group-hover/card:scale-105"
-          loading="lazy"
-        />
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/45 to-transparent p-3 text-white">
-          <Badge className="rounded-md bg-white text-black hover:bg-white">
-            #{rank}
-          </Badge>
+    <Link to={detailTo} className="group/card block h-full">
+      <Card className="h-full rounded-lg py-0 transition duration-300 group-hover/card:-translate-y-0.5 group-hover/card:shadow-xl">
+        <div className="relative aspect-[2/3] overflow-hidden rounded-t-lg bg-muted">
+          <img
+            src={getPosterUrl(item)}
+            alt={`${getTitle(item)} poster`}
+            className="h-full w-full object-cover transition-transform duration-300 group-hover/card:scale-105"
+            loading="lazy"
+          />
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/45 to-transparent p-3 text-white">
+            <Badge className="rounded-md bg-white text-black hover:bg-white">
+              #{rank}
+            </Badge>
+          </div>
         </div>
-      </div>
 
-      <CardHeader className="gap-2">
-        <CardTitle className="line-clamp-1">{getTitle(item)}</CardTitle>
-        <CardDescription className="line-clamp-2 min-h-10">
-          {item.overview || "No description available yet."}
-        </CardDescription>
-        <CardAction>
-          <Badge variant="secondary" className="gap-1 rounded-md">
-            <Star className="h-3.5 w-3.5 fill-current" />
-            {formatRating(item.vote_average)}
-          </Badge>
-        </CardAction>
-      </CardHeader>
+        <CardHeader className="gap-2">
+          <CardTitle className="line-clamp-1">{getTitle(item)}</CardTitle>
+          <CardDescription className="line-clamp-2 min-h-10">
+            {item.overview || "No description available yet."}
+          </CardDescription>
+          <CardAction>
+            <Badge variant="secondary" className="gap-1 rounded-md">
+              <Star className="h-3.5 w-3.5 fill-current" />
+              {formatRating(item.vote_average)}
+            </Badge>
+          </CardAction>
+        </CardHeader>
 
-      <CardContent className="pb-4">
-        <div className="flex flex-wrap gap-2">
-          <Badge variant="secondary" className="gap-1 rounded-md">
-            <MediaIcon className="h-3.5 w-3.5" />
-            {resolvedMediaType === "movie" ? "Movie" : "Series"}
-          </Badge>
-          <Badge variant="secondary" className="gap-1 rounded-md">
-            <CalendarDays className="h-3.5 w-3.5" />
-            {getReleaseYear(item)}
-          </Badge>
-        </div>
-      </CardContent>
-    </Card>
+        <CardContent className="pb-4">
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="secondary" className="gap-1 rounded-md">
+              <MediaIcon className="h-3.5 w-3.5" />
+              {resolvedMediaType === "movie" ? "Movie" : "Series"}
+            </Badge>
+            <Badge variant="secondary" className="gap-1 rounded-md">
+              <CalendarDays className="h-3.5 w-3.5" />
+              {getReleaseYear(item)}
+            </Badge>
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
   )
 }
 
@@ -250,10 +253,47 @@ function LoadingCarousel() {
       {Array.from({ length: 5 }).map((_, index) => (
         <Card
           key={index}
-            className="h-[26rem] rounded-lg bg-muted/50 sm:h-[29rem]"
-        />
+          className="h-[26rem] overflow-hidden rounded-lg py-0 sm:h-[29rem]"
+        >
+          <Skeleton className="aspect-[2/3] w-full rounded-b-none rounded-t-lg" />
+          <CardHeader className="gap-2">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1 space-y-2">
+                <Skeleton className="h-5 w-4/5" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+              </div>
+              <Skeleton className="h-6 w-12 shrink-0" />
+            </div>
+          </CardHeader>
+          <CardContent className="pb-4">
+            <div className="flex flex-wrap gap-2">
+              <Skeleton className="h-6 w-16" />
+              <Skeleton className="h-6 w-14" />
+            </div>
+          </CardContent>
+        </Card>
       ))}
     </div>
+  )
+}
+
+function LoadingMoreCard() {
+  return (
+    <Card className="h-full min-h-[29rem] overflow-hidden rounded-lg py-0">
+      <Skeleton className="aspect-[2/3] w-full rounded-b-none rounded-t-lg" />
+      <CardHeader className="gap-2">
+        <Skeleton className="h-5 w-3/4" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-2/3" />
+      </CardHeader>
+      <CardContent className="pb-4">
+        <div className="flex gap-2">
+          <Skeleton className="h-6 w-16" />
+          <Skeleton className="h-6 w-14" />
+        </div>
+      </CardContent>
+    </Card>
   )
 }
 
@@ -267,6 +307,7 @@ function SectionCarousel({
   onLoadMore: (section: HomeSection) => void
 }) {
   const [carouselApi, setCarouselApi] = useState<CarouselApi>()
+  const carouselRootRef = useRef<HTMLDivElement>(null)
   const wheelDeltaRef = useRef(0)
 
   useEffect(() => {
@@ -290,8 +331,8 @@ function SectionCarousel({
   }, [carouselApi, onLoadMore, section])
 
   const handleWheel = useCallback(
-    (event: React.WheelEvent<HTMLDivElement>) => {
-      if (!carouselApi) {
+    (event: WheelEvent) => {
+      if (!carouselApi || event.ctrlKey) {
         return
       }
 
@@ -326,41 +367,52 @@ function SectionCarousel({
     [carouselApi, onLoadMore, section]
   )
 
+  useEffect(() => {
+    const carouselRoot = carouselRootRef.current
+
+    if (!carouselRoot) {
+      return
+    }
+
+    carouselRoot.addEventListener("wheel", handleWheel, { passive: false })
+
+    return () => carouselRoot.removeEventListener("wheel", handleWheel)
+  }, [handleWheel])
+
   return (
-    <Carousel
-      setApi={setCarouselApi}
-      opts={{ align: "start", dragFree: true }}
-      className="relative"
-      onWheel={handleWheel}
-    >
-      <CarouselContent className="-ml-4">
-        {state.items.map((item, index) => (
-          <CarouselItem
-            key={`${section.id}-${item.id}`}
-            className="basis-[82%] pl-4 min-[420px]:basis-[58%] sm:basis-[42%] md:basis-[31%] lg:basis-[23%] 2xl:basis-[18%]"
-          >
-            <MediaCard
-              item={item}
-              mediaType={section.mediaType}
-              rank={index + 1}
-            />
-          </CarouselItem>
-        ))}
+    <div ref={carouselRootRef}>
+      <Carousel
+        setApi={setCarouselApi}
+        opts={{ align: "start", dragFree: true }}
+        className="relative"
+      >
+        <CarouselContent className="-ml-4">
+          {state.items.map((item, index) => (
+            <CarouselItem
+              key={`${section.id}-${item.id}`}
+              className="basis-[82%] pl-4 min-[420px]:basis-[58%] sm:basis-[42%] md:basis-[31%] lg:basis-[23%] 2xl:basis-[18%]"
+            >
+              <MediaCard
+                item={item}
+                mediaType={section.mediaType}
+                rank={index + 1}
+              />
+            </CarouselItem>
+          ))}
 
-        {state.loadingMore && (
-          <CarouselItem className="basis-[82%] pl-4 min-[420px]:basis-[58%] sm:basis-[42%] md:basis-[31%] lg:basis-[23%] 2xl:basis-[18%]">
-            <Card className="flex h-full min-h-[29rem] items-center justify-center rounded-lg bg-muted/50">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            </Card>
-          </CarouselItem>
-        )}
-      </CarouselContent>
+          {state.loadingMore && (
+            <CarouselItem className="basis-[82%] pl-4 min-[420px]:basis-[58%] sm:basis-[42%] md:basis-[31%] lg:basis-[23%] 2xl:basis-[18%]">
+              <LoadingMoreCard />
+            </CarouselItem>
+          )}
+        </CarouselContent>
 
-      <div className="mt-4 flex justify-end gap-2">
-        <CarouselPrevious className="static translate-0 rounded-md" />
-        <CarouselNext className="static translate-0 rounded-md" />
-      </div>
-    </Carousel>
+        <div className="mt-4 flex justify-end gap-2">
+          <CarouselPrevious className="static translate-0 rounded-md" />
+          <CarouselNext className="static translate-0 rounded-md" />
+        </div>
+      </Carousel>
+    </div>
   )
 }
 

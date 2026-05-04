@@ -1,7 +1,8 @@
-import { Fragment, useEffect, useState, type CSSProperties } from "react"
-import { Search } from "lucide-react"
+import { Fragment, useEffect, useMemo, useState, type CSSProperties } from "react"
+import { Building2, Film, Search, Tv, UserRound } from "lucide-react"
 import { Link, useRouterState } from "@tanstack/react-router"
 
+import apiEndPoints from "@/api-fetch-endpoints/apiEndPoints.json"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -21,6 +22,43 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu"
 import { cn } from "@/lib/utils"
+import { fetchApiData } from "@/service/fetchApiData"
+
+type EndpointConfig = {
+  method: "GET"
+  api: string
+}
+
+type ApiEndpoints = {
+  search: {
+    movie: EndpointConfig
+    tv: EndpointConfig
+    person: EndpointConfig
+    company: EndpointConfig
+    multi: EndpointConfig
+  }
+}
+
+type SearchScope = "movie" | "tv" | "person" | "company" | "multi"
+
+type SearchResult = {
+  id: number
+  title?: string
+  name?: string
+  media_type?: "movie" | "tv" | "person"
+  poster_path?: string | null
+  profile_path?: string | null
+  logo_path?: string | null
+  overview?: string
+  known_for_department?: string
+  origin_country?: string
+  release_date?: string
+  first_air_date?: string
+}
+
+type SearchResponse = {
+  results: SearchResult[]
+}
 
 type NavItem = {
   label: string
@@ -37,6 +75,8 @@ const animeMenuItems = [
   { label: "Movies", to: "/anime" },
   { label: "Series", to: "/anime" },
 ]
+
+const endpoints = apiEndPoints as ApiEndpoints
 
 const routeLabels: Record<string, string> = {
   home: "Home",
@@ -69,7 +109,191 @@ function useBreadcrumbItems() {
   }))
 }
 
+function getSearchScope(pathname: string): SearchScope {
+  if (pathname.startsWith("/movie")) {
+    return "movie"
+  }
+
+  if (pathname.startsWith("/series") || pathname.startsWith("/anime")) {
+    return "tv"
+  }
+
+  if (pathname.startsWith("/person")) {
+    return "person"
+  }
+
+  if (pathname.startsWith("/company")) {
+    return "company"
+  }
+
+  return "multi"
+}
+
+function getSearchCopy(scope: SearchScope) {
+  const copy = {
+    movie: "Search movies",
+    tv: "Search series",
+    person: "Search people",
+    company: "Search companies",
+    multi: "Search movies, series, people",
+  } satisfies Record<SearchScope, string>
+
+  return copy[scope]
+}
+
+function getSearchTitle(result: SearchResult) {
+  return result.title ?? result.name ?? "Untitled"
+}
+
+function getSearchMeta(result: SearchResult, scope: SearchScope) {
+  const mediaType = result.media_type ?? scope
+  const date = result.release_date ?? result.first_air_date
+  const year = date ? new Date(date).getFullYear().toString() : null
+
+  if (mediaType === "person") {
+    return result.known_for_department ?? "Person"
+  }
+
+  if (scope === "company") {
+    return result.origin_country || "Company"
+  }
+
+  if (mediaType === "tv") {
+    return year ? `Series · ${year}` : "Series"
+  }
+
+  return year ? `Movie · ${year}` : "Movie"
+}
+
+function getSearchIcon(result: SearchResult, scope: SearchScope) {
+  const mediaType = result.media_type ?? scope
+
+  if (mediaType === "person") {
+    return <UserRound className="h-4 w-4" />
+  }
+
+  if (scope === "company") {
+    return <Building2 className="h-4 w-4" />
+  }
+
+  if (mediaType === "tv") {
+    return <Tv className="h-4 w-4" />
+  }
+
+  return <Film className="h-4 w-4" />
+}
+
+function getSearchImage(result: SearchResult, scope: SearchScope) {
+  const path = result.poster_path ?? result.profile_path ?? result.logo_path
+
+  if (!path) {
+    return null
+  }
+
+  if (scope === "company" || result.logo_path) {
+    return `https://image.tmdb.org/t/p/w185${path}`
+  }
+
+  return `https://image.tmdb.org/t/p/w185${path}`
+}
+
+function getSearchRoute(result: SearchResult, scope: SearchScope, pathname: string) {
+  const mediaType = result.media_type ?? scope
+
+  if (mediaType === "person") {
+    return {
+      to: "/person/$personId" as const,
+      params: { personId: String(result.id) },
+    }
+  }
+
+  if (scope === "company") {
+    return {
+      to: "/company/$companyId" as const,
+      params: { companyId: String(result.id) },
+    }
+  }
+
+  if (mediaType === "tv") {
+    return {
+      to: pathname.startsWith("/anime")
+        ? ("/anime/$mediaId" as const)
+        : ("/series/$mediaId" as const),
+      params: { mediaId: String(result.id) },
+    }
+  }
+
+  return {
+    to: "/movie/$mediaId" as const,
+    params: { mediaId: String(result.id) },
+  }
+}
+
 function HeaderSearch({ className }: { className?: string }) {
+  const pathname = useRouterState({
+    select: (state) => state.location.pathname,
+  })
+  const scope = useMemo(() => getSearchScope(pathname), [pathname])
+  const [query, setQuery] = useState("")
+  const [results, setResults] = useState<SearchResult[]>([])
+  const [isFocused, setIsFocused] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const endpoint = endpoints.search[scope]
+  const placeholder = pathname.startsWith("/anime")
+    ? "Search anime"
+    : getSearchCopy(scope)
+
+  useEffect(() => {
+    const trimmedQuery = query.trim()
+
+    if (trimmedQuery.length < 2) {
+      return
+    }
+
+    const abortController = new AbortController()
+    const timeout = window.setTimeout(async () => {
+      setIsLoading(true)
+
+      const response = await fetchApiData<SearchResponse>({
+        endpoint: endpoint.api,
+        method: endpoint.method,
+        params: {
+          query: trimmedQuery,
+          language: "en-US",
+          page: 1,
+          include_adult: false,
+        },
+        signal: abortController.signal,
+      })
+
+      if (abortController.signal.aborted) {
+        return
+      }
+
+      setResults(
+        (response?.results ?? [])
+          .filter((result) => {
+            const mediaType = result.media_type ?? scope
+            return (
+              mediaType === "movie" ||
+              mediaType === "tv" ||
+              mediaType === "person" ||
+              scope === "company"
+            )
+          })
+          .slice(0, 6)
+      )
+      setIsLoading(false)
+    }, 280)
+
+    return () => {
+      window.clearTimeout(timeout)
+      abortController.abort()
+    }
+  }, [endpoint.api, endpoint.method, query, scope])
+
+  const showResults = isFocused && query.trim().length >= 2
+
   return (
     <div className={cn("relative", className)}>
       <Search
@@ -78,10 +302,77 @@ function HeaderSearch({ className }: { className?: string }) {
       />
       <Input
         type="search"
-        placeholder="Search movies, series, anime"
-        aria-label="Search movies, series, anime"
+        value={query}
+        placeholder={placeholder}
+        aria-label={placeholder}
+        onChange={(event) => {
+          const nextQuery = event.target.value
+          setQuery(nextQuery)
+
+          if (nextQuery.trim().length < 2) {
+            setResults([])
+            setIsLoading(false)
+          }
+        }}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => {
+          window.setTimeout(() => setIsFocused(false), 160)
+        }}
         className="h-9 border-[var(--header-control-border)] bg-[var(--header-control-bg)] pr-3 pl-9 text-primary-foreground shadow-none placeholder:text-primary-foreground/40 hover:border-white/20 hover:bg-[var(--header-control-hover-bg)] focus-visible:border-white/35 focus-visible:bg-[var(--header-control-hover-bg)] focus-visible:ring-white/15"
       />
+      {showResults && (
+        <div className="absolute top-[calc(100%+0.5rem)] right-0 left-0 z-[70] overflow-hidden rounded-lg border border-white/12 bg-black/94 text-white shadow-2xl shadow-black/35 backdrop-blur-xl">
+          <div className="border-b border-white/10 px-3 py-2 text-xs font-medium text-white/56">
+            {isLoading ? "Searching..." : placeholder}
+          </div>
+          {results.length > 0 ? (
+            <div className="max-h-96 overflow-y-auto p-1">
+              {results.map((result) => {
+                const route = getSearchRoute(result, scope, pathname)
+                const image = getSearchImage(result, scope)
+
+                return (
+                  <Link
+                    key={`${scope}-${result.id}-${result.media_type ?? "item"}`}
+                    to={route.to}
+                    params={route.params}
+                    onClick={() => {
+                      setQuery("")
+                      setResults([])
+                      setIsFocused(false)
+                    }}
+                    className="flex min-w-0 items-center gap-3 rounded-md p-2 transition hover:bg-white/10 focus:bg-white/10"
+                  >
+                    <div className="flex h-12 w-9 shrink-0 items-center justify-center overflow-hidden rounded-md bg-white/10 text-white/62">
+                      {image ? (
+                        <img
+                          src={image}
+                          alt={getSearchTitle(result)}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        getSearchIcon(result, scope)
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium">
+                        {getSearchTitle(result)}
+                      </p>
+                      <p className="truncate text-xs text-white/52">
+                        {getSearchMeta(result, scope)}
+                      </p>
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
+          ) : (
+            <div className="px-3 py-4 text-sm text-white/52">
+              {isLoading ? "Finding matches..." : "No results found."}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -107,25 +398,26 @@ export function HeaderLayout() {
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 text-primary-foreground transition-all duration-300",
+        "fixed inset-x-0 top-0 z-50 text-primary-foreground transition-all duration-300",
         hasScrolled
           ? "border-b border-white/10 shadow-[0_1px_0_rgba(255,255,255,0.04),0_18px_50px_rgba(0,0,0,0.28)] backdrop-blur-xl"
-          : "border-b border-white/0 shadow-none backdrop-blur-[2px]"
+          : "border-0 bg-transparent shadow-none backdrop-blur-none"
       )}
       style={{
         backgroundColor: hasScrolled
-          ? "rgba(var(--hero-accent-color, 5, 5, 5), 0.78)"
-          : "rgba(var(--hero-accent-color, 5, 5, 5), 0.2)",
+          ? "rgba(0, 0, 0, 0.88)"
+          : "rgba(0, 0, 0, 0.28)",
         borderColor: hasScrolled
-          ? "rgba(var(--hero-accent-color, 5, 5, 5), 0.42)"
-          : "rgba(var(--hero-accent-color, 5, 5, 5), 0.18)",
+          ? "rgba(255, 255, 255, 0.14)"
+          : "transparent",
         "--header-control-bg": hasScrolled
-          ? "rgba(var(--hero-accent-color, 5, 5, 5), 0.36)"
-          : "rgba(var(--hero-accent-color, 5, 5, 5), 0.22)",
-        "--header-control-hover-bg":
-          "rgba(var(--hero-accent-color, 5, 5, 5), 0.46)",
+          ? "rgba(255, 255, 255, 0.1)"
+          : "rgba(0, 0, 0, 0.18)",
+        "--header-control-hover-bg": hasScrolled
+          ? "rgba(255, 255, 255, 0.14)"
+          : "rgba(0, 0, 0, 0.26)",
         "--header-control-border":
-          "rgba(var(--hero-accent-color, 5, 5, 5), 0.5)",
+          hasScrolled ? "rgba(255, 255, 255, 0.16)" : "rgba(255, 255, 255, 0.12)",
       } as CSSProperties}
     >
       <div className="mx-auto flex min-h-20 w-full min-w-0 flex-col justify-center gap-3 px-3 py-3 sm:px-4 lg:flex-row lg:items-center lg:justify-between">
@@ -191,7 +483,7 @@ export function HeaderLayout() {
             viewport={false}
             className="max-w-full min-w-0 [&_[data-slot=navigation-menu-indicator]>div]:!bg-white/15"
           >
-            <NavigationMenuList className="max-w-[calc(100vw-1.5rem)] gap-1 overflow-x-auto overflow-y-visible rounded-md border border-[var(--header-control-border)] bg-[var(--header-control-bg)] p-1 shadow-inner [scrollbar-width:none] sm:max-w-none">
+            <NavigationMenuList className="max-w-[calc(100vw-1.5rem)] gap-1 overflow-visible rounded-md border border-[var(--header-control-border)] bg-[var(--header-control-bg)] p-1 shadow-inner sm:max-w-none">
               {navItems.map((item) => (
                 <NavigationMenuItem key={item.to}>
                   <NavigationMenuLink
@@ -211,7 +503,7 @@ export function HeaderLayout() {
                   </NavigationMenuLink>
                 </NavigationMenuItem>
               ))}
-              <NavigationMenuItem>
+              <NavigationMenuItem className="z-50">
                 <NavigationMenuTrigger
                   className={cn(
                     "h-auto rounded-md border border-transparent bg-transparent px-2.5 py-2 text-xs font-normal text-white/68 hover:border-white/10 hover:bg-white/[0.08] hover:text-white focus:border-white/10 focus:bg-white/[0.08] focus:text-white data-popup-open:!border-white/10 data-popup-open:!bg-white/[0.08] data-popup-open:!text-white data-open:!border-white/10 data-open:!bg-white/[0.08] data-open:!text-white sm:px-3 sm:text-sm",
@@ -221,7 +513,7 @@ export function HeaderLayout() {
                 >
                   Anime
                 </NavigationMenuTrigger>
-                <NavigationMenuContent className="!right-0 !left-auto z-50 !rounded-md !border !border-[var(--header-control-border)] !bg-[rgba(var(--hero-accent-color,5,5,5),0.92)] !text-white shadow-xl shadow-black/30 !ring-white/10">
+                <NavigationMenuContent className="!right-0 !left-auto z-50 !w-48 !rounded-md !border !border-[var(--header-control-border)] !bg-black/90 !text-white shadow-xl shadow-black/30 !ring-white/10 backdrop-blur-xl">
                   <div className="grid w-48 gap-1 p-1">
                     {animeMenuItems.map((item) => (
                       <NavigationMenuLink

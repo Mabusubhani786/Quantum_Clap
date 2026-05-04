@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { Loader2 } from "lucide-react"
 
 import apiEndPoints from "@/api-fetch-endpoints/apiEndPoints.json"
 import { CardInfo } from "@/components/CardInfo"
 import { MediaPagination } from "@/components/MediaPagination"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
 import { fetchApiData, type FetchParams } from "@/service/fetchApiData"
 
 export type EndpointConfig = {
@@ -61,6 +61,7 @@ type MediaCatalogPageProps = {
   endpoint: EndpointConfig
   mediaType: MediaType
   mediaLabel: string
+  detailBasePath: "/movie" | "/series" | "/anime"
   params?: FetchParams
 }
 
@@ -119,12 +120,44 @@ function getGenreNames(
     .slice(0, 4)
 }
 
+function CatalogCardSkeleton() {
+  return (
+    <Card className="relative isolate @container/card-info overflow-hidden rounded-lg border-white/10 bg-[#050505] py-0 text-white">
+      <div className="absolute inset-0 -z-10 bg-black/70" />
+      <div className="grid gap-3 p-3 @[28rem]/card-info:grid-cols-[7.25rem_1fr] @[42rem]/card-info:grid-cols-[8.5rem_1fr] @[58rem]/card-info:grid-cols-[10rem_1fr] @[28rem]/card-info:p-4">
+        <Skeleton className="aspect-[2/3] w-full rounded-lg bg-white/12" />
+        <div className="flex min-w-0 flex-col justify-center gap-3 py-1 sm:py-2">
+          <div className="space-y-2">
+            <Skeleton className="h-7 w-4/5 bg-white/14" />
+            <Skeleton className="h-6 w-20 bg-white/14" />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Skeleton className="h-6 w-20 bg-white/14" />
+            <Skeleton className="h-6 w-24 bg-white/14" />
+            <Skeleton className="h-6 w-16 bg-white/14" />
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-full bg-white/14" />
+            <Skeleton className="h-4 w-11/12 bg-white/14" />
+            <Skeleton className="h-4 w-2/3 bg-white/14" />
+          </div>
+          <div className="flex gap-3">
+            <Skeleton className="h-5 w-16 bg-white/14" />
+            <Skeleton className="h-5 w-20 bg-white/14" />
+          </div>
+        </div>
+      </div>
+    </Card>
+  )
+}
+
 export function MediaCatalogPage({
   title,
   description,
   endpoint,
   mediaType,
   mediaLabel,
+  detailBasePath,
   params,
 }: MediaCatalogPageProps) {
   const [page, setPage] = useState(1)
@@ -252,13 +285,8 @@ export function MediaCatalogPage({
         </Card>
       ) : loading ? (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {Array.from({ length: 8 }).map((_, index) => (
-            <Card
-              key={index}
-              className="flex min-h-80 items-center justify-center rounded-lg bg-muted/50"
-            >
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            </Card>
+          {Array.from({ length: 9 }).map((_, index) => (
+            <CatalogCardSkeleton key={index} />
           ))}
         </div>
       ) : (
@@ -275,6 +303,7 @@ export function MediaCatalogPage({
               genres={getGenreNames(item, mediaType, genreMaps)}
               rating={formatRating(item.vote_average)}
               releaseDate={getReleaseYear(item)}
+              detailTo={`${detailBasePath}/${item.id}`}
             />
           ))}
         </div>

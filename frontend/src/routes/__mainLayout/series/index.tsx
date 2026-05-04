@@ -6,7 +6,7 @@ import {
   MediaCatalogPage,
 } from "@/components/MediaCatalogPage"
 
-export const Route = createFileRoute("/__mainLayout/series")({
+export const Route = createFileRoute("/__mainLayout/series/")({
   component: RouteComponent,
 })
 
@@ -26,6 +26,7 @@ function RouteComponent() {
       endpoint={endpoints.tv.popular}
       mediaType="tv"
       mediaLabel="Series"
+      detailBasePath="/series"
     />
   )
 }

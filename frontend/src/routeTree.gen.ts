@@ -11,10 +11,17 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as _mainLayoutRouteImport } from './routes/__mainLayout'
 import { Route as _mainLayoutIndexRouteImport } from './routes/__mainLayout/index'
-import { Route as _mainLayoutSeriesRouteImport } from './routes/__mainLayout/series'
-import { Route as _mainLayoutMovieRouteImport } from './routes/__mainLayout/movie'
 import { Route as _mainLayoutHomeRouteImport } from './routes/__mainLayout/home'
-import { Route as _mainLayoutAnimeRouteImport } from './routes/__mainLayout/anime'
+import { Route as _mainLayoutSeriesIndexRouteImport } from './routes/__mainLayout/series/index'
+import { Route as _mainLayoutMovieIndexRouteImport } from './routes/__mainLayout/movie/index'
+import { Route as _mainLayoutAnimeIndexRouteImport } from './routes/__mainLayout/anime/index'
+import { Route as _mainLayoutSeriesMediaIdRouteImport } from './routes/__mainLayout/series/$mediaId'
+import { Route as _mainLayoutPersonPersonIdRouteImport } from './routes/__mainLayout/person/$personId'
+import { Route as _mainLayoutMovieMediaIdRouteImport } from './routes/__mainLayout/movie/$mediaId'
+import { Route as _mainLayoutCompanyCompanyIdRouteImport } from './routes/__mainLayout/company/$companyId'
+import { Route as _mainLayoutAnimeMediaIdRouteImport } from './routes/__mainLayout/anime/$mediaId'
+import { Route as _mainLayoutSeriesMediaIdOverviewRouteImport } from './routes/__mainLayout/series/$mediaId/overview'
+import { Route as _mainLayoutAnimeMediaIdOverviewRouteImport } from './routes/__mainLayout/anime/$mediaId/overview'
 
 const _mainLayoutRoute = _mainLayoutRouteImport.update({
   id: '/__mainLayout',
@@ -25,63 +32,155 @@ const _mainLayoutIndexRoute = _mainLayoutIndexRouteImport.update({
   path: '/',
   getParentRoute: () => _mainLayoutRoute,
 } as any)
-const _mainLayoutSeriesRoute = _mainLayoutSeriesRouteImport.update({
-  id: '/series',
-  path: '/series',
-  getParentRoute: () => _mainLayoutRoute,
-} as any)
-const _mainLayoutMovieRoute = _mainLayoutMovieRouteImport.update({
-  id: '/movie',
-  path: '/movie',
-  getParentRoute: () => _mainLayoutRoute,
-} as any)
 const _mainLayoutHomeRoute = _mainLayoutHomeRouteImport.update({
   id: '/home',
   path: '/home',
   getParentRoute: () => _mainLayoutRoute,
 } as any)
-const _mainLayoutAnimeRoute = _mainLayoutAnimeRouteImport.update({
-  id: '/anime',
-  path: '/anime',
+const _mainLayoutSeriesIndexRoute = _mainLayoutSeriesIndexRouteImport.update({
+  id: '/series/',
+  path: '/series/',
   getParentRoute: () => _mainLayoutRoute,
 } as any)
+const _mainLayoutMovieIndexRoute = _mainLayoutMovieIndexRouteImport.update({
+  id: '/movie/',
+  path: '/movie/',
+  getParentRoute: () => _mainLayoutRoute,
+} as any)
+const _mainLayoutAnimeIndexRoute = _mainLayoutAnimeIndexRouteImport.update({
+  id: '/anime/',
+  path: '/anime/',
+  getParentRoute: () => _mainLayoutRoute,
+} as any)
+const _mainLayoutSeriesMediaIdRoute =
+  _mainLayoutSeriesMediaIdRouteImport.update({
+    id: '/series/$mediaId',
+    path: '/series/$mediaId',
+    getParentRoute: () => _mainLayoutRoute,
+  } as any)
+const _mainLayoutPersonPersonIdRoute =
+  _mainLayoutPersonPersonIdRouteImport.update({
+    id: '/person/$personId',
+    path: '/person/$personId',
+    getParentRoute: () => _mainLayoutRoute,
+  } as any)
+const _mainLayoutMovieMediaIdRoute = _mainLayoutMovieMediaIdRouteImport.update({
+  id: '/movie/$mediaId',
+  path: '/movie/$mediaId',
+  getParentRoute: () => _mainLayoutRoute,
+} as any)
+const _mainLayoutCompanyCompanyIdRoute =
+  _mainLayoutCompanyCompanyIdRouteImport.update({
+    id: '/company/$companyId',
+    path: '/company/$companyId',
+    getParentRoute: () => _mainLayoutRoute,
+  } as any)
+const _mainLayoutAnimeMediaIdRoute = _mainLayoutAnimeMediaIdRouteImport.update({
+  id: '/anime/$mediaId',
+  path: '/anime/$mediaId',
+  getParentRoute: () => _mainLayoutRoute,
+} as any)
+const _mainLayoutSeriesMediaIdOverviewRoute =
+  _mainLayoutSeriesMediaIdOverviewRouteImport.update({
+    id: '/overview',
+    path: '/overview',
+    getParentRoute: () => _mainLayoutSeriesMediaIdRoute,
+  } as any)
+const _mainLayoutAnimeMediaIdOverviewRoute =
+  _mainLayoutAnimeMediaIdOverviewRouteImport.update({
+    id: '/overview',
+    path: '/overview',
+    getParentRoute: () => _mainLayoutAnimeMediaIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof _mainLayoutIndexRoute
-  '/anime': typeof _mainLayoutAnimeRoute
   '/home': typeof _mainLayoutHomeRoute
-  '/movie': typeof _mainLayoutMovieRoute
-  '/series': typeof _mainLayoutSeriesRoute
+  '/anime/$mediaId': typeof _mainLayoutAnimeMediaIdRouteWithChildren
+  '/company/$companyId': typeof _mainLayoutCompanyCompanyIdRoute
+  '/movie/$mediaId': typeof _mainLayoutMovieMediaIdRoute
+  '/person/$personId': typeof _mainLayoutPersonPersonIdRoute
+  '/series/$mediaId': typeof _mainLayoutSeriesMediaIdRouteWithChildren
+  '/anime/': typeof _mainLayoutAnimeIndexRoute
+  '/movie/': typeof _mainLayoutMovieIndexRoute
+  '/series/': typeof _mainLayoutSeriesIndexRoute
+  '/anime/$mediaId/overview': typeof _mainLayoutAnimeMediaIdOverviewRoute
+  '/series/$mediaId/overview': typeof _mainLayoutSeriesMediaIdOverviewRoute
 }
 export interface FileRoutesByTo {
-  '/anime': typeof _mainLayoutAnimeRoute
   '/home': typeof _mainLayoutHomeRoute
-  '/movie': typeof _mainLayoutMovieRoute
-  '/series': typeof _mainLayoutSeriesRoute
   '/': typeof _mainLayoutIndexRoute
+  '/anime/$mediaId': typeof _mainLayoutAnimeMediaIdRouteWithChildren
+  '/company/$companyId': typeof _mainLayoutCompanyCompanyIdRoute
+  '/movie/$mediaId': typeof _mainLayoutMovieMediaIdRoute
+  '/person/$personId': typeof _mainLayoutPersonPersonIdRoute
+  '/series/$mediaId': typeof _mainLayoutSeriesMediaIdRouteWithChildren
+  '/anime': typeof _mainLayoutAnimeIndexRoute
+  '/movie': typeof _mainLayoutMovieIndexRoute
+  '/series': typeof _mainLayoutSeriesIndexRoute
+  '/anime/$mediaId/overview': typeof _mainLayoutAnimeMediaIdOverviewRoute
+  '/series/$mediaId/overview': typeof _mainLayoutSeriesMediaIdOverviewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/__mainLayout': typeof _mainLayoutRouteWithChildren
-  '/__mainLayout/anime': typeof _mainLayoutAnimeRoute
   '/__mainLayout/home': typeof _mainLayoutHomeRoute
-  '/__mainLayout/movie': typeof _mainLayoutMovieRoute
-  '/__mainLayout/series': typeof _mainLayoutSeriesRoute
   '/__mainLayout/': typeof _mainLayoutIndexRoute
+  '/__mainLayout/anime/$mediaId': typeof _mainLayoutAnimeMediaIdRouteWithChildren
+  '/__mainLayout/company/$companyId': typeof _mainLayoutCompanyCompanyIdRoute
+  '/__mainLayout/movie/$mediaId': typeof _mainLayoutMovieMediaIdRoute
+  '/__mainLayout/person/$personId': typeof _mainLayoutPersonPersonIdRoute
+  '/__mainLayout/series/$mediaId': typeof _mainLayoutSeriesMediaIdRouteWithChildren
+  '/__mainLayout/anime/': typeof _mainLayoutAnimeIndexRoute
+  '/__mainLayout/movie/': typeof _mainLayoutMovieIndexRoute
+  '/__mainLayout/series/': typeof _mainLayoutSeriesIndexRoute
+  '/__mainLayout/anime/$mediaId/overview': typeof _mainLayoutAnimeMediaIdOverviewRoute
+  '/__mainLayout/series/$mediaId/overview': typeof _mainLayoutSeriesMediaIdOverviewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/anime' | '/home' | '/movie' | '/series'
+  fullPaths:
+    | '/'
+    | '/home'
+    | '/anime/$mediaId'
+    | '/company/$companyId'
+    | '/movie/$mediaId'
+    | '/person/$personId'
+    | '/series/$mediaId'
+    | '/anime/'
+    | '/movie/'
+    | '/series/'
+    | '/anime/$mediaId/overview'
+    | '/series/$mediaId/overview'
   fileRoutesByTo: FileRoutesByTo
-  to: '/anime' | '/home' | '/movie' | '/series' | '/'
+  to:
+    | '/home'
+    | '/'
+    | '/anime/$mediaId'
+    | '/company/$companyId'
+    | '/movie/$mediaId'
+    | '/person/$personId'
+    | '/series/$mediaId'
+    | '/anime'
+    | '/movie'
+    | '/series'
+    | '/anime/$mediaId/overview'
+    | '/series/$mediaId/overview'
   id:
     | '__root__'
     | '/__mainLayout'
-    | '/__mainLayout/anime'
     | '/__mainLayout/home'
-    | '/__mainLayout/movie'
-    | '/__mainLayout/series'
     | '/__mainLayout/'
+    | '/__mainLayout/anime/$mediaId'
+    | '/__mainLayout/company/$companyId'
+    | '/__mainLayout/movie/$mediaId'
+    | '/__mainLayout/person/$personId'
+    | '/__mainLayout/series/$mediaId'
+    | '/__mainLayout/anime/'
+    | '/__mainLayout/movie/'
+    | '/__mainLayout/series/'
+    | '/__mainLayout/anime/$mediaId/overview'
+    | '/__mainLayout/series/$mediaId/overview'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -104,20 +203,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof _mainLayoutIndexRouteImport
       parentRoute: typeof _mainLayoutRoute
     }
-    '/__mainLayout/series': {
-      id: '/__mainLayout/series'
-      path: '/series'
-      fullPath: '/series'
-      preLoaderRoute: typeof _mainLayoutSeriesRouteImport
-      parentRoute: typeof _mainLayoutRoute
-    }
-    '/__mainLayout/movie': {
-      id: '/__mainLayout/movie'
-      path: '/movie'
-      fullPath: '/movie'
-      preLoaderRoute: typeof _mainLayoutMovieRouteImport
-      parentRoute: typeof _mainLayoutRoute
-    }
     '/__mainLayout/home': {
       id: '/__mainLayout/home'
       path: '/home'
@@ -125,30 +210,132 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof _mainLayoutHomeRouteImport
       parentRoute: typeof _mainLayoutRoute
     }
-    '/__mainLayout/anime': {
-      id: '/__mainLayout/anime'
-      path: '/anime'
-      fullPath: '/anime'
-      preLoaderRoute: typeof _mainLayoutAnimeRouteImport
+    '/__mainLayout/series/': {
+      id: '/__mainLayout/series/'
+      path: '/series'
+      fullPath: '/series/'
+      preLoaderRoute: typeof _mainLayoutSeriesIndexRouteImport
       parentRoute: typeof _mainLayoutRoute
+    }
+    '/__mainLayout/movie/': {
+      id: '/__mainLayout/movie/'
+      path: '/movie'
+      fullPath: '/movie/'
+      preLoaderRoute: typeof _mainLayoutMovieIndexRouteImport
+      parentRoute: typeof _mainLayoutRoute
+    }
+    '/__mainLayout/anime/': {
+      id: '/__mainLayout/anime/'
+      path: '/anime'
+      fullPath: '/anime/'
+      preLoaderRoute: typeof _mainLayoutAnimeIndexRouteImport
+      parentRoute: typeof _mainLayoutRoute
+    }
+    '/__mainLayout/series/$mediaId': {
+      id: '/__mainLayout/series/$mediaId'
+      path: '/series/$mediaId'
+      fullPath: '/series/$mediaId'
+      preLoaderRoute: typeof _mainLayoutSeriesMediaIdRouteImport
+      parentRoute: typeof _mainLayoutRoute
+    }
+    '/__mainLayout/person/$personId': {
+      id: '/__mainLayout/person/$personId'
+      path: '/person/$personId'
+      fullPath: '/person/$personId'
+      preLoaderRoute: typeof _mainLayoutPersonPersonIdRouteImport
+      parentRoute: typeof _mainLayoutRoute
+    }
+    '/__mainLayout/movie/$mediaId': {
+      id: '/__mainLayout/movie/$mediaId'
+      path: '/movie/$mediaId'
+      fullPath: '/movie/$mediaId'
+      preLoaderRoute: typeof _mainLayoutMovieMediaIdRouteImport
+      parentRoute: typeof _mainLayoutRoute
+    }
+    '/__mainLayout/company/$companyId': {
+      id: '/__mainLayout/company/$companyId'
+      path: '/company/$companyId'
+      fullPath: '/company/$companyId'
+      preLoaderRoute: typeof _mainLayoutCompanyCompanyIdRouteImport
+      parentRoute: typeof _mainLayoutRoute
+    }
+    '/__mainLayout/anime/$mediaId': {
+      id: '/__mainLayout/anime/$mediaId'
+      path: '/anime/$mediaId'
+      fullPath: '/anime/$mediaId'
+      preLoaderRoute: typeof _mainLayoutAnimeMediaIdRouteImport
+      parentRoute: typeof _mainLayoutRoute
+    }
+    '/__mainLayout/series/$mediaId/overview': {
+      id: '/__mainLayout/series/$mediaId/overview'
+      path: '/overview'
+      fullPath: '/series/$mediaId/overview'
+      preLoaderRoute: typeof _mainLayoutSeriesMediaIdOverviewRouteImport
+      parentRoute: typeof _mainLayoutSeriesMediaIdRoute
+    }
+    '/__mainLayout/anime/$mediaId/overview': {
+      id: '/__mainLayout/anime/$mediaId/overview'
+      path: '/overview'
+      fullPath: '/anime/$mediaId/overview'
+      preLoaderRoute: typeof _mainLayoutAnimeMediaIdOverviewRouteImport
+      parentRoute: typeof _mainLayoutAnimeMediaIdRoute
     }
   }
 }
 
+interface _mainLayoutAnimeMediaIdRouteChildren {
+  _mainLayoutAnimeMediaIdOverviewRoute: typeof _mainLayoutAnimeMediaIdOverviewRoute
+}
+
+const _mainLayoutAnimeMediaIdRouteChildren: _mainLayoutAnimeMediaIdRouteChildren =
+  {
+    _mainLayoutAnimeMediaIdOverviewRoute: _mainLayoutAnimeMediaIdOverviewRoute,
+  }
+
+const _mainLayoutAnimeMediaIdRouteWithChildren =
+  _mainLayoutAnimeMediaIdRoute._addFileChildren(
+    _mainLayoutAnimeMediaIdRouteChildren,
+  )
+
+interface _mainLayoutSeriesMediaIdRouteChildren {
+  _mainLayoutSeriesMediaIdOverviewRoute: typeof _mainLayoutSeriesMediaIdOverviewRoute
+}
+
+const _mainLayoutSeriesMediaIdRouteChildren: _mainLayoutSeriesMediaIdRouteChildren =
+  {
+    _mainLayoutSeriesMediaIdOverviewRoute:
+      _mainLayoutSeriesMediaIdOverviewRoute,
+  }
+
+const _mainLayoutSeriesMediaIdRouteWithChildren =
+  _mainLayoutSeriesMediaIdRoute._addFileChildren(
+    _mainLayoutSeriesMediaIdRouteChildren,
+  )
+
 interface _mainLayoutRouteChildren {
-  _mainLayoutAnimeRoute: typeof _mainLayoutAnimeRoute
   _mainLayoutHomeRoute: typeof _mainLayoutHomeRoute
-  _mainLayoutMovieRoute: typeof _mainLayoutMovieRoute
-  _mainLayoutSeriesRoute: typeof _mainLayoutSeriesRoute
   _mainLayoutIndexRoute: typeof _mainLayoutIndexRoute
+  _mainLayoutAnimeMediaIdRoute: typeof _mainLayoutAnimeMediaIdRouteWithChildren
+  _mainLayoutCompanyCompanyIdRoute: typeof _mainLayoutCompanyCompanyIdRoute
+  _mainLayoutMovieMediaIdRoute: typeof _mainLayoutMovieMediaIdRoute
+  _mainLayoutPersonPersonIdRoute: typeof _mainLayoutPersonPersonIdRoute
+  _mainLayoutSeriesMediaIdRoute: typeof _mainLayoutSeriesMediaIdRouteWithChildren
+  _mainLayoutAnimeIndexRoute: typeof _mainLayoutAnimeIndexRoute
+  _mainLayoutMovieIndexRoute: typeof _mainLayoutMovieIndexRoute
+  _mainLayoutSeriesIndexRoute: typeof _mainLayoutSeriesIndexRoute
 }
 
 const _mainLayoutRouteChildren: _mainLayoutRouteChildren = {
-  _mainLayoutAnimeRoute: _mainLayoutAnimeRoute,
   _mainLayoutHomeRoute: _mainLayoutHomeRoute,
-  _mainLayoutMovieRoute: _mainLayoutMovieRoute,
-  _mainLayoutSeriesRoute: _mainLayoutSeriesRoute,
   _mainLayoutIndexRoute: _mainLayoutIndexRoute,
+  _mainLayoutAnimeMediaIdRoute: _mainLayoutAnimeMediaIdRouteWithChildren,
+  _mainLayoutCompanyCompanyIdRoute: _mainLayoutCompanyCompanyIdRoute,
+  _mainLayoutMovieMediaIdRoute: _mainLayoutMovieMediaIdRoute,
+  _mainLayoutPersonPersonIdRoute: _mainLayoutPersonPersonIdRoute,
+  _mainLayoutSeriesMediaIdRoute: _mainLayoutSeriesMediaIdRouteWithChildren,
+  _mainLayoutAnimeIndexRoute: _mainLayoutAnimeIndexRoute,
+  _mainLayoutMovieIndexRoute: _mainLayoutMovieIndexRoute,
+  _mainLayoutSeriesIndexRoute: _mainLayoutSeriesIndexRoute,
 }
 
 const _mainLayoutRouteWithChildren = _mainLayoutRoute._addFileChildren(
