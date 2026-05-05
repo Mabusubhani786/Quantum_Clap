@@ -217,9 +217,9 @@ function MediaCard({
           </div>
         </div>
 
-        <CardHeader className="gap-2">
+        <CardHeader className="gap-1.5 pb-3">
           <CardTitle className="line-clamp-1">{getTitle(item)}</CardTitle>
-          <CardDescription className="line-clamp-2 min-h-10">
+          <CardDescription className="line-clamp-2 min-h-8 text-xs">
             {item.overview || "No description available yet."}
           </CardDescription>
           <CardAction>
@@ -230,7 +230,7 @@ function MediaCard({
           </CardAction>
         </CardHeader>
 
-        <CardContent className="pb-4">
+        <CardContent className="pb-3">
           <div className="flex flex-wrap gap-2">
             <Badge variant="secondary" className="gap-1 rounded-md">
               <MediaIcon className="h-3.5 w-3.5" />
@@ -253,7 +253,7 @@ function LoadingCarousel() {
       {Array.from({ length: 5 }).map((_, index) => (
         <Card
           key={index}
-          className="h-[26rem] overflow-hidden rounded-lg py-0 sm:h-[29rem]"
+          className="h-[19.5rem] overflow-hidden rounded-lg py-0 sm:h-[21.5rem]"
         >
           <Skeleton className="aspect-[2/3] w-full rounded-b-none rounded-t-lg" />
           <CardHeader className="gap-2">
@@ -280,7 +280,7 @@ function LoadingCarousel() {
 
 function LoadingMoreCard() {
   return (
-    <Card className="h-full min-h-[29rem] overflow-hidden rounded-lg py-0">
+    <Card className="h-full min-h-[21.5rem] overflow-hidden rounded-lg py-0">
       <Skeleton className="aspect-[2/3] w-full rounded-b-none rounded-t-lg" />
       <CardHeader className="gap-2">
         <Skeleton className="h-5 w-3/4" />
@@ -390,7 +390,7 @@ function SectionCarousel({
           {state.items.map((item, index) => (
             <CarouselItem
               key={`${section.id}-${item.id}`}
-              className="basis-[82%] pl-4 min-[420px]:basis-[58%] sm:basis-[42%] md:basis-[31%] lg:basis-[23%] 2xl:basis-[18%]"
+              className="basis-[60%] pl-4 min-[420px]:basis-[42%] sm:basis-[30%] md:basis-[23%] lg:basis-[16.5%] 2xl:basis-[12%]"
             >
               <MediaCard
                 item={item}
@@ -401,7 +401,7 @@ function SectionCarousel({
           ))}
 
           {state.loadingMore && (
-            <CarouselItem className="basis-[82%] pl-4 min-[420px]:basis-[58%] sm:basis-[42%] md:basis-[31%] lg:basis-[23%] 2xl:basis-[18%]">
+            <CarouselItem className="basis-[60%] pl-4 min-[420px]:basis-[42%] sm:basis-[30%] md:basis-[23%] lg:basis-[16.5%] 2xl:basis-[12%]">
               <LoadingMoreCard />
             </CarouselItem>
           )}

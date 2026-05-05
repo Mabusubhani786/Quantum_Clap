@@ -14,12 +14,10 @@ import {
 import { Input } from "@/components/ui/input"
 import {
   NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuIndicator,
   NavigationMenuItem,
+  NavigationMenuIndicator,
   NavigationMenuLink,
   NavigationMenuList,
-  NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu"
 import { cn } from "@/lib/utils"
 import { fetchApiData } from "@/service/fetchApiData"
@@ -62,18 +60,14 @@ type SearchResponse = {
 
 type NavItem = {
   label: string
-  to: "/home" | "/movie" | "/series"
+  to: "/home" | "/movie" | "/series" | "/anime"
 }
 
 const navItems: NavItem[] = [
   { label: "Home", to: "/home" },
   { label: "Movies", to: "/movie" },
   { label: "Series", to: "/series" },
-]
-
-const animeMenuItems = [
-  { label: "Movies", to: "/anime" },
-  { label: "Series", to: "/anime" },
+  { label: "Anime", to: "/anime" },
 ]
 
 const endpoints = apiEndPoints as ApiEndpoints
@@ -380,9 +374,6 @@ function HeaderSearch({ className }: { className?: string }) {
 export function HeaderLayout() {
   const [hasScrolled, setHasScrolled] = useState(false)
   const breadcrumbItems = useBreadcrumbItems()
-  const isAnimeActive = useRouterState({
-    select: (state) => state.location.pathname.startsWith("/anime"),
-  })
 
   useEffect(() => {
     const handleScroll = () => {
@@ -503,30 +494,6 @@ export function HeaderLayout() {
                   </NavigationMenuLink>
                 </NavigationMenuItem>
               ))}
-              <NavigationMenuItem className="z-50">
-                <NavigationMenuTrigger
-                  className={cn(
-                    "h-auto rounded-md border border-transparent bg-transparent px-2.5 py-2 text-xs font-normal text-white/68 hover:border-white/10 hover:bg-white/[0.08] hover:text-white focus:border-white/10 focus:bg-white/[0.08] focus:text-white data-popup-open:!border-white/10 data-popup-open:!bg-white/[0.08] data-popup-open:!text-white data-open:!border-white/10 data-open:!bg-white/[0.08] data-open:!text-white sm:px-3 sm:text-sm",
-                    isAnimeActive &&
-                      "!border-white/14 !bg-white/[0.13] font-medium !text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
-                  )}
-                >
-                  Anime
-                </NavigationMenuTrigger>
-                <NavigationMenuContent className="!right-0 !left-auto z-50 !w-48 !rounded-md !border !border-[var(--header-control-border)] !bg-black/90 !text-white shadow-xl shadow-black/30 !ring-white/10 backdrop-blur-xl">
-                  <div className="grid w-48 gap-1 p-1">
-                    {animeMenuItems.map((item) => (
-                      <NavigationMenuLink
-                        key={item.label}
-                        asChild
-                        className="rounded-md border border-transparent px-3 py-2 text-sm text-white/72 hover:border-white/10 hover:bg-white/[0.08] hover:text-white focus:border-white/10 focus:bg-white/[0.08] focus:text-white"
-                      >
-                        <Link to={item.to}>{item.label}</Link>
-                      </NavigationMenuLink>
-                    ))}
-                  </div>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
             </NavigationMenuList>
             <NavigationMenuIndicator />
           </NavigationMenu>

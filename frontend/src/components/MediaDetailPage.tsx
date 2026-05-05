@@ -183,8 +183,7 @@ type TmdbListResponse<TItem> = {
 const posterBaseUrl = "https://image.tmdb.org/t/p/w342"
 const fallbackPoster =
   "https://placehold.co/342x513/111111/fafafa?text=No+Poster"
-const fallbackLogo =
-  "https://placehold.co/240x140/111111/fafafa?text=No+Logo"
+const fallbackLogo = "https://placehold.co/240x140/111111/fafafa?text=No+Logo"
 
 function getTitle(item: TmdbDetail) {
   return item.title ?? item.name ?? "Untitled"
@@ -208,15 +207,26 @@ function formatRating(rating?: number) {
   return rating && rating > 0 ? rating.toFixed(1) : "NR"
 }
 
+function formatRuntimeMinutes(minutes: number) {
+  if (minutes < 60) {
+    return `${minutes} min`
+  }
+
+  const hours = Math.floor(minutes / 60)
+  const remainingMinutes = minutes % 60
+
+  return `${hours}hr : ${remainingMinutes} mins`
+}
+
 function getRuntime(item: TmdbDetail) {
   if (item.runtime) {
-    return `${item.runtime} min`
+    return formatRuntimeMinutes(item.runtime)
   }
 
   const episodeRuntime = item.episode_run_time?.[0]
 
   if (episodeRuntime) {
-    return `${episodeRuntime} min episodes`
+    return `${formatRuntimeMinutes(episodeRuntime)} episodes`
   }
 
   return "Runtime TBA"
@@ -367,7 +377,9 @@ export function MediaDetailPage({
 }: MediaDetailPageProps) {
   const [detail, setDetail] = useState<TmdbDetail | null>(null)
   const [similarItems, setSimilarItems] = useState<TmdbRelatedItem[]>([])
-  const [recommendedItems, setRecommendedItems] = useState<TmdbRelatedItem[]>([])
+  const [recommendedItems, setRecommendedItems] = useState<TmdbRelatedItem[]>(
+    []
+  )
   const [similarPage, setSimilarPage] = useState(0)
   const [recommendedPage, setRecommendedPage] = useState(0)
   const [similarHasMore, setSimilarHasMore] = useState(true)
@@ -397,7 +409,9 @@ export function MediaDetailPage({
       signal?: AbortSignal
     ) => {
       const isSimilar = kind === "similar"
-      const endpointConfig = isSimilar ? similarEndpoint : recommendationsEndpoint
+      const endpointConfig = isSimilar
+        ? similarEndpoint
+        : recommendationsEndpoint
       const endpointUrl = isSimilar
         ? similarResolvedEndpoint
         : recommendationsResolvedEndpoint
@@ -480,7 +494,8 @@ export function MediaDetailPage({
             method: endpoint.method,
             params: {
               language: "en-US",
-              append_to_response: "videos,credits,images,watch/providers,reviews",
+              append_to_response:
+                "videos,credits,images,watch/providers,reviews",
             },
             signal: abortController.signal,
           }),
@@ -821,7 +836,10 @@ function CreditCarouselSection({
       </CardHeader>
       <CardContent>
         {people.length > 0 ? (
-          <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
+          <Carousel
+            opts={{ align: "start", dragFree: true }}
+            className="w-full"
+          >
             <CarouselContent className="-ml-3">
               {people.map((person, index) => (
                 <CarouselItem
@@ -907,23 +925,26 @@ function WatchProvidersSection({
       </CardHeader>
       <CardContent>
         {regions.length > 0 ? (
-          <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
+          <Carousel
+            opts={{ align: "start", dragFree: true }}
+            className="w-full"
+          >
             <CarouselContent className="-ml-3">
               {regions.map(([regionCode, region]) => {
                 const groups = getProviderGroups(region)
 
                 return (
                   <CarouselItem key={regionCode} className="basis-auto pl-3">
-                    <article className="flex h-[28rem] w-[19rem] flex-col overflow-hidden rounded-lg border bg-card sm:w-[22rem]">
-                      <div className="flex items-start justify-between gap-3 border-b bg-muted/30 p-4">
+                    <article className="flex h-[20rem] w-[40rem] max-w-full flex-col overflow-hidden rounded-lg border bg-card">
+                      <div className="flex items-start justify-between gap-2 border-b bg-muted/30 p-3">
                         <div>
                           <Badge variant="secondary" className="rounded-md">
                             {regionCode}
                           </Badge>
-                          <h3 className="mt-2 text-base font-semibold">
+                          <h3 className="mt-1.5 text-sm font-semibold">
                             {regionCode} Availability
                           </h3>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-[11px] text-muted-foreground">
                             {groups.length} available option groups
                           </p>
                         </div>
@@ -932,36 +953,38 @@ function WatchProvidersSection({
                             href={region.link}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border bg-background text-muted-foreground transition hover:text-foreground"
+                            className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border bg-background text-muted-foreground transition hover:text-foreground"
                             aria-label={`Open ${regionCode} watch providers`}
                           >
-                            <ExternalLink className="h-4 w-4" />
+                            <ExternalLink className="h-3.5 w-3.5" />
                           </a>
                         )}
                       </div>
 
-                      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
+                      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-3">
                         {groups.map((group) => (
-                          <div key={group.label} className="space-y-2">
+                          <div key={group.label} className="space-y-1.5">
                             <div className="flex items-center justify-between gap-2">
-                              <p className="text-sm font-semibold">{group.label}</p>
+                              <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                                {group.label}
+                              </p>
                               <Badge variant="outline" className="rounded-md">
                                 {group.providers.length}
                               </Badge>
                             </div>
-                            <div className="grid grid-cols-2 gap-2">
+                            <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid-cols-4">
                               {group.providers.map((provider) => (
                                 <div
                                   key={`${group.label}-${provider.provider_id}`}
-                                  className="flex min-w-0 items-center gap-2 rounded-md border bg-background/70 p-2"
+                                  className="flex min-w-0 items-center gap-1.5 rounded-md border bg-background/70 p-1.5"
                                 >
                                   <img
                                     src={getProviderLogoUrl(provider.logo_path)}
                                     alt={provider.provider_name}
-                                    className="h-8 w-8 shrink-0 rounded-md object-cover"
+                                    className="h-6 w-6 shrink-0 rounded object-cover"
                                     loading="lazy"
                                   />
-                                  <p className="line-clamp-2 text-xs font-medium leading-4">
+                                  <p className="line-clamp-2 text-left text-[10px] leading-3.5 font-medium">
                                     {provider.provider_name}
                                   </p>
                                 </div>
@@ -1062,7 +1085,9 @@ function SeasonDataCard({
     <div className="rounded-lg border bg-muted/30 p-3">
       <p className="text-xs font-medium text-muted-foreground">{label}</p>
       <p className="mt-1 line-clamp-1 text-sm font-semibold">{value}</p>
-      <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">{detail}</p>
+      <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
+        {detail}
+      </p>
     </div>
   )
 }
@@ -1099,7 +1124,8 @@ function EpisodesSection({
           <div>
             <CardTitle>Seasons</CardTitle>
             <CardDescription>
-              Season posters, dates, ratings, and episode counts from this series
+              Season posters, dates, ratings, and episode counts from this
+              series
             </CardDescription>
           </div>
           {status ? (
@@ -1133,7 +1159,9 @@ function EpisodesSection({
           <SeasonDataCard
             label="Airing window"
             value={`${formatAirDate(firstAirDate)} - ${formatAirDate(lastAirDate)}`}
-            detail={inProduction ? "Currently in production" : "Production inactive"}
+            detail={
+              inProduction ? "Currently in production" : "Production inactive"
+            }
           />
           <SeasonDataCard
             label="Episode total"
@@ -1160,7 +1188,10 @@ function EpisodesSection({
                 Browse season posters, dates, ratings, and episode counts.
               </p>
             </div>
-            <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
+            <Carousel
+              opts={{ align: "start", dragFree: true }}
+              className="w-full"
+            >
               <CarouselContent className="-ml-3">
                 {seasonSummaries.map((season) => (
                   <CarouselItem key={season.id} className="basis-auto pl-3">
@@ -1182,19 +1213,26 @@ function EpisodesSection({
                                 {formatAirDate(season.air_date)}
                               </p>
                             </div>
-                            <Badge variant="outline" className="shrink-0 rounded-md">
+                            <Badge
+                              variant="outline"
+                              className="shrink-0 rounded-md"
+                            >
                               S{season.season_number}
                             </Badge>
                           </div>
                           <p className="line-clamp-3 text-xs leading-5 text-muted-foreground">
-                            {season.overview || "Season overview is not available yet."}
+                            {season.overview ||
+                              "Season overview is not available yet."}
                           </p>
                         </div>
                         <div className="flex flex-wrap gap-2">
                           <Badge variant="secondary" className="rounded-md">
                             {season.episode_count} episodes
                           </Badge>
-                          <Badge variant="secondary" className="gap-1 rounded-md">
+                          <Badge
+                            variant="secondary"
+                            className="gap-1 rounded-md"
+                          >
                             <Star className="h-3 w-3 fill-current" />
                             {formatRating(season.vote_average)}
                           </Badge>
@@ -1211,7 +1249,10 @@ function EpisodesSection({
             </Carousel>
           </div>
         ) : isLoading ? (
-          <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
+          <Carousel
+            opts={{ align: "start", dragFree: true }}
+            className="w-full"
+          >
             <CarouselContent className="-ml-3">
               {Array.from({ length: 4 }).map((_, index) => (
                 <CarouselItem key={index} className="basis-auto pl-3">
@@ -1255,11 +1296,16 @@ function ProductionCompaniesSection({
           <Building2 className="h-5 w-5" />
           Production Companies
         </CardTitle>
-        <CardDescription>Company details from this title response</CardDescription>
+        <CardDescription>
+          Company details from this title response
+        </CardDescription>
       </CardHeader>
       <CardContent>
         {companies.length > 0 ? (
-          <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
+          <Carousel
+            opts={{ align: "start", dragFree: true }}
+            className="w-full"
+          >
             <CarouselContent className="-ml-3">
               {companies.map((company) => (
                 <CarouselItem key={company.id} className="basis-auto pl-3">
@@ -1375,10 +1421,7 @@ function RelatedMediaSection({
           >
             <CarouselContent className="-ml-3">
               {items.map((item) => (
-                <CarouselItem
-                  key={item.id}
-                  className="basis-auto pl-3"
-                >
+                <CarouselItem key={item.id} className="basis-auto pl-3">
                   <Link
                     to={
                       detailBasePath === "/movie"
@@ -1399,7 +1442,10 @@ function RelatedMediaSection({
                       />
                       <div className="space-y-2 p-3">
                         <div className="flex items-center justify-between gap-2">
-                          <Badge variant="secondary" className="rounded-md text-xs">
+                          <Badge
+                            variant="secondary"
+                            className="rounded-md text-xs"
+                          >
                             {mediaLabel}
                           </Badge>
                           <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
