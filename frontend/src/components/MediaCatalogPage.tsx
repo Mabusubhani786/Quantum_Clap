@@ -172,6 +172,17 @@ export function MediaCatalogPage({
   const requestParams = useMemo(() => params ?? {}, [params])
 
   useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent("catalog-page-change", {
+        detail: {
+          route: detailBasePath,
+          page,
+        },
+      })
+    )
+  }, [detailBasePath, page])
+
+  useEffect(() => {
     const timer = window.setTimeout(() => setPage(1), 0)
 
     return () => window.clearTimeout(timer)

@@ -1,4 +1,10 @@
-import { Fragment, useEffect, useMemo, useState, type CSSProperties } from "react"
+import {
+  Fragment,
+  useEffect,
+  useMemo,
+  useState,
+  type CSSProperties,
+} from "react"
 import { Building2, Film, Search, Tv, UserRound } from "lucide-react"
 import { Link, useRouterState } from "@tanstack/react-router"
 
@@ -191,7 +197,11 @@ function getSearchImage(result: SearchResult, scope: SearchScope) {
   return `https://image.tmdb.org/t/p/w185${path}`
 }
 
-function getSearchRoute(result: SearchResult, scope: SearchScope, pathname: string) {
+function getSearchRoute(
+  result: SearchResult,
+  scope: SearchScope,
+  pathname: string
+) {
   const mediaType = result.media_type ?? scope
 
   if (mediaType === "person") {
@@ -394,32 +404,37 @@ export function HeaderLayout() {
           ? "border-b border-white/10 shadow-[0_1px_0_rgba(255,255,255,0.04),0_18px_50px_rgba(0,0,0,0.28)] backdrop-blur-xl"
           : "border-0 bg-transparent shadow-none backdrop-blur-none"
       )}
-      style={{
-        backgroundColor: hasScrolled
-          ? "rgba(0, 0, 0, 0.88)"
-          : "rgba(0, 0, 0, 0.28)",
-        borderColor: hasScrolled
-          ? "rgba(255, 255, 255, 0.14)"
-          : "transparent",
-        "--header-control-bg": hasScrolled
-          ? "rgba(255, 255, 255, 0.1)"
-          : "rgba(0, 0, 0, 0.18)",
-        "--header-control-hover-bg": hasScrolled
-          ? "rgba(255, 255, 255, 0.14)"
-          : "rgba(0, 0, 0, 0.26)",
-        "--header-control-border":
-          hasScrolled ? "rgba(255, 255, 255, 0.16)" : "rgba(255, 255, 255, 0.12)",
-      } as CSSProperties}
+      style={
+        {
+          backgroundColor: hasScrolled
+            ? "rgba(0, 0, 0, 0.88)"
+            : "rgba(0, 0, 0, 0.28)",
+          borderColor: hasScrolled
+            ? "rgba(255, 255, 255, 0.14)"
+            : "transparent",
+          "--header-control-bg": hasScrolled
+            ? "rgba(255, 255, 255, 0.1)"
+            : "rgba(0, 0, 0, 0.18)",
+          "--header-control-hover-bg": hasScrolled
+            ? "rgba(255, 255, 255, 0.14)"
+            : "rgba(0, 0, 0, 0.26)",
+          "--header-control-border": hasScrolled
+            ? "rgba(255, 255, 255, 0.16)"
+            : "rgba(255, 255, 255, 0.12)",
+        } as CSSProperties
+      }
     >
       <div className="mx-auto flex min-h-20 w-full min-w-0 flex-col justify-center gap-3 px-3 py-3 sm:px-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex min-w-0 items-center gap-4">
           <Link to="/home" className="flex shrink-0 items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-md border border-[var(--header-control-border)] bg-[var(--header-control-bg)] text-sm font-bold text-primary-foreground shadow-inner">
-              V
-            </div>
+            <img
+              src="/assets/quantum_clap_logo.png"
+              alt="Quantum Clap"
+              className="h-9 w-9 rounded-md border border-[var(--header-control-border)] object-cover"
+            />
             <div className="flex items-center gap-2">
-              <span className="font-semibold tracking-wide text-white">
-                Vexto
+              <span className="[font-family:'Cinzel',_'Trajan_Pro',_'Times_New_Roman',_serif] font-semibold tracking-[0.08em] text-white">
+                Quantum Clap
               </span>
               <span className="text-white/30">/</span>
               <span className="text-white/55">Media</span>
@@ -433,7 +448,7 @@ export function HeaderLayout() {
                   asChild
                   className="hover:text-primary-foreground"
                 >
-                  <Link to="/home">Vexto</Link>
+                  <Link to="/home">Quantum Clap</Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               {breadcrumbItems.map((item, index) => {

@@ -1,21 +1,46 @@
-# React + TypeScript + Vite + shadcn/ui
+# Quantum Clap Frontend
 
-This is a template for a new Vite project with React, TypeScript, and shadcn/ui.
+The frontend delivers the Quantum Clap experience for browsing and discovering entertainment. It focuses on clean navigation, clear content discovery, and immersive media pages.
 
-## Adding components
+## Summary
 
-To add components to your app, run the following command:
+- Browse movies, series, and anime in one place
+- Responsive catalogs, detail pages, and entity profiles
+- Explore trending titles, ratings, and recommendations
+- Enjoy polished cards, carousels, and clear navigation
 
-```bash
-npx shadcn@latest add button
-```
+## Key Pages
 
-This will place the ui components in the `src/components` directory.
+- `Home` — hero section and trending discovery
+- `Movies` — movie catalog with pagination and genre metadata
+- `Series` — TV series catalog and series detail pages
+- `Anime` — anime catalog and overview pages
+- `Movie Detail` — movie synopsis, cast, recommendations, and providers
+- `Series Detail` — full series overview, seasons, and creators
+- `Person Detail` — actor/crew biography and credit list
+- `Company Detail` — production company profile and logos
 
-## Using components
+## Project Structure
 
-To use the components in your app, import them as follows:
+- `src/routes/` — route definitions and page route components
+- `src/components/` — page components, shared UI, and feature widgets
+- `src/components/ui/` — shared reusable UI components
+- `src/service/` — `fetchApiData` helper for TMDB requests
+- `src/api-fetch-endpoints/` — JSON endpoint configurations for TMDB
+- `src/layout/` — application layout and header wrapper
 
-```tsx
-import { Button } from "@/components/ui/button"
-```
+## Setup
+
+1. `cd frontend`
+2. `npm install`
+3. Configure environment variables for TMDB API access
+4. `npm run dev`
+
+## Scripts
+
+- `npm run dev`
+- `npm run build`
+- `npm run preview`
+- `npm run lint`
+- `npm run format`
+- `npm run typecheck`

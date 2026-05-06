@@ -136,8 +136,10 @@ type HeroSource = {
 
 const endpoints = apiEndPoints as ApiEndpoints
 const heroPreviewDuration = 24000
-const heroItemsPerPage = 10
-const heroVideoLookupLimit = 18
+const heroItemsPerPage = 5
+const heroVideoLookupLimit = 14
+const heroSourcePage = 2
+const listingRoutePrefixes = ["/movie", "/series", "/anime"] as const
 const animeHeroParams = {
   sort_by: "popularity.desc",
   with_genres: 16,
@@ -218,27 +220,6 @@ function getEpisodeLabel(episode?: TmdbEpisodeSummary | null) {
   }
 
   return `S${episode.season_number} E${episode.episode_number}`
-}
-
-function mergeHeroItems(
-  currentItems: HeroMedia[],
-  nextItems: HeroMedia[]
-) {
-  const seenItems = new Set(
-    currentItems.map((hero) => `${hero.mediaType}-${hero.item.id}`)
-  )
-  const uniqueNextItems = nextItems.filter((hero) => {
-    const key = `${hero.mediaType}-${hero.item.id}`
-
-    if (seenItems.has(key)) {
-      return false
-    }
-
-    seenItems.add(key)
-    return true
-  })
-
-  return [...currentItems, ...uniqueNextItems]
 }
 
 function createGenreMap(genres: TmdbGenre[]) {
@@ -409,9 +390,11 @@ function getHeroSource(pathname: string): HeroSource {
 }
 
 export function HeroSection() {
-  const pathname = useRouterState({
-    select: (state) => state.location.pathname,
+  const location = useRouterState({
+    select: (state) => state.location,
   })
+  const pathname = location.pathname
+  const routeRefreshKey = location.href
   const isEntityDetailRoute =
     pathname.startsWith("/person") ||
     pathname.startsWith("/company") ||
@@ -421,14 +404,26 @@ export function HeroSection() {
   const [activeIndex, setActiveIndex] = useState(0)
   const [carouselApi, setCarouselApi] = useState<CarouselApi>()
   const [isLoading, setIsLoading] = useState(true)
-  const [isLoadingMore, setIsLoadingMore] = useState(false)
-  const [currentPage, setCurrentPage] = useState(0)
-  const [hasMorePages, setHasMorePages] = useState(true)
   const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false)
+  const [catalogPageByRoute, setCatalogPageByRoute] = useState<
+    Partial<Record<(typeof listingRoutePrefixes)[number], number>>
+  >({})
   const [genreMaps, setGenreMaps] = useState<GenreMaps>({
     movie: new Map(),
     tv: new Map(),
   })
+
+  const listingRouteKey = useMemo(() => {
+    return (
+      listingRoutePrefixes.find((routePrefix) =>
+        pathname.startsWith(routePrefix)
+      ) ?? null
+    )
+  }, [pathname])
+
+  const sourcePage = listingRouteKey
+    ? Math.max(1, catalogPageByRoute[listingRouteKey] ?? 1)
+    : heroSourcePage
 
   const activeHero = heroItems[activeIndex]
   const activeItem = activeHero?.item
@@ -440,27 +435,14 @@ export function HeroSection() {
     : heroItems
 
   const loadHeroPage = useCallback(
-    async (
-      page: number,
-      mode: "replace" | "append",
-      signal?: AbortSignal
-    ) => {
-      if (mode === "replace") {
-        setIsLoading(true)
-        setIsLoadingMore(false)
-        setHeroItems([])
-        setActiveIndex(0)
-        setCurrentPage(0)
-        setHasMorePages(true)
-      } else {
-        setIsLoadingMore(true)
-      }
+    async (signal?: AbortSignal) => {
+      setIsLoading(true)
+      setHeroItems([])
+      setActiveIndex(0)
 
       if (isEntityDetailRoute) {
         setHeroItems([])
         setIsLoading(false)
-        setIsLoadingMore(false)
-        setHasMorePages(false)
         return
       }
 
@@ -524,10 +506,7 @@ export function HeroSection() {
           setHeroItems([])
         }
 
-        setCurrentPage(1)
-        setHasMorePages(false)
         setIsLoading(false)
-        setIsLoadingMore(false)
         setActiveIndex(0)
         return
       }
@@ -537,7 +516,7 @@ export function HeroSection() {
         method: heroSource.endpoint.method,
         params: {
           language: "en-US",
-          page,
+          page: sourcePage,
           ...heroSource.params,
         },
         signal,
@@ -579,29 +558,55 @@ export function HeroSection() {
         return
       }
 
-      const videoItems = mediaWithVideos
-        .filter((hero) => Boolean(hero.video))
-        .slice(0, heroItemsPerPage)
-      const fallbackItems = mediaWithVideos.slice(0, heroItemsPerPage)
-      const nextHeroItems = videoItems.length > 0 ? videoItems : fallbackItems
-      const totalPages = Math.min(response?.total_pages ?? page, 500)
+      const randomVideoItems = shuffleItems(
+        mediaWithVideos.filter((hero) => Boolean(hero.video))
+      ).slice(0, heroItemsPerPage)
+      const fallbackItems = shuffleItems(mediaWithVideos).slice(0, heroItemsPerPage)
 
-      setHeroItems((currentItems) =>
-        mode === "append"
-          ? mergeHeroItems(currentItems, nextHeroItems)
-          : nextHeroItems
-      )
-      setCurrentPage(response?.page ?? page)
-      setHasMorePages(page < totalPages)
+      setHeroItems(randomVideoItems.length > 0 ? randomVideoItems : fallbackItems)
       setIsLoading(false)
-      setIsLoadingMore(false)
-
-      if (mode === "replace") {
-        setActiveIndex(0)
-      }
+      setActiveIndex(0)
     },
-    [heroSource, isEntityDetailRoute]
+    [heroSource, isEntityDetailRoute, routeRefreshKey, sourcePage]
   )
+
+  useEffect(() => {
+    function handleCatalogPageChange(event: Event) {
+      const customEvent = event as CustomEvent<{
+        route?: string
+        page?: number
+      }>
+      const nextRoute = customEvent.detail?.route
+      const nextPage = customEvent.detail?.page
+
+      if (
+        !nextRoute ||
+        typeof nextPage !== "number" ||
+        !listingRoutePrefixes.includes(
+          nextRoute as (typeof listingRoutePrefixes)[number]
+        )
+      ) {
+        return
+      }
+
+      setCatalogPageByRoute((current) => {
+        const routeKey = nextRoute as (typeof listingRoutePrefixes)[number]
+        if (current[routeKey] === nextPage) {
+          return current
+        }
+
+        return {
+          ...current,
+          [routeKey]: nextPage,
+        }
+      })
+    }
+
+    window.addEventListener("catalog-page-change", handleCatalogPageChange)
+
+    return () =>
+      window.removeEventListener("catalog-page-change", handleCatalogPageChange)
+  }, [])
 
   useEffect(() => {
     const abortController = new AbortController()
@@ -635,21 +640,13 @@ export function HeroSection() {
         tv: createGenreMap(tvGenres?.genres ?? []),
       })
 
-      await loadHeroPage(1, "replace", abortController.signal)
+      await loadHeroPage(abortController.signal)
     }
 
     loadHeroMedia()
 
     return () => abortController.abort()
   }, [loadHeroPage])
-
-  const loadNextHeroPage = useCallback(() => {
-    if (isLoading || isLoadingMore || !hasMorePages) {
-      return
-    }
-
-    void loadHeroPage(currentPage + 1, "append")
-  }, [currentPage, hasMorePages, isLoading, isLoadingMore, loadHeroPage])
 
   useEffect(() => {
     if (!carouselApi) {
@@ -660,10 +657,6 @@ export function HeroSection() {
       const selectedIndex = carouselApi.selectedScrollSnap()
 
       setActiveIndex(selectedIndex)
-
-      if (!carouselApi.canScrollNext() || selectedIndex >= heroItems.length - 2) {
-        loadNextHeroPage()
-      }
     }
 
     handleSelect()
@@ -674,7 +667,7 @@ export function HeroSection() {
       carouselApi.off("select", handleSelect)
       carouselApi.off("reInit", handleSelect)
     }
-  }, [carouselApi, heroItems.length, loadNextHeroPage])
+  }, [carouselApi, heroItems.length])
 
   useEffect(() => {
     if (!carouselApi || heroItems.length <= 1) {
@@ -811,13 +804,11 @@ export function HeroSection() {
                     Trailer Queue
                   </p>
                   <p className="text-xs text-white/56">
-                    Page-wise trailers from {heroSource.label}
+                    Random trailers from page {sourcePage} in {heroSource.label}
                   </p>
                 </div>
                 <Badge className="rounded-md bg-white/12 text-white hover:bg-white/12">
-                  {heroSource.detailId
-                    ? `${heroItems.length || 1} videos`
-                    : `Page ${currentPage || 1}`}
+                  {heroSource.detailId ? `${heroItems.length || 1} videos` : "5 videos"}
                 </Badge>
               </div>
               <Carousel
@@ -926,11 +917,6 @@ export function HeroSection() {
                       </CarouselItem>
                     )
                   })}
-                  {isLoadingMore && (
-                    <CarouselItem className="basis-[86%] pl-3 sm:basis-[58%] lg:basis-[86%] xl:basis-[78%]">
-                      <HeroQueueCardSkeleton isActive={false} />
-                    </CarouselItem>
-                  )}
                 </CarouselContent>
                 <div className="mt-3 flex justify-end gap-2">
                   <CarouselPrevious className="static translate-0 rounded-md border-white/12 bg-white/10 text-white hover:bg-white/16 hover:text-white disabled:opacity-35" />
