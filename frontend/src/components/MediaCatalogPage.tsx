@@ -122,28 +122,28 @@ function getGenreNames(
 
 function CatalogCardSkeleton() {
   return (
-    <Card className="relative isolate @container/card-info overflow-hidden rounded-lg border-white/10 bg-[#050505] py-0 text-white">
-      <div className="absolute inset-0 -z-10 bg-black/70" />
+    <Card className="relative isolate @container/card-info overflow-hidden rounded-lg border-border bg-card py-0">
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-background/20 via-transparent to-muted/40" />
       <div className="grid gap-3 p-3 @[28rem]/card-info:grid-cols-[7.25rem_1fr] @[42rem]/card-info:grid-cols-[8.5rem_1fr] @[58rem]/card-info:grid-cols-[10rem_1fr] @[28rem]/card-info:p-4">
-        <Skeleton className="aspect-[2/3] w-full rounded-lg bg-white/12" />
+        <Skeleton className="aspect-[2/3] w-full rounded-lg bg-muted" />
         <div className="flex min-w-0 flex-col justify-center gap-3 py-1 sm:py-2">
           <div className="space-y-2">
-            <Skeleton className="h-7 w-4/5 bg-white/14" />
-            <Skeleton className="h-6 w-20 bg-white/14" />
+            <Skeleton className="h-7 w-4/5 bg-muted" />
+            <Skeleton className="h-6 w-20 bg-muted" />
           </div>
           <div className="flex flex-wrap gap-2">
-            <Skeleton className="h-6 w-20 bg-white/14" />
-            <Skeleton className="h-6 w-24 bg-white/14" />
-            <Skeleton className="h-6 w-16 bg-white/14" />
+            <Skeleton className="h-6 w-20 bg-muted" />
+            <Skeleton className="h-6 w-24 bg-muted" />
+            <Skeleton className="h-6 w-16 bg-muted" />
           </div>
           <div className="space-y-2">
-            <Skeleton className="h-4 w-full bg-white/14" />
-            <Skeleton className="h-4 w-11/12 bg-white/14" />
-            <Skeleton className="h-4 w-2/3 bg-white/14" />
+            <Skeleton className="h-4 w-full bg-muted" />
+            <Skeleton className="h-4 w-11/12 bg-muted" />
+            <Skeleton className="h-4 w-2/3 bg-muted" />
           </div>
           <div className="flex gap-3">
-            <Skeleton className="h-5 w-16 bg-white/14" />
-            <Skeleton className="h-5 w-20 bg-white/14" />
+            <Skeleton className="h-5 w-16 bg-muted" />
+            <Skeleton className="h-5 w-20 bg-muted" />
           </div>
         </div>
       </div>

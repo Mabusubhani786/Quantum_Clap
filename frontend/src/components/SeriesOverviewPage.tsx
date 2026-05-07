@@ -187,7 +187,11 @@ function hasRating(rating?: number) {
 }
 
 function formatTrendRating(rating?: number) {
-  return hasRating(rating) ? rating?.toFixed(1) : ""
+  if (typeof rating !== "number" || rating <= 0) {
+    return ""
+  }
+
+  return rating.toFixed(1)
 }
 
 function getHeroSlides(detail: TmdbSeriesDetail) {
@@ -351,7 +355,7 @@ export function SeriesOverviewPage({
             className="absolute inset-0 -z-20 h-full w-full object-cover transition-opacity duration-700"
           />
         )}
-        <div className="absolute inset-0 -z-10 bg-black/62" />
+        <div className="absolute inset-0 -z-10 bg-black/35" />
         <div className="absolute inset-x-0 bottom-0 -z-10 h-40 bg-gradient-to-t from-background to-transparent" />
 
         <div className="mx-auto grid min-h-[40rem] max-w-7xl gap-8 px-3 pb-10 pt-28 sm:px-4 lg:grid-cols-[18rem_minmax(0,1fr)] lg:items-end lg:pt-32">
@@ -618,12 +622,12 @@ function RatingTrendsPanel({
         </aside>
 
         <div className="min-w-0 p-4 sm:p-6">
-          <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+          <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
             <div>
               <Badge variant="secondary" className="mb-3 rounded-md">
                 Rating Trends
               </Badge>
-              <h3 className="text-2xl font-bold sm:text-3xl">
+              <h3 className="text-xl font-bold sm:text-2xl">
                 Season rating matrix
               </h3>
               <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
@@ -637,27 +641,26 @@ function RatingTrendsPanel({
           {seasons.length > 0 ? (
             <div className="overflow-x-auto pb-2">
               <div
-                className="grid min-w-max gap-1.5"
+                className="grid min-w-max gap-x-[2px] gap-y-[2px]"
                 style={{
-                  gridTemplateColumns: `2.75rem repeat(${seasons.length}, minmax(3.75rem, 4.5rem))`,
+                  gridTemplateColumns: `minmax(1rem, 5ch) repeat(${seasons.length}, minmax(4rem, 5rem))`,
                 }}
               >
                 <div />
                 {seasons.map((season) => (
                   <div
                     key={season.id}
-                    className="rounded-md border bg-muted/35 px-1.5 py-1 text-center"
+                    className="flex h-8 items-center justify-center rounded-md border border-border/70 bg-muted/40 px-1 text-center shadow-sm"
                   >
-                    <p className="text-base font-bold">S{season.season_number}</p>
-                    <p className="text-[0.6rem] text-muted-foreground">
-                      {season.episodes?.length ?? season.episode_count} eps
+                    <p className="text-[0.68rem] font-medium leading-none text-foreground/90 sm:text-xs">
+                      S{season.season_number}
                     </p>
                   </div>
                 ))}
 
                 {Array.from({ length: maxEpisodeCount }).map((_, episodeIndex) => (
                   <Fragment key={episodeIndex}>
-                    <div className="flex h-9 items-center justify-end pr-2 text-xs font-bold text-muted-foreground">
+                    <div className="flex h-8 items-center justify-start pl-1 text-left text-base font-medium leading-none uppercase tabular-nums text-foreground/85 sm:text-lg">
                       E{episodeIndex + 1}
                     </div>
                     {seasons.map((season) => {
@@ -669,15 +672,12 @@ function RatingTrendsPanel({
                           key={`${season.id}-${episodeIndex}`}
                           className={
                             hasEpisodeRating
-                              ? "flex h-9 items-center justify-center rounded-md border text-base font-bold shadow-sm"
-                              : "h-9"
+                              ? `flex h-8 items-center justify-center rounded-md text-lg font-semibold leading-none sm:text-xl ${getRatingClass(
+                                  episode?.vote_average
+                                )}`
+                              : "h-8 rounded-md"
                           }
-                          style={
-                            hasEpisodeRating
-                              ? getRatingTheme(episode?.vote_average)
-                              : undefined
-                          }
-                          title={episode?.name}
+                          title={hasEpisodeRating ? episode?.name : undefined}
                         >
                           {formatTrendRating(episode?.vote_average)}
                         </div>
@@ -686,16 +686,23 @@ function RatingTrendsPanel({
                   </Fragment>
                 ))}
 
-                <div className="flex h-9 items-center justify-end pr-2 text-xs font-bold">
+                <div className="flex h-8 items-center justify-start pl-1 text-left text-[0.58rem] font-semibold uppercase tracking-[0.12em] tabular-nums text-muted-foreground sm:text-[0.62rem]">
                   AVG.
                 </div>
                 {seasons.map((season) => {
                   const average = getSeasonAverage(season)
+                  const hasAverage = hasRating(average)
 
                   return (
                     <div
                       key={`avg-${season.id}`}
-                      className="flex h-9 items-center justify-center rounded-md border-b-3 border-x-0 border-t-0 border-foreground bg-transparent text-xl font-bold"
+                      className={
+                        hasAverage
+                          ? `flex h-8 items-center justify-center rounded-md text-base font-semibold leading-none sm:text-lg ${getRatingClass(
+                              average
+                            )}`
+                          : "h-8 rounded-md"
+                      }
                     >
                       {formatTrendRating(average)}
                     </div>
@@ -727,69 +734,50 @@ function getSeasonAverage(season: TmdbSeasonDetail) {
   return ratings.reduce((total, rating) => total + rating, 0) / ratings.length
 }
 
-function getRatingTheme(rating?: number) {
-  if (!rating || rating <= 0) {
-    return {}
+function getRatingClass(rating?: number) {
+  if (typeof rating !== "number" || rating <= 0) {
+    return ""
   }
 
   if (rating >= 9) {
-    return {
-      backgroundColor: "#dcfce7",
-      color: "#14532d",
-      borderColor: "#86efac",
-    }
+    return "bg-[#187a3f] text-slate-100"
   }
 
   if (rating >= 8) {
-    return {
-      backgroundColor: "#f0fdf4",
-      color: "#166534",
-      borderColor: "#bbf7d0",
-    }
+    return "bg-[#2cbc68] text-[#1f2937]"
   }
 
   if (rating >= 7) {
-    return {
-      backgroundColor: "#fefce8",
-      color: "#854d0e",
-      borderColor: "#fde68a",
-    }
+    return "bg-[#f0d23b] text-[#1f2937]"
   }
 
   if (rating >= 6) {
-    return {
-      backgroundColor: "#fff7ed",
-      color: "#9a3412",
-      borderColor: "#fed7aa",
-    }
+    return "bg-[#f2a91b] text-[#1f2937]"
   }
 
-  return {
-    backgroundColor: "#f3e8ff",
-    color: "#6b21a8",
-    borderColor: "#d8b4fe",
+  if (rating >= 5) {
+    return "bg-[#ef5538] text-slate-100"
   }
+
+  return "bg-[#5b2e82] text-slate-100"
 }
 
 function RatingLegend() {
   const items = [
-    { label: "Awesome", color: "#14532d" },
-    { label: "Great", color: "#22c55e" },
-    { label: "Good", color: "#eab308" },
-    { label: "Regular", color: "#f97316" },
-    { label: "Bad", color: "#e11d48" },
-    { label: "Garbage / Empty", color: "#7e22ce" },
+    { label: "Awesome", color: "#187a3f" },
+    { label: "Great", color: "#2cbc68" },
+    { label: "Good", color: "#f0d23b" },
+    { label: "Regular", color: "#f2a91b" },
+    { label: "Bad", color: "#ef5538" },
+    { label: "Garbage", color: "#5b2e82" },
   ]
 
   return (
-    <div className="flex flex-wrap gap-3">
+    <div className="flex flex-wrap gap-4">
       {items.map((item) => (
-        <div
-          key={item.label}
-          className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground"
-        >
+        <div key={item.label} className="inline-flex items-center gap-2 text-sm">
           <span
-            className="h-3.5 w-3.5 rounded-full"
+            className="h-5 w-5 rounded-full"
             style={{ backgroundColor: item.color }}
           />
           {item.label}

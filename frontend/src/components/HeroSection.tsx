@@ -704,7 +704,7 @@ export function HeroSection() {
           />
         )}
 
-        <div className="absolute inset-0 -z-10 bg-black/28" />
+        <div className="absolute inset-0 -z-10 bg-black/18" />
 
         <div className="mx-auto flex min-h-[clamp(40rem,82vh,56rem)] w-full items-end px-3 pb-8 sm:min-h-[clamp(36rem,76vh,54rem)] sm:px-4 lg:pb-12">
           <div className="grid w-full min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,24rem)] lg:items-end xl:gap-8">

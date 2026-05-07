@@ -141,6 +141,35 @@ function getSearchCopy(scope: SearchScope) {
   return copy[scope]
 }
 
+function getSearchPlaceholders(pathname: string, scope: SearchScope) {
+  if (pathname.startsWith("/anime")) {
+    return [
+      "Search anime titles",
+      "Try: Attack on Titan",
+      "Try: Demon Slayer",
+    ]
+  }
+
+  if (pathname.startsWith("/movie")) {
+    return ["Search movies", "Try: Inception", "Try: Interstellar"]
+  }
+
+  if (pathname.startsWith("/series")) {
+    return ["Search series", "Try: Breaking Bad", "Try: The Last of Us"]
+  }
+
+  if (pathname.startsWith("/person")) {
+    return ["Search people", "Try: Christopher Nolan", "Try: Cillian Murphy"]
+  }
+
+  if (pathname.startsWith("/company")) {
+    return ["Search companies", "Try: Pixar", "Try: Warner Bros."]
+  }
+
+  const baseCopy = getSearchCopy(scope)
+  return [baseCopy, "Search by title", "Search by cast or creator"]
+}
+
 function getSearchTitle(result: SearchResult) {
   return result.title ?? result.name ?? "Untitled"
 }
@@ -242,10 +271,29 @@ function HeaderSearch({ className }: { className?: string }) {
   const [results, setResults] = useState<SearchResult[]>([])
   const [isFocused, setIsFocused] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [placeholderIndex, setPlaceholderIndex] = useState(0)
   const endpoint = endpoints.search[scope]
-  const placeholder = pathname.startsWith("/anime")
-    ? "Search anime"
-    : getSearchCopy(scope)
+  const placeholders = useMemo(
+    () => getSearchPlaceholders(pathname, scope),
+    [pathname, scope]
+  )
+  const placeholder = placeholders[placeholderIndex] ?? getSearchCopy(scope)
+
+  useEffect(() => {
+    setPlaceholderIndex(0)
+  }, [pathname, scope])
+
+  useEffect(() => {
+    if (query.trim().length > 0 || isFocused || placeholders.length < 2) {
+      return
+    }
+
+    const intervalId = window.setInterval(() => {
+      setPlaceholderIndex((current) => (current + 1) % placeholders.length)
+    }, 2200)
+
+    return () => window.clearInterval(intervalId)
+  }, [isFocused, placeholders, query])
 
   useEffect(() => {
     const trimmedQuery = query.trim()
@@ -301,7 +349,7 @@ function HeaderSearch({ className }: { className?: string }) {
   return (
     <div className={cn("relative", className)}>
       <Search
-        className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-primary-foreground/50"
+        className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-white/60"
         aria-hidden="true"
       />
       <Input
@@ -322,7 +370,7 @@ function HeaderSearch({ className }: { className?: string }) {
         onBlur={() => {
           window.setTimeout(() => setIsFocused(false), 160)
         }}
-        className="h-9 border-[var(--header-control-border)] bg-[var(--header-control-bg)] pr-3 pl-9 text-primary-foreground shadow-none placeholder:text-primary-foreground/40 hover:border-white/20 hover:bg-[var(--header-control-hover-bg)] focus-visible:border-white/35 focus-visible:bg-[var(--header-control-hover-bg)] focus-visible:ring-white/15"
+        className="h-9 border-[var(--header-control-border)] bg-[var(--header-control-bg)] pr-3 pl-9 text-white shadow-none placeholder:text-white/45 hover:border-white/20 hover:bg-[var(--header-control-hover-bg)] focus-visible:border-white/35 focus-visible:bg-[var(--header-control-hover-bg)] focus-visible:ring-white/15"
       />
       {showResults && (
         <div className="absolute top-[calc(100%+0.5rem)] right-0 left-0 z-[70] overflow-hidden rounded-lg border border-white/12 bg-black/94 text-white shadow-2xl shadow-black/35 backdrop-blur-xl">
@@ -399,7 +447,7 @@ export function HeaderLayout() {
   return (
     <header
       className={cn(
-        "fixed inset-x-0 top-0 z-50 text-primary-foreground transition-all duration-300",
+        "fixed inset-x-0 top-0 z-50 text-white transition-all duration-300",
         hasScrolled
           ? "border-b border-white/10 shadow-[0_1px_0_rgba(255,255,255,0.04),0_18px_50px_rgba(0,0,0,0.28)] backdrop-blur-xl"
           : "border-0 bg-transparent shadow-none backdrop-blur-none"
@@ -446,7 +494,7 @@ export function HeaderLayout() {
               <BreadcrumbItem>
                 <BreadcrumbLink
                   asChild
-                  className="hover:text-primary-foreground"
+                  className="hover:text-white"
                 >
                   <Link to="/home">Quantum Clap</Link>
                 </BreadcrumbLink>
@@ -459,13 +507,13 @@ export function HeaderLayout() {
                     <BreadcrumbSeparator className="text-white/25" />
                     <BreadcrumbItem className="min-w-0 flex-nowrap gap-1">
                       {isLast ? (
-                        <BreadcrumbPage className="truncate font-medium text-primary-foreground">
+                        <BreadcrumbPage className="truncate font-medium text-white">
                           {item.label}
                         </BreadcrumbPage>
                       ) : (
                         <BreadcrumbLink
                           asChild
-                          className="truncate hover:text-primary-foreground"
+                          className="truncate hover:text-white"
                         >
                           <Link to={item.to}>{item.label}</Link>
                         </BreadcrumbLink>
@@ -479,7 +527,7 @@ export function HeaderLayout() {
         </div>
 
         <div className="flex min-w-0 flex-wrap items-center justify-between gap-3 lg:flex-nowrap">
-          <div className="min-w-0 text-sm font-medium text-primary-foreground md:hidden">
+          <div className="min-w-0 text-sm font-medium text-white md:hidden">
             {breadcrumbItems.at(-1)?.label ?? "Home"}
           </div>
 
