@@ -210,34 +210,36 @@ function MediaCard({
             className="h-full w-full object-cover transition-transform duration-300 group-hover/card:scale-105"
             loading="lazy"
           />
-          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/45 to-transparent p-3 text-white">
-            <Badge className="rounded-md bg-white text-black hover:bg-white">
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/45 to-transparent p-2 text-white">
+            <Badge className="rounded-md bg-white px-1.5 py-0.5 text-[10px] text-black hover:bg-white">
               #{rank}
             </Badge>
           </div>
         </div>
 
-        <CardHeader className="gap-1.5 pb-3">
-          <CardTitle className="line-clamp-1">{getTitle(item)}</CardTitle>
-          <CardDescription className="line-clamp-2 min-h-8 text-xs">
+        <CardHeader className="gap-1 pb-2">
+          <CardTitle className="line-clamp-1 text-sm leading-tight sm:text-[0.95rem]">
+            {getTitle(item)}
+          </CardTitle>
+          <CardDescription className="line-clamp-2 min-h-6 text-[10px] leading-relaxed">
             {item.overview || "No description available yet."}
           </CardDescription>
           <CardAction>
-            <Badge variant="secondary" className="gap-1 rounded-md">
-              <Star className="h-3.5 w-3.5 fill-current" />
+            <Badge variant="secondary" className="gap-1 rounded-md px-1.5 py-0.5 text-[10px]">
+              <Star className="h-2.5 w-2.5 fill-current" />
               {formatRating(item.vote_average)}
             </Badge>
           </CardAction>
         </CardHeader>
 
-        <CardContent className="pb-3">
-          <div className="flex flex-wrap gap-2">
-            <Badge variant="secondary" className="gap-1 rounded-md">
-              <MediaIcon className="h-3.5 w-3.5" />
+        <CardContent className="pb-2">
+          <div className="flex flex-wrap gap-1">
+            <Badge variant="secondary" className="gap-1 rounded-md px-1.5 py-0.5 text-[10px]">
+              <MediaIcon className="h-2.5 w-2.5" />
               {resolvedMediaType === "movie" ? "Movie" : "Series"}
             </Badge>
-            <Badge variant="secondary" className="gap-1 rounded-md">
-              <CalendarDays className="h-3.5 w-3.5" />
+            <Badge variant="secondary" className="gap-1 rounded-md px-1.5 py-0.5 text-[10px]">
+              <CalendarDays className="h-2.5 w-2.5" />
               {getReleaseYear(item)}
             </Badge>
           </div>
@@ -249,27 +251,27 @@ function MediaCard({
 
 function LoadingCarousel() {
   return (
-    <div className="grid grid-cols-1 gap-4 overflow-hidden min-[420px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
+    <div className="grid grid-cols-1 gap-3 overflow-hidden min-[420px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
       {Array.from({ length: 5 }).map((_, index) => (
         <Card
           key={index}
-          className="h-[19.5rem] overflow-hidden rounded-lg py-0 sm:h-[21.5rem]"
+          className="h-[16.25rem] overflow-hidden rounded-lg py-0 sm:h-[18rem]"
         >
           <Skeleton className="aspect-[2/3] w-full rounded-b-none rounded-t-lg" />
-          <CardHeader className="gap-2">
+          <CardHeader className="gap-1 pb-2">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1 space-y-2">
-                <Skeleton className="h-5 w-4/5" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-4/5" />
+                <Skeleton className="h-2.5 w-full" />
+                <Skeleton className="h-2.5 w-3/4" />
               </div>
-              <Skeleton className="h-6 w-12 shrink-0" />
+              <Skeleton className="h-4 w-9 shrink-0" />
             </div>
           </CardHeader>
-          <CardContent className="pb-4">
-            <div className="flex flex-wrap gap-2">
-              <Skeleton className="h-6 w-16" />
-              <Skeleton className="h-6 w-14" />
+          <CardContent className="pb-2">
+            <div className="flex flex-wrap gap-1">
+              <Skeleton className="h-4 w-12" />
+              <Skeleton className="h-4 w-10" />
             </div>
           </CardContent>
         </Card>
@@ -280,17 +282,17 @@ function LoadingCarousel() {
 
 function LoadingMoreCard() {
   return (
-    <Card className="h-full min-h-[21.5rem] overflow-hidden rounded-lg py-0">
+    <Card className="h-full min-h-[18rem] overflow-hidden rounded-lg py-0">
       <Skeleton className="aspect-[2/3] w-full rounded-b-none rounded-t-lg" />
-      <CardHeader className="gap-2">
-        <Skeleton className="h-5 w-3/4" />
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-2/3" />
+      <CardHeader className="gap-1 pb-2">
+        <Skeleton className="h-4 w-3/4" />
+        <Skeleton className="h-2.5 w-full" />
+        <Skeleton className="h-2.5 w-2/3" />
       </CardHeader>
-      <CardContent className="pb-4">
-        <div className="flex gap-2">
-          <Skeleton className="h-6 w-16" />
-          <Skeleton className="h-6 w-14" />
+      <CardContent className="pb-2">
+        <div className="flex gap-1">
+          <Skeleton className="h-4 w-12" />
+          <Skeleton className="h-4 w-10" />
         </div>
       </CardContent>
     </Card>
@@ -390,7 +392,7 @@ function SectionCarousel({
           {state.items.map((item, index) => (
             <CarouselItem
               key={`${section.id}-${item.id}`}
-              className="basis-[60%] pl-4 min-[420px]:basis-[42%] sm:basis-[30%] md:basis-[23%] lg:basis-[16.5%] 2xl:basis-[12%]"
+              className="basis-[46%] pl-3 min-[420px]:basis-[32%] sm:basis-[24%] md:basis-[17.5%] lg:basis-[12.5%] 2xl:basis-[9.5%]"
             >
               <MediaCard
                 item={item}
@@ -401,7 +403,7 @@ function SectionCarousel({
           ))}
 
           {state.loadingMore && (
-            <CarouselItem className="basis-[60%] pl-4 min-[420px]:basis-[42%] sm:basis-[30%] md:basis-[23%] lg:basis-[16.5%] 2xl:basis-[12%]">
+            <CarouselItem className="basis-[46%] pl-3 min-[420px]:basis-[32%] sm:basis-[24%] md:basis-[17.5%] lg:basis-[12.5%] 2xl:basis-[9.5%]">
               <LoadingMoreCard />
             </CarouselItem>
           )}
