@@ -11,6 +11,7 @@ import { useRouterState } from "@tanstack/react-router"
 
 import apiEndPoints from "@/api-fetch-endpoints/apiEndPoints.json"
 import { HeroVideoDialog } from "@/components/HeroVideoDialog"
+import { WatchListButton } from "@/components/WatchListButton"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -786,14 +787,36 @@ export function HeroSection() {
                   </div>
                 )}
 
-                <Button
-                  className="h-10 rounded-md bg-white px-4 text-sm font-semibold text-black hover:bg-white/90"
-                  disabled={!activeVideo}
-                  onClick={() => setIsVideoDialogOpen(true)}
-                >
-                  <Play className="h-4 w-4 fill-current" />
-                  Play preview
-                </Button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    className="h-10 rounded-md bg-white px-4 text-sm font-semibold text-black hover:bg-white/90"
+                    disabled={!activeVideo}
+                    onClick={() => setIsVideoDialogOpen(true)}
+                  >
+                    <Play className="h-4 w-4 fill-current" />
+                    Play preview
+                  </Button>
+                  <WatchListButton
+                    className="size-10 rounded-md"
+                    item={{
+                      media_id: activeItem.id,
+                      media_type: activeMediaType,
+                      title: getTitle(activeItem),
+                      overview: activeItem.overview,
+                      poster_url: activeItem.poster_path
+                        ? `https://image.tmdb.org/t/p/w500${activeItem.poster_path}`
+                        : undefined,
+                      background_image_url: activeItem.backdrop_path
+                        ? `https://image.tmdb.org/t/p/original${activeItem.backdrop_path}`
+                        : undefined,
+                      metadata: {
+                        rating: activeItem.vote_average,
+                        release_year: getReleaseYear(activeItem),
+                        genres: activeGenres,
+                      },
+                    }}
+                  />
+                </div>
               </div>
             )}
 
@@ -873,6 +896,28 @@ export function HeroSection() {
                                 >
                                   {hero?.video ? "Video" : "No video"}
                                 </Badge>
+                                <div className="z-20 shrink-0">
+                                  <WatchListButton
+                                    className="size-8"
+                                    item={{
+                                      media_id: item.id,
+                                      media_type: mediaType,
+                                      title: getTitle(item),
+                                      overview: item.overview,
+                                      poster_url: item.poster_path
+                                        ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
+                                        : undefined,
+                                      background_image_url: item.backdrop_path
+                                        ? `https://image.tmdb.org/t/p/original${item.backdrop_path}`
+                                        : undefined,
+                                      metadata: {
+                                        rating: item.vote_average,
+                                        release_year: getReleaseYear(item),
+                                        genres,
+                                      },
+                                    }}
+                                  />
+                                </div>
                               </div>
                             </CardHeader>
                             <CardContent className="px-4 pb-4">

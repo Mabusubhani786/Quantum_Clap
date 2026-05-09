@@ -28,6 +28,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel"
 import { Skeleton } from "@/components/ui/skeleton"
+import { WatchListButton } from "@/components/WatchListButton"
 import { fetchApiData } from "@/service/fetchApiData"
 
 type EndpointConfig = {
@@ -129,6 +130,10 @@ function getPosterUrl(path: string | null) {
   return path
     ? `${imageBaseUrl}w342${path}`
     : "https://placehold.co/342x513/111111/fafafa?text=No+Poster"
+}
+
+function getBackdropUrl(path: string | null) {
+  return path ? `${imageBaseUrl}original${path}` : undefined
 }
 
 function getLogoUrl(path: string | null) {
@@ -549,18 +554,41 @@ function CreditRail({
             <CarouselContent className="-ml-3">
               {items.map((item, index) => (
                 <CarouselItem key={`${item.media_type}-${item.id}-${index}`} className="basis-auto pl-3">
-                  <Link
-                    to={getCreditRoute(item)}
-                    params={{ mediaId: String(item.id) }}
-                    className="group block w-[11rem] sm:w-[12rem]"
-                  >
+                  <div className="group relative block w-[11rem] sm:w-[12rem]">
+                    <Link
+                      aria-label={`Open ${getCreditTitle(item)}`}
+                      to={getCreditRoute(item)}
+                      params={{ mediaId: String(item.id) }}
+                      className="absolute inset-0 z-10 rounded-lg"
+                    />
                     <div className="h-[25rem] overflow-hidden rounded-lg border bg-card transition duration-300 group-hover:-translate-y-0.5 group-hover:shadow-lg sm:h-[26rem]">
+                      <div className="relative">
                       <img
                         src={getPosterUrl(item.poster_path)}
                         alt={getCreditTitle(item)}
                         className="h-[16.5rem] w-full object-cover sm:h-[18rem]"
                         loading="lazy"
                       />
+                        <div className="absolute top-2 right-2 z-20">
+                          <WatchListButton
+                            item={{
+                              media_id: item.id,
+                              media_type:
+                                item.media_type === "tv" ? "tv" : "movie",
+                              title: getCreditTitle(item),
+                              poster_url: getPosterUrl(item.poster_path),
+                              background_image_url: getBackdropUrl(
+                                item.backdrop_path
+                              ),
+                              metadata: {
+                                role: item.character || item.job,
+                                rating: item.vote_average,
+                                release_year: getCreditYear(item),
+                              },
+                            }}
+                          />
+                        </div>
+                      </div>
                       <div className="space-y-2 p-3">
                         <div className="flex items-center justify-between gap-2">
                           <Badge variant="secondary" className="rounded-md text-xs">
@@ -579,7 +607,7 @@ function CreditRail({
                         </p>
                       </div>
                     </div>
-                  </Link>
+                  </div>
                 </CarouselItem>
               ))}
             </CarouselContent>

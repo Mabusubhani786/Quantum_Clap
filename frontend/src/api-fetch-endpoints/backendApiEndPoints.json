@@ -1,0 +1,12 @@
+{
+  "auth": {
+    "sign_in": "/sign-in",
+    "sign_up": "/user"
+  },
+  "user": {
+    "base": "/user"
+  },
+  "watch_list": {
+    "base": "/watch-list"
+  }
+}

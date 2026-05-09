@@ -6,7 +6,11 @@ export interface IUser {
   middle_name?: string;
   last_name: string;
   user_name: string;
+  email: string;
   password: string;
+  profile_url?: string;
+  background_image_url?: string;
+  is_verify_opt: boolean;
   is_active: boolean;
   created_date?: Date;
   updated_date?: Date;
@@ -22,7 +26,17 @@ const userSchema = new mongoose.Schema<UserDocument>(
     middle_name: { type: String, trim: true },
     last_name: { type: String, required: true, trim: true },
     user_name: { type: String, required: true, unique: true, trim: true },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+      lowercase: true,
+    },
     password: { type: String, required: true, minlength: 8 },
+    profile_url: { type: String, trim: true },
+    background_image_url: { type: String, trim: true },
+    is_verify_opt: { type: Boolean, default: false },
     is_active: { type: Boolean, default: true },
     created_by: { type: String, trim: true },
     updated_by: { type: String, trim: true },

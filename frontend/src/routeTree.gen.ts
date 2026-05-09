@@ -16,6 +16,7 @@ import { Route as _mainLayoutHomeRouteImport } from './routes/__mainLayout/home'
 import { Route as _authLayoutSignUpRouteImport } from './routes/__authLayout/sign-up'
 import { Route as _authLayoutSignInRouteImport } from './routes/__authLayout/sign-in'
 import { Route as _mainLayoutSeriesIndexRouteImport } from './routes/__mainLayout/series/index'
+import { Route as _mainLayoutProfileIndexRouteImport } from './routes/__mainLayout/profile/index'
 import { Route as _mainLayoutMovieIndexRouteImport } from './routes/__mainLayout/movie/index'
 import { Route as _mainLayoutAnimeIndexRouteImport } from './routes/__mainLayout/anime/index'
 import { Route as _mainLayoutSeriesMediaIdRouteImport } from './routes/__mainLayout/series/$mediaId'
@@ -57,6 +58,11 @@ const _authLayoutSignInRoute = _authLayoutSignInRouteImport.update({
 const _mainLayoutSeriesIndexRoute = _mainLayoutSeriesIndexRouteImport.update({
   id: '/series/',
   path: '/series/',
+  getParentRoute: () => _mainLayoutRoute,
+} as any)
+const _mainLayoutProfileIndexRoute = _mainLayoutProfileIndexRouteImport.update({
+  id: '/profile/',
+  path: '/profile/',
   getParentRoute: () => _mainLayoutRoute,
 } as any)
 const _mainLayoutMovieIndexRoute = _mainLayoutMovieIndexRouteImport.update({
@@ -122,6 +128,7 @@ export interface FileRoutesByFullPath {
   '/series/$mediaId': typeof _mainLayoutSeriesMediaIdRouteWithChildren
   '/anime/': typeof _mainLayoutAnimeIndexRoute
   '/movie/': typeof _mainLayoutMovieIndexRoute
+  '/profile/': typeof _mainLayoutProfileIndexRoute
   '/series/': typeof _mainLayoutSeriesIndexRoute
   '/anime/$mediaId/overview': typeof _mainLayoutAnimeMediaIdOverviewRoute
   '/series/$mediaId/overview': typeof _mainLayoutSeriesMediaIdOverviewRoute
@@ -138,6 +145,7 @@ export interface FileRoutesByTo {
   '/series/$mediaId': typeof _mainLayoutSeriesMediaIdRouteWithChildren
   '/anime': typeof _mainLayoutAnimeIndexRoute
   '/movie': typeof _mainLayoutMovieIndexRoute
+  '/profile': typeof _mainLayoutProfileIndexRoute
   '/series': typeof _mainLayoutSeriesIndexRoute
   '/anime/$mediaId/overview': typeof _mainLayoutAnimeMediaIdOverviewRoute
   '/series/$mediaId/overview': typeof _mainLayoutSeriesMediaIdOverviewRoute
@@ -157,6 +165,7 @@ export interface FileRoutesById {
   '/__mainLayout/series/$mediaId': typeof _mainLayoutSeriesMediaIdRouteWithChildren
   '/__mainLayout/anime/': typeof _mainLayoutAnimeIndexRoute
   '/__mainLayout/movie/': typeof _mainLayoutMovieIndexRoute
+  '/__mainLayout/profile/': typeof _mainLayoutProfileIndexRoute
   '/__mainLayout/series/': typeof _mainLayoutSeriesIndexRoute
   '/__mainLayout/anime/$mediaId/overview': typeof _mainLayoutAnimeMediaIdOverviewRoute
   '/__mainLayout/series/$mediaId/overview': typeof _mainLayoutSeriesMediaIdOverviewRoute
@@ -175,6 +184,7 @@ export interface FileRouteTypes {
     | '/series/$mediaId'
     | '/anime/'
     | '/movie/'
+    | '/profile/'
     | '/series/'
     | '/anime/$mediaId/overview'
     | '/series/$mediaId/overview'
@@ -191,6 +201,7 @@ export interface FileRouteTypes {
     | '/series/$mediaId'
     | '/anime'
     | '/movie'
+    | '/profile'
     | '/series'
     | '/anime/$mediaId/overview'
     | '/series/$mediaId/overview'
@@ -209,6 +220,7 @@ export interface FileRouteTypes {
     | '/__mainLayout/series/$mediaId'
     | '/__mainLayout/anime/'
     | '/__mainLayout/movie/'
+    | '/__mainLayout/profile/'
     | '/__mainLayout/series/'
     | '/__mainLayout/anime/$mediaId/overview'
     | '/__mainLayout/series/$mediaId/overview'
@@ -268,6 +280,13 @@ declare module '@tanstack/react-router' {
       path: '/series'
       fullPath: '/series/'
       preLoaderRoute: typeof _mainLayoutSeriesIndexRouteImport
+      parentRoute: typeof _mainLayoutRoute
+    }
+    '/__mainLayout/profile/': {
+      id: '/__mainLayout/profile/'
+      path: '/profile'
+      fullPath: '/profile/'
+      preLoaderRoute: typeof _mainLayoutProfileIndexRouteImport
       parentRoute: typeof _mainLayoutRoute
     }
     '/__mainLayout/movie/': {
@@ -390,6 +409,7 @@ interface _mainLayoutRouteChildren {
   _mainLayoutSeriesMediaIdRoute: typeof _mainLayoutSeriesMediaIdRouteWithChildren
   _mainLayoutAnimeIndexRoute: typeof _mainLayoutAnimeIndexRoute
   _mainLayoutMovieIndexRoute: typeof _mainLayoutMovieIndexRoute
+  _mainLayoutProfileIndexRoute: typeof _mainLayoutProfileIndexRoute
   _mainLayoutSeriesIndexRoute: typeof _mainLayoutSeriesIndexRoute
 }
 
@@ -402,6 +422,7 @@ const _mainLayoutRouteChildren: _mainLayoutRouteChildren = {
   _mainLayoutSeriesMediaIdRoute: _mainLayoutSeriesMediaIdRouteWithChildren,
   _mainLayoutAnimeIndexRoute: _mainLayoutAnimeIndexRoute,
   _mainLayoutMovieIndexRoute: _mainLayoutMovieIndexRoute,
+  _mainLayoutProfileIndexRoute: _mainLayoutProfileIndexRoute,
   _mainLayoutSeriesIndexRoute: _mainLayoutSeriesIndexRoute,
 }
 

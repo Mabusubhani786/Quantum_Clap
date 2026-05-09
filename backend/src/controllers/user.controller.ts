@@ -23,8 +23,8 @@ class UserController extends RestController<IUser, Partial<IUser>> {
 
   constructor() {
     super({
-      tableName: "users",
-      schema: "users",
+      tableName: "user",
+      schema: "user",
       lookupID: "_id",
       searchAble: true,
       orderBy: "created_date",

@@ -37,6 +37,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
+import { WatchListButton } from "@/components/WatchListButton"
 import { fetchApiData } from "@/service/fetchApiData"
 
 export const Route = createFileRoute("/__mainLayout/home")({
@@ -201,7 +202,12 @@ function MediaCard({
   const detailTo = `/${resolvedMediaType === "movie" ? "movie" : "series"}/${item.id}`
 
   return (
-    <Link to={detailTo} className="group/card block h-full">
+    <div className="group/card relative block h-full">
+      <Link
+        aria-label={`Open ${getTitle(item)}`}
+        to={detailTo}
+        className="absolute inset-0 z-10 rounded-lg"
+      />
       <Card className="h-full rounded-lg py-0 transition duration-300 group-hover/card:-translate-y-0.5 group-hover/card:shadow-xl">
         <div className="relative aspect-[2/3] overflow-hidden rounded-t-lg bg-muted">
           <img
@@ -210,6 +216,25 @@ function MediaCard({
             className="h-full w-full object-cover transition-transform duration-300 group-hover/card:scale-105"
             loading="lazy"
           />
+          <div className="absolute top-2 right-2 z-20">
+            <WatchListButton
+              item={{
+                media_id: item.id,
+                media_type: resolvedMediaType,
+                title: getTitle(item),
+                overview: item.overview,
+                poster_url: getPosterUrl(item),
+                background_image_url: item.backdrop_path
+                  ? `https://image.tmdb.org/t/p/original${item.backdrop_path}`
+                  : undefined,
+                metadata: {
+                  rank,
+                  rating: item.vote_average,
+                  release_year: getReleaseYear(item),
+                },
+              }}
+            />
+          </div>
           <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/45 to-transparent p-2 text-white">
             <Badge className="rounded-md bg-white px-1.5 py-0.5 text-[10px] text-black hover:bg-white">
               #{rank}
@@ -245,7 +270,7 @@ function MediaCard({
           </div>
         </CardContent>
       </Card>
-    </Link>
+    </div>
   )
 }
 

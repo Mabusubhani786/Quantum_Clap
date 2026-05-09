@@ -32,6 +32,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel"
 import { Skeleton } from "@/components/ui/skeleton"
+import { WatchListButton } from "@/components/WatchListButton"
 import { fetchApiData } from "@/service/fetchApiData"
 
 type EndpointConfig = {
@@ -181,6 +182,7 @@ type TmdbListResponse<TItem> = {
 }
 
 const posterBaseUrl = "https://image.tmdb.org/t/p/w342"
+const backdropBaseUrl = "https://image.tmdb.org/t/p/original"
 const fallbackPoster =
   "https://placehold.co/342x513/111111/fafafa?text=No+Poster"
 const fallbackLogo = "https://placehold.co/240x140/111111/fafafa?text=No+Logo"
@@ -248,6 +250,10 @@ function getProfileUrl(path: string | null) {
 
 function getPosterUrl(path: string | null) {
   return path ? `${posterBaseUrl}${path}` : fallbackPoster
+}
+
+function getBackdropUrl(path?: string | null) {
+  return path ? `${backdropBaseUrl}${path}` : undefined
 }
 
 function getLogoUrl(path: string | null) {
@@ -615,9 +621,33 @@ export function MediaDetailPage({
                 </Badge>
               )}
             </div>
-            <CardTitle className="text-2xl sm:text-3xl">
-              {getTitle(detail)}
-            </CardTitle>
+            <div className="flex items-start justify-between gap-3">
+              <CardTitle className="text-2xl sm:text-3xl">
+                {getTitle(detail)}
+              </CardTitle>
+              <WatchListButton
+                className="shrink-0 border-border bg-background text-foreground hover:bg-muted"
+                item={{
+                  media_id: detail.id,
+                  media_type:
+                    detailBasePath === "/anime"
+                      ? "anime"
+                      : detailBasePath === "/series"
+                        ? "tv"
+                        : "movie",
+                  title: getTitle(detail),
+                  overview: detail.overview,
+                  poster_url: getPosterUrl(detail.poster_path ?? null),
+                  background_image_url: getBackdropUrl(detail.backdrop_path),
+                  metadata: {
+                    rating: detail.vote_average,
+                    release_year: getReleaseYear(detail),
+                    status: detail.status,
+                    genres: detail.genres?.map((genre) => genre.name) ?? [],
+                  },
+                }}
+              />
+            </div>
             {detail.tagline && (
               <CardDescription className="text-base">
                 {detail.tagline}
@@ -1422,24 +1452,53 @@ function RelatedMediaSection({
             <CarouselContent className="-ml-3">
               {items.map((item) => (
                 <CarouselItem key={item.id} className="basis-auto pl-3">
-                  <Link
-                    to={
-                      detailBasePath === "/movie"
-                        ? "/movie/$mediaId"
-                        : detailBasePath === "/series"
-                          ? "/series/$mediaId"
-                          : "/anime/$mediaId"
-                    }
-                    params={{ mediaId: String(item.id) }}
-                    className="group block w-[11rem] sm:w-[12rem]"
-                  >
+                  <div className="group relative block w-[11rem] sm:w-[12rem]">
+                    <Link
+                      aria-label={`Open ${getRelatedTitle(item)}`}
+                      to={
+                        detailBasePath === "/movie"
+                          ? "/movie/$mediaId"
+                          : detailBasePath === "/series"
+                            ? "/series/$mediaId"
+                            : "/anime/$mediaId"
+                      }
+                      params={{ mediaId: String(item.id) }}
+                      className="absolute inset-0 z-10 rounded-lg"
+                    />
                     <div className="h-[25rem] overflow-hidden rounded-lg border bg-card transition duration-300 group-hover:-translate-y-0.5 group-hover:shadow-lg sm:h-[26rem]">
+                      <div className="relative">
                       <img
                         src={getPosterUrl(item.poster_path)}
                         alt={`${getRelatedTitle(item)} poster`}
                         className="h-[16.5rem] w-full object-cover sm:h-[18rem]"
                         loading="lazy"
                       />
+                        <div className="absolute top-2 right-2 z-20">
+                          <WatchListButton
+                            item={{
+                              media_id: item.id,
+                              media_type:
+                                detailBasePath === "/anime"
+                                  ? "anime"
+                                  : detailBasePath === "/series"
+                                    ? "tv"
+                                    : "movie",
+                              title: getRelatedTitle(item),
+                              overview: item.overview,
+                              poster_url: getPosterUrl(item.poster_path),
+                              background_image_url: getBackdropUrl(
+                                item.backdrop_path
+                              ),
+                              metadata: {
+                                rating: item.vote_average,
+                                release_year:
+                                  item.release_date?.slice(0, 4) ??
+                                  item.first_air_date?.slice(0, 4),
+                              },
+                            }}
+                          />
+                        </div>
+                      </div>
                       <div className="space-y-2 p-3">
                         <div className="flex items-center justify-between gap-2">
                           <Badge
@@ -1461,7 +1520,7 @@ function RelatedMediaSection({
                         </p>
                       </div>
                     </div>
-                  </Link>
+                  </div>
                 </CarouselItem>
               ))}
               {isLoadingMore && (

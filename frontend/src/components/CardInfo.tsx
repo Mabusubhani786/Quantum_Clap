@@ -4,6 +4,10 @@ import { Link } from "@tanstack/react-router"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card"
+import {
+  WatchListButton,
+  type WatchListMediaInput,
+} from "@/components/WatchListButton"
 import { cn } from "@/lib/utils"
 
 type CardInfoProps = {
@@ -17,6 +21,7 @@ type CardInfoProps = {
   rating?: string
   releaseDate?: string
   detailTo?: string
+  watchListItem?: WatchListMediaInput
   className?: string
 }
 
@@ -31,6 +36,7 @@ export function CardInfo({
   rating,
   releaseDate,
   detailTo,
+  watchListItem,
   className,
 }: CardInfoProps) {
   const card = (
@@ -43,6 +49,11 @@ export function CardInfo({
     >
       <div className="absolute inset-0 -z-10 bg-gradient-to-r from-black via-black/75 to-black/35" />
       <div className="absolute inset-0 -z-10 bg-black/20" />
+      {watchListItem && (
+        <div className="absolute top-3 right-3 z-20">
+          <WatchListButton item={watchListItem} />
+        </div>
+      )}
 
       <CardContent className="grid gap-3 p-3 @[28rem]/card-info:grid-cols-[7.25rem_1fr] @[42rem]/card-info:grid-cols-[8.5rem_1fr] @[58rem]/card-info:grid-cols-[10rem_1fr] @[28rem]/card-info:p-4">
         <CardContainer
@@ -121,8 +132,13 @@ export function CardInfo({
   }
 
   return (
-    <Link to={detailTo} className="block h-full min-w-0">
+    <div className="relative block h-full min-w-0">
+      <Link
+        aria-label={`Open ${title}`}
+        to={detailTo}
+        className="absolute inset-0 z-10 rounded-lg"
+      />
       {card}
-    </Link>
+    </div>
   )
 }

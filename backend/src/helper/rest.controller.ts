@@ -12,6 +12,11 @@ interface HttpError extends Error {
   details?: unknown;
 }
 
+interface MongoDuplicateKeyError extends Error {
+  code: 11000;
+  keyValue?: Record<string, unknown>;
+}
+
 export interface RestControllerConfig {
   tableName: string;
   schema: string;
@@ -28,6 +33,16 @@ const isHttpError = (error: unknown): error is HttpError => {
   }
 
   return typeof (error as Partial<HttpError>).statusCode === "number";
+};
+
+const isMongoDuplicateKeyError = (
+  error: unknown
+): error is MongoDuplicateKeyError => {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  return (error as Partial<MongoDuplicateKeyError>).code === 11000;
 };
 
 const createHttpError = (
@@ -467,6 +482,15 @@ export default abstract class RestController<
           formatFailResponse({
             message: "Validation failed",
             data: [error.errors],
+          })
+        );
+      }
+
+      if (isMongoDuplicateKeyError(error)) {
+        return reply.code(409).send(
+          formatFailResponse({
+            message: "Duplicate record",
+            data: error.keyValue ? [error.keyValue] : [],
           })
         );
       }

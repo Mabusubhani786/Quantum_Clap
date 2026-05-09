@@ -315,6 +315,19 @@ export function MediaCatalogPage({
               rating={formatRating(item.vote_average)}
               releaseDate={getReleaseYear(item)}
               detailTo={`${detailBasePath}/${item.id}`}
+              watchListItem={{
+                media_id: item.id,
+                media_type: detailBasePath === "/anime" ? "anime" : mediaType,
+                title: getTitle(item),
+                overview: item.overview,
+                poster_url: getPosterUrl(item),
+                background_image_url: getBackdropUrl(item),
+                metadata: {
+                  rating: item.vote_average,
+                  release_year: getReleaseYear(item),
+                  genres: getGenreNames(item, mediaType, genreMaps),
+                },
+              }}
             />
           ))}
         </div>

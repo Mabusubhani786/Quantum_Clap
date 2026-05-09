@@ -69,6 +69,13 @@ type NavItem = {
   to: "/home" | "/movie" | "/series" | "/anime"
 }
 
+type SessionUser = {
+  first_name?: string
+  last_name?: string
+  user_name?: string
+  email?: string
+}
+
 const navItems: NavItem[] = [
   { label: "Home", to: "/home" },
   { label: "Movies", to: "/movie" },
@@ -77,6 +84,23 @@ const navItems: NavItem[] = [
 ]
 
 const endpoints = apiEndPoints as ApiEndpoints
+
+function getSessionUser(): SessionUser | null {
+  try {
+    const storedUser = sessionStorage.getItem("user")
+    return storedUser ? (JSON.parse(storedUser) as SessionUser) : null
+  } catch {
+    return null
+  }
+}
+
+function getUserInitials(user: SessionUser | null) {
+  const firstInitial = user?.first_name?.trim().charAt(0)
+  const lastInitial = user?.last_name?.trim().charAt(0)
+  const fallbackInitial = user?.user_name?.trim().charAt(0) ?? "U"
+
+  return `${firstInitial ?? fallbackInitial}${lastInitial ?? ""}`.toUpperCase()
+}
 
 const routeLabels: Record<string, string> = {
   home: "Home",
@@ -143,11 +167,7 @@ function getSearchCopy(scope: SearchScope) {
 
 function getSearchPlaceholders(pathname: string, scope: SearchScope) {
   if (pathname.startsWith("/anime")) {
-    return [
-      "Search anime titles",
-      "Try: Attack on Titan",
-      "Try: Demon Slayer",
-    ]
+    return ["Search anime titles", "Try: Attack on Titan", "Try: Demon Slayer"]
   }
 
   if (pathname.startsWith("/movie")) {
@@ -431,7 +451,12 @@ function HeaderSearch({ className }: { className?: string }) {
 
 export function HeaderLayout() {
   const [hasScrolled, setHasScrolled] = useState(false)
+  const [sessionUser, setSessionUser] = useState<SessionUser | null>(null)
   const breadcrumbItems = useBreadcrumbItems()
+
+  useEffect(() => {
+    setSessionUser(getSessionUser())
+  }, [])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -492,10 +517,7 @@ export function HeaderLayout() {
           <Breadcrumb className="hidden min-w-0 items-center text-sm text-white/45 md:flex">
             <BreadcrumbList className="min-w-0 flex-nowrap gap-1 text-white/45">
               <BreadcrumbItem>
-                <BreadcrumbLink
-                  asChild
-                  className="hover:text-white"
-                >
+                <BreadcrumbLink asChild className="hover:text-white">
                   <Link to="/home">Quantum Clap</Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
@@ -560,6 +582,14 @@ export function HeaderLayout() {
             </NavigationMenuList>
             <NavigationMenuIndicator />
           </NavigationMenu>
+
+          <Link
+            to="/profile"
+            aria-label="Open profile"
+            className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--header-control-border)] bg-[var(--header-control-bg)] text-sm font-semibold text-white shadow-inner transition hover:border-white/25 hover:bg-[var(--header-control-hover-bg)]"
+          >
+            {getUserInitials(sessionUser)}
+          </Link>
         </div>
 
         <HeaderSearch className="block w-full md:hidden" />

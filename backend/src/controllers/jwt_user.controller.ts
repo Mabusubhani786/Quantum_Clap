@@ -13,7 +13,9 @@ import {
 } from "@/helper/response-formatter.ts";
 
 interface JwtUserTokenRequestBody {
-  user_name: string;
+  login?: string;
+  user_name?: string;
+  email?: string;
   password: string;
 }
 
@@ -56,19 +58,25 @@ class JwtUserController {
     reply: FastifyReply
   ) => {
     try {
-      const userName = request.body?.user_name?.trim();
+      const login = (
+        request.body?.login ??
+        request.body?.user_name ??
+        request.body?.email ??
+        ""
+      ).trim();
       const password = request.body?.password;
 
-      if (!userName || !password) {
+      if (!login || !password) {
         return reply.code(400).send(
           formatFailResponse({
-            message: "user_name and password are required",
+            message: "user_name or email and password are required",
           })
         );
       }
 
+      const normalizedLogin = login.toLowerCase();
       const user = await User.findOne({
-        user_name: userName,
+        $or: [{ user_name: login }, { email: normalizedLogin }],
         is_active: true,
       })
         .lean<UserRecord>()

@@ -7,6 +7,17 @@ const DEFAULT_PORT = 4000;
 
 const start = async () => {
   await connectDB();
+
+  server.addHook("onRequest", async (request, reply) => {
+    reply.header("Access-Control-Allow-Origin", "*");
+    reply.header("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+    reply.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+    if (request.method === "OPTIONS") {
+      return reply.code(204).send();
+    }
+  });
+
   await registerRoutes(server);
   const port = Number(process.env.PORT) || DEFAULT_PORT;
 
