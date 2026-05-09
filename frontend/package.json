@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "vite build && tsc -b",
     "lint": "eslint .",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit",
@@ -14,7 +14,7 @@
   "dependencies": {
     "@fontsource-variable/inter": "^5.2.8",
     "@tailwindcss/vite": "^4.2.1",
-    "@tanstack/react-router": "^1.168.23",
+    "@tanstack/react-router": "^1.169.2",
     "@tanstack/react-router-devtools": "^1.166.13",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

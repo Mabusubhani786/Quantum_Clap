@@ -10,8 +10,11 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as _mainLayoutRouteImport } from './routes/__mainLayout'
-import { Route as _mainLayoutIndexRouteImport } from './routes/__mainLayout/index'
+import { Route as _authLayoutRouteImport } from './routes/__authLayout'
+import { Route as _authLayoutIndexRouteImport } from './routes/__authLayout/index'
 import { Route as _mainLayoutHomeRouteImport } from './routes/__mainLayout/home'
+import { Route as _authLayoutSignUpRouteImport } from './routes/__authLayout/sign-up'
+import { Route as _authLayoutSignInRouteImport } from './routes/__authLayout/sign-in'
 import { Route as _mainLayoutSeriesIndexRouteImport } from './routes/__mainLayout/series/index'
 import { Route as _mainLayoutMovieIndexRouteImport } from './routes/__mainLayout/movie/index'
 import { Route as _mainLayoutAnimeIndexRouteImport } from './routes/__mainLayout/anime/index'
@@ -27,15 +30,29 @@ const _mainLayoutRoute = _mainLayoutRouteImport.update({
   id: '/__mainLayout',
   getParentRoute: () => rootRouteImport,
 } as any)
-const _mainLayoutIndexRoute = _mainLayoutIndexRouteImport.update({
+const _authLayoutRoute = _authLayoutRouteImport.update({
+  id: '/__authLayout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const _authLayoutIndexRoute = _authLayoutIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => _mainLayoutRoute,
+  getParentRoute: () => _authLayoutRoute,
 } as any)
 const _mainLayoutHomeRoute = _mainLayoutHomeRouteImport.update({
   id: '/home',
   path: '/home',
   getParentRoute: () => _mainLayoutRoute,
+} as any)
+const _authLayoutSignUpRoute = _authLayoutSignUpRouteImport.update({
+  id: '/sign-up',
+  path: '/sign-up',
+  getParentRoute: () => _authLayoutRoute,
+} as any)
+const _authLayoutSignInRoute = _authLayoutSignInRouteImport.update({
+  id: '/sign-in',
+  path: '/sign-in',
+  getParentRoute: () => _authLayoutRoute,
 } as any)
 const _mainLayoutSeriesIndexRoute = _mainLayoutSeriesIndexRouteImport.update({
   id: '/series/',
@@ -94,7 +111,9 @@ const _mainLayoutAnimeMediaIdOverviewRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof _mainLayoutIndexRoute
+  '/': typeof _authLayoutIndexRoute
+  '/sign-in': typeof _authLayoutSignInRoute
+  '/sign-up': typeof _authLayoutSignUpRoute
   '/home': typeof _mainLayoutHomeRoute
   '/anime/$mediaId': typeof _mainLayoutAnimeMediaIdRouteWithChildren
   '/company/$companyId': typeof _mainLayoutCompanyCompanyIdRoute
@@ -108,8 +127,10 @@ export interface FileRoutesByFullPath {
   '/series/$mediaId/overview': typeof _mainLayoutSeriesMediaIdOverviewRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof _authLayoutIndexRoute
+  '/sign-in': typeof _authLayoutSignInRoute
+  '/sign-up': typeof _authLayoutSignUpRoute
   '/home': typeof _mainLayoutHomeRoute
-  '/': typeof _mainLayoutIndexRoute
   '/anime/$mediaId': typeof _mainLayoutAnimeMediaIdRouteWithChildren
   '/company/$companyId': typeof _mainLayoutCompanyCompanyIdRoute
   '/movie/$mediaId': typeof _mainLayoutMovieMediaIdRoute
@@ -123,9 +144,12 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/__authLayout': typeof _authLayoutRouteWithChildren
   '/__mainLayout': typeof _mainLayoutRouteWithChildren
+  '/__authLayout/sign-in': typeof _authLayoutSignInRoute
+  '/__authLayout/sign-up': typeof _authLayoutSignUpRoute
   '/__mainLayout/home': typeof _mainLayoutHomeRoute
-  '/__mainLayout/': typeof _mainLayoutIndexRoute
+  '/__authLayout/': typeof _authLayoutIndexRoute
   '/__mainLayout/anime/$mediaId': typeof _mainLayoutAnimeMediaIdRouteWithChildren
   '/__mainLayout/company/$companyId': typeof _mainLayoutCompanyCompanyIdRoute
   '/__mainLayout/movie/$mediaId': typeof _mainLayoutMovieMediaIdRoute
@@ -141,6 +165,8 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/sign-in'
+    | '/sign-up'
     | '/home'
     | '/anime/$mediaId'
     | '/company/$companyId'
@@ -154,8 +180,10 @@ export interface FileRouteTypes {
     | '/series/$mediaId/overview'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/home'
     | '/'
+    | '/sign-in'
+    | '/sign-up'
+    | '/home'
     | '/anime/$mediaId'
     | '/company/$companyId'
     | '/movie/$mediaId'
@@ -168,9 +196,12 @@ export interface FileRouteTypes {
     | '/series/$mediaId/overview'
   id:
     | '__root__'
+    | '/__authLayout'
     | '/__mainLayout'
+    | '/__authLayout/sign-in'
+    | '/__authLayout/sign-up'
     | '/__mainLayout/home'
-    | '/__mainLayout/'
+    | '/__authLayout/'
     | '/__mainLayout/anime/$mediaId'
     | '/__mainLayout/company/$companyId'
     | '/__mainLayout/movie/$mediaId'
@@ -184,6 +215,7 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  _authLayoutRoute: typeof _authLayoutRouteWithChildren
   _mainLayoutRoute: typeof _mainLayoutRouteWithChildren
 }
 
@@ -196,12 +228,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof _mainLayoutRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/__mainLayout/': {
-      id: '/__mainLayout/'
+    '/__authLayout': {
+      id: '/__authLayout'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof _authLayoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/__authLayout/': {
+      id: '/__authLayout/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof _mainLayoutIndexRouteImport
-      parentRoute: typeof _mainLayoutRoute
+      preLoaderRoute: typeof _authLayoutIndexRouteImport
+      parentRoute: typeof _authLayoutRoute
     }
     '/__mainLayout/home': {
       id: '/__mainLayout/home'
@@ -209,6 +248,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/home'
       preLoaderRoute: typeof _mainLayoutHomeRouteImport
       parentRoute: typeof _mainLayoutRoute
+    }
+    '/__authLayout/sign-up': {
+      id: '/__authLayout/sign-up'
+      path: '/sign-up'
+      fullPath: '/sign-up'
+      preLoaderRoute: typeof _authLayoutSignUpRouteImport
+      parentRoute: typeof _authLayoutRoute
+    }
+    '/__authLayout/sign-in': {
+      id: '/__authLayout/sign-in'
+      path: '/sign-in'
+      fullPath: '/sign-in'
+      preLoaderRoute: typeof _authLayoutSignInRouteImport
+      parentRoute: typeof _authLayoutRoute
     }
     '/__mainLayout/series/': {
       id: '/__mainLayout/series/'
@@ -283,6 +336,22 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface _authLayoutRouteChildren {
+  _authLayoutSignInRoute: typeof _authLayoutSignInRoute
+  _authLayoutSignUpRoute: typeof _authLayoutSignUpRoute
+  _authLayoutIndexRoute: typeof _authLayoutIndexRoute
+}
+
+const _authLayoutRouteChildren: _authLayoutRouteChildren = {
+  _authLayoutSignInRoute: _authLayoutSignInRoute,
+  _authLayoutSignUpRoute: _authLayoutSignUpRoute,
+  _authLayoutIndexRoute: _authLayoutIndexRoute,
+}
+
+const _authLayoutRouteWithChildren = _authLayoutRoute._addFileChildren(
+  _authLayoutRouteChildren,
+)
+
 interface _mainLayoutAnimeMediaIdRouteChildren {
   _mainLayoutAnimeMediaIdOverviewRoute: typeof _mainLayoutAnimeMediaIdOverviewRoute
 }
@@ -314,7 +383,6 @@ const _mainLayoutSeriesMediaIdRouteWithChildren =
 
 interface _mainLayoutRouteChildren {
   _mainLayoutHomeRoute: typeof _mainLayoutHomeRoute
-  _mainLayoutIndexRoute: typeof _mainLayoutIndexRoute
   _mainLayoutAnimeMediaIdRoute: typeof _mainLayoutAnimeMediaIdRouteWithChildren
   _mainLayoutCompanyCompanyIdRoute: typeof _mainLayoutCompanyCompanyIdRoute
   _mainLayoutMovieMediaIdRoute: typeof _mainLayoutMovieMediaIdRoute
@@ -327,7 +395,6 @@ interface _mainLayoutRouteChildren {
 
 const _mainLayoutRouteChildren: _mainLayoutRouteChildren = {
   _mainLayoutHomeRoute: _mainLayoutHomeRoute,
-  _mainLayoutIndexRoute: _mainLayoutIndexRoute,
   _mainLayoutAnimeMediaIdRoute: _mainLayoutAnimeMediaIdRouteWithChildren,
   _mainLayoutCompanyCompanyIdRoute: _mainLayoutCompanyCompanyIdRoute,
   _mainLayoutMovieMediaIdRoute: _mainLayoutMovieMediaIdRoute,
@@ -343,6 +410,7 @@ const _mainLayoutRouteWithChildren = _mainLayoutRoute._addFileChildren(
 )
 
 const rootRouteChildren: RootRouteChildren = {
+  _authLayoutRoute: _authLayoutRouteWithChildren,
   _mainLayoutRoute: _mainLayoutRouteWithChildren,
 }
 export const routeTree = rootRouteImport
