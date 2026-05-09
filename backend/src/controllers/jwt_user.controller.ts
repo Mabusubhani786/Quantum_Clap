@@ -27,10 +27,27 @@ interface JwtUserRevokeRequestBody {
 }
 
 type UserRecord = IUser & { _id: mongoose.Types.ObjectId };
+type DuplicateKeyError = {
+  code?: number;
+  keyPattern?: Record<string, number>;
+};
 
 const sanitizeUserRecord = (user: Record<string, unknown>) => {
   const { password, ...safeUser } = user;
   return safeUser;
+};
+
+const getErrorMessage = (error: unknown): string => {
+  if (error instanceof Error && typeof error.message === "string") {
+    return error.message;
+  }
+
+  return "Unexpected error";
+};
+
+const isDuplicateKeyError = (error: unknown): boolean => {
+  const candidate = error as DuplicateKeyError | undefined;
+  return candidate?.code === 11000;
 };
 
 class JwtUserController {
@@ -74,35 +91,26 @@ class JwtUserController {
         );
       }
 
-      const fullUserRecord = await User.findById(user._id).lean<UserRecord>().exec();
-      if (!fullUserRecord) {
-        return reply.code(404).send(
-          formatFailResponse({
-            message: "User not found",
-          })
-        );
-      }
-
       const userSnapshot = sanitizeUserRecord(
-        fullUserRecord as unknown as Record<string, unknown>
+        user as unknown as Record<string, unknown>
       );
-      const userId = String(fullUserRecord._id);
+      const userId = String(user._id);
 
       const accessToken = generateAccessToken({
         sub: userId,
-        user_name: fullUserRecord.user_name,
+        user_name: user.user_name,
         user_data: userSnapshot,
       });
       const refreshToken = generateRefreshToken({
         sub: userId,
-        user_name: fullUserRecord.user_name,
+        user_name: user.user_name,
       });
 
       const deviceInfo = String(request.headers["user-agent"] ?? "");
       const ipAddress = request.ip;
 
       await JwtAuth.create({
-        user_id: fullUserRecord._id,
+        user_id: user._id,
         user_data: userSnapshot,
         access_token: accessToken.token,
         refresh_token: refreshToken.token,
@@ -111,8 +119,8 @@ class JwtUserController {
         is_revoked: false,
         device_info: deviceInfo,
         ip_address: ipAddress,
-        created_by: fullUserRecord.user_name,
-        updated_by: fullUserRecord.user_name,
+        created_by: user.user_name,
+        updated_by: user.user_name,
       });
 
       return reply.send(
@@ -127,7 +135,25 @@ class JwtUserController {
           },
         })
       );
-    } catch {
+    } catch (error) {
+      const errorMessage = getErrorMessage(error);
+
+      if (errorMessage.includes("JWT_SECRET env var is required")) {
+        return reply.code(500).send(
+          formatFailResponse({
+            message: "Server configuration error: JWT_SECRET is missing",
+          })
+        );
+      }
+
+      if (isDuplicateKeyError(error)) {
+        return reply.code(409).send(
+          formatFailResponse({
+            message: "Token session already exists. Please retry.",
+          })
+        );
+      }
+
       return reply.code(500).send(
         formatFailResponse({
           message: "Unable to generate token",
