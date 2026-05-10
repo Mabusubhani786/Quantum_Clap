@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router"
 import { CalendarDays, LockKeyhole, Mail, UserRound } from "lucide-react"
 
 import backendApiEndPoints from "@/api-fetch-endpoints/backendApiEndPoints.json"
+import { UserMediaSections } from "@/components/UserMediaSections"
 import {
   Accordion,
   AccordionContent,
@@ -379,6 +380,8 @@ function RouteComponent() {
             </CardContent>
           </Card>
         </div>
+
+        <UserMediaSections className="mt-8 space-y-8" />
       </section>
     </main>
   )

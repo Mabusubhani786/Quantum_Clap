@@ -1,11 +1,31 @@
 import { useEffect, useMemo, useState } from "react"
-import { createFileRoute, Outlet } from "@tanstack/react-router"
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router"
+import { toast } from "sonner"
 
 import apiEndPoints from "@/api-fetch-endpoints/apiEndPoints.json"
 import { ThreeDMarquee } from "@/components/ui/3d-marquee"
+import {
+  clearAuthSession,
+  hasAccessToken,
+  isAccessTokenValid,
+} from "@/lib/auth-session"
 import { fetchApiData, type HttpMethod } from "@/service/fetchApiData"
 
 export const Route = createFileRoute("/__authLayout")({
+  beforeLoad: ({ location }) => {
+    if (isAccessTokenValid()) {
+      throw redirect({ to: "/home" })
+    }
+
+    if (hasAccessToken()) {
+      clearAuthSession()
+      toast.error("Session expired. Please sign in again.")
+    }
+
+    if (location.pathname !== "/sign-in") {
+      throw redirect({ to: "/sign-in" })
+    }
+  },
   component: RouteComponent,
 })
 

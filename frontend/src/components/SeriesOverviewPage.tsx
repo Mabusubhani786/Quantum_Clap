@@ -347,7 +347,7 @@ export function SeriesOverviewPage({
 
   return (
     <section className="-mx-2 -mt-6 bg-background sm:-mx-3">
-      <section className="relative isolate min-h-[40rem] overflow-hidden bg-black text-white">
+      <section className="relative isolate min-h-[min(58rem,100svh)] overflow-hidden bg-black text-white sm:min-h-[44rem] lg:min-h-[40rem]">
         {activeBackdrop && (
           <img
             src={activeBackdrop}
@@ -358,41 +358,41 @@ export function SeriesOverviewPage({
         <div className="absolute inset-0 -z-10 bg-black/35" />
         <div className="absolute inset-x-0 bottom-0 -z-10 h-40 bg-gradient-to-t from-background to-transparent" />
 
-        <div className="mx-auto grid min-h-[40rem] max-w-7xl gap-8 px-3 pb-10 pt-28 sm:px-4 lg:grid-cols-[18rem_minmax(0,1fr)] lg:items-end lg:pt-32">
+        <div className="mx-auto grid min-h-[min(58rem,100svh)] max-w-7xl content-end gap-6 px-5 pt-56 pb-36 sm:min-h-[44rem] sm:px-5 sm:pt-36 sm:pb-24 md:pt-32 lg:min-h-[40rem] lg:grid-cols-[18rem_minmax(0,1fr)] lg:items-end lg:px-4 lg:pt-32 lg:pb-20">
           <img
             src={getPosterUrl(detail.poster_path)}
             alt={getTitle(detail)}
             className="hidden aspect-[2/3] w-full rounded-lg border border-white/15 object-cover shadow-2xl shadow-black/50 lg:block"
           />
 
-          <div className="max-w-4xl space-y-5">
-            <div className="flex flex-wrap gap-2">
-              <Badge className="rounded-md border border-white/15 bg-white/12 text-white hover:bg-white/12">
+          <div className="max-w-4xl space-y-4 sm:space-y-5 lg:pb-4">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2">
+              <Badge className="rounded-md border border-white/15 bg-white/12 text-xs text-white hover:bg-white/12 sm:text-sm">
                 {mediaLabel}
               </Badge>
-              <Badge className="rounded-md border border-white/15 bg-white/12 text-white hover:bg-white/12">
+              <Badge className="rounded-md border border-white/15 bg-white/12 text-xs text-white hover:bg-white/12 sm:text-sm">
                 {detail.number_of_seasons ?? seasons.length} seasons
               </Badge>
-              <Badge className="rounded-md border border-white/15 bg-white/12 text-white hover:bg-white/12">
+              <Badge className="rounded-md border border-white/15 bg-white/12 text-xs text-white hover:bg-white/12 sm:text-sm">
                 {detail.number_of_episodes ?? 0} episodes
               </Badge>
             </div>
 
             <div>
-              <h1 className="max-w-3xl text-5xl font-bold leading-none sm:text-7xl">
+              <h1 className="max-w-3xl text-[clamp(3rem,14vw,5.75rem)] font-bold leading-[0.92] sm:text-7xl sm:leading-none">
                 {getTitle(detail)}
               </h1>
               {getOriginalTitle(detail) && (
-                <p className="mt-3 text-base font-medium text-white/62">
+                <p className="mt-2 text-sm font-medium text-white/62 sm:mt-3 sm:text-base">
                   Original: {getOriginalTitle(detail)}
                 </p>
               )}
-              <p className="mt-3 text-lg text-white/70">
+              <p className="mt-3 line-clamp-2 max-w-2xl text-base leading-6 text-white/74 sm:line-clamp-3 sm:text-lg sm:leading-7">
                 {detail.tagline || detail.overview || "Overview is not available yet."}
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3 text-sm">
+            <div className="flex flex-wrap items-center gap-2 text-sm sm:gap-3">
               <span className="inline-flex items-center gap-1.5 rounded-md bg-white px-2 py-1 font-bold text-black">
                 <Star className="h-4 w-4 fill-yellow-400 text-yellow-500" />
                 {formatRating(detail.vote_average)}
@@ -407,11 +407,11 @@ export function SeriesOverviewPage({
             </div>
 
             {detail.genres && detail.genres.length > 0 && (
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5 sm:gap-2">
                 {detail.genres.map((genre) => (
                   <Badge
                     key={genre.id}
-                    className="rounded-md border border-white/15 bg-white/10 text-white hover:bg-white/10"
+                    className="rounded-md border border-white/15 bg-white/10 text-xs text-white hover:bg-white/10 sm:text-sm"
                   >
                     {genre.name}
                   </Badge>
@@ -422,7 +422,7 @@ export function SeriesOverviewPage({
             <CreatorList creators={detail.created_by ?? []} />
 
             <div className="flex flex-wrap gap-2">
-              <Button asChild className="rounded-md bg-white text-black hover:bg-white/90">
+              <Button asChild className="h-10 rounded-md bg-white px-4 text-sm text-black hover:bg-white/90">
                 <Link
                   to={
                     detailBasePath === "/anime"
@@ -440,7 +440,7 @@ export function SeriesOverviewPage({
         </div>
 
         {heroSlides.length > 1 && (
-          <div className="absolute bottom-5 right-4 flex gap-2">
+          <div className="absolute right-5 bottom-8 left-5 flex justify-center gap-2 sm:right-4 sm:bottom-6 sm:left-auto sm:justify-end">
             {heroSlides.map((slide, slideIndex) => (
               <button
                 key={slide}
@@ -537,7 +537,7 @@ function CreatorList({ creators }: { creators: TmdbCreator[] }) {
   }
 
   return (
-    <div className="flex max-w-full gap-3 overflow-x-auto pb-1">
+    <div className="flex max-w-full gap-2 overflow-x-auto pb-1 sm:gap-3">
       {creators.map((creator) => {
         const profileUrl = getProfileUrl(creator.profile_path)
 
@@ -546,7 +546,7 @@ function CreatorList({ creators }: { creators: TmdbCreator[] }) {
             key={creator.id}
             to="/person/$personId"
             params={{ personId: String(creator.id) }}
-            className="flex min-w-48 items-center gap-3 rounded-lg border border-white/12 bg-white/10 p-2 backdrop-blur-md"
+            className="flex min-w-[14rem] max-w-full items-center gap-3 rounded-lg border border-white/12 bg-white/10 p-2 backdrop-blur-md sm:min-w-48"
           >
             {profileUrl ? (
               <img

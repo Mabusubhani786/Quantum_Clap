@@ -1,9 +1,39 @@
-import { createFileRoute, Outlet, useRouterState } from "@tanstack/react-router"
+import {
+  createFileRoute,
+  Outlet,
+  redirect,
+  useRouterState,
+} from "@tanstack/react-router"
+import { toast } from "sonner"
 
 import { HeroSection } from "@/components/HeroSection"
 import { HeaderLayout } from "@/layout/headerLayout"
+import {
+  clearAuthSession,
+  hasAccessToken,
+  isAccessTokenValid,
+} from "@/lib/auth-session"
 
 export const Route = createFileRoute("/__mainLayout")({
+  beforeLoad: ({ location }) => {
+    if (isAccessTokenValid()) {
+      if (location.pathname === "/") {
+        throw redirect({ to: "/home" })
+      }
+
+      return
+    }
+
+    if (hasAccessToken()) {
+      toast.error("Session expired. Please sign in again.")
+    } else {
+      toast.error("Please sign in to continue.")
+    }
+    clearAuthSession()
+    throw redirect({
+      to: "/sign-in",
+    })
+  },
   component: RouteComponent,
 })
 

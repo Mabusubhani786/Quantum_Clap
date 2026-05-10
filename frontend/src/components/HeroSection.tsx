@@ -693,7 +693,7 @@ export function HeroSection() {
 
   return (
     <section className="relative isolate overflow-hidden bg-[#050505] text-white">
-      <div className="relative min-h-[clamp(40rem,82vh,56rem)] sm:min-h-[clamp(36rem,76vh,54rem)]">
+      <div className="relative min-h-[clamp(48rem,100svh,62rem)] sm:min-h-[clamp(42rem,88vh,58rem)] lg:min-h-[clamp(36rem,76vh,54rem)]">
         {activeVideo && (
           <iframe
             key={activeVideo.key}
@@ -707,28 +707,28 @@ export function HeroSection() {
 
         <div className="absolute inset-0 -z-10 bg-black/18" />
 
-        <div className="mx-auto flex min-h-[clamp(40rem,82vh,56rem)] w-full items-end px-3 pb-8 sm:min-h-[clamp(36rem,76vh,54rem)] sm:px-4 lg:pb-12">
-          <div className="grid w-full min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,24rem)] lg:items-end xl:gap-8">
+        <div className="mx-auto flex min-h-[clamp(48rem,100svh,62rem)] w-full items-end px-3 pt-40 pb-7 sm:min-h-[clamp(42rem,88vh,58rem)] sm:px-4 sm:pt-32 lg:min-h-[clamp(36rem,76vh,54rem)] lg:pt-28 lg:pb-12">
+          <div className="grid w-full min-w-0 gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,24rem)] lg:items-end xl:gap-8">
             {!activeItem ? (
               <HeroFeatureSkeleton />
             ) : (
-              <div className="max-w-3xl space-y-5">
-                <Badge className="gap-2 rounded-md border-white/12 bg-white/[0.1] px-3 py-1 text-sm font-medium text-white shadow-inner hover:bg-white/[0.1]">
+              <div className="max-w-3xl space-y-4 sm:space-y-5">
+                <Badge className="gap-2 rounded-md border-white/12 bg-white/[0.1] px-2.5 py-1 text-xs font-medium text-white shadow-inner hover:bg-white/[0.1] sm:px-3 sm:text-sm">
                   <Play className="h-4 w-4 fill-current" />
                   {activeVideo ? "Now playing trailer" : "Featured preview"}
                 </Badge>
 
-                <div className="space-y-3">
-                  <h1 className="max-w-3xl text-3xl leading-tight font-bold sm:text-5xl lg:text-6xl">
+                <div className="space-y-2 sm:space-y-3">
+                  <h1 className="max-w-3xl text-[clamp(2.25rem,11vw,4rem)] leading-[0.95] font-bold sm:text-5xl sm:leading-tight lg:text-6xl">
                     {getTitle(activeItem)}
                   </h1>
-                  <p className="line-clamp-3 max-w-2xl text-base leading-7 text-white/80 sm:text-lg">
+                  <p className="line-clamp-2 max-w-2xl text-sm leading-6 text-white/80 sm:line-clamp-3 sm:text-lg sm:leading-7">
                     {activeItem.overview || "No description available yet."}
                   </p>
                 </div>
 
-                <div className="flex flex-wrap gap-2">
-                  <Badge variant="secondary" className="gap-1 rounded-md">
+                <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                  <Badge variant="secondary" className="gap-1 rounded-md text-xs sm:text-sm">
                     {activeMediaType === "tv" ? (
                       <Clapperboard className="h-3.5 w-3.5" />
                     ) : (
@@ -736,18 +736,18 @@ export function HeroSection() {
                     )}
                     {activeMediaType === "tv" ? "Series" : "Movie"}
                   </Badge>
-                  <Badge variant="secondary" className="gap-1 rounded-md">
+                  <Badge variant="secondary" className="gap-1 rounded-md text-xs sm:text-sm">
                     <Star className="h-3.5 w-3.5 fill-current" />
                     {formatRating(activeItem.vote_average)}
                   </Badge>
-                  <Badge variant="secondary" className="gap-1 rounded-md">
+                  <Badge variant="secondary" className="gap-1 rounded-md text-xs sm:text-sm">
                     <CalendarDays className="h-3.5 w-3.5" />
                     {getReleaseYear(activeItem)}
                   </Badge>
                   {activeGenres.map((genre) => (
                     <Badge
                       key={genre}
-                      className="rounded-md bg-white/12 text-white hover:bg-white/12"
+                      className="rounded-md bg-white/12 text-xs text-white hover:bg-white/12 sm:text-sm"
                     >
                       {genre}
                     </Badge>
@@ -755,7 +755,7 @@ export function HeroSection() {
                 </div>
 
                 {activeMediaType === "tv" && (
-                  <div className="grid max-w-3xl gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                  <div className="grid max-w-3xl grid-cols-2 gap-2 lg:grid-cols-4">
                     <HeroAirInfo
                       label="First aired"
                       value={formatAirDate(activeItem.first_air_date)}
@@ -995,13 +995,17 @@ function HeroAirInfo({
   detail: string
 }) {
   return (
-    <div className="rounded-lg border border-white/10 bg-black/24 p-3 shadow-lg shadow-black/10 backdrop-blur-sm">
-      <div className="mb-1 flex items-center gap-2 text-[0.7rem] font-medium uppercase text-white/54">
-        <Radio className="h-3.5 w-3.5" />
+    <div className="min-w-0 rounded-lg border border-white/10 bg-black/24 p-2.5 shadow-lg shadow-black/10 backdrop-blur-sm sm:p-3">
+      <div className="mb-1 flex min-w-0 items-center gap-1.5 text-[0.62rem] font-medium uppercase text-white/54 sm:gap-2 sm:text-[0.7rem]">
+        <Radio className="h-3 w-3 shrink-0 sm:h-3.5 sm:w-3.5" />
         {label}
       </div>
-      <p className="line-clamp-1 text-sm font-semibold text-white">{value}</p>
-      <p className="line-clamp-1 text-xs text-white/62">{detail}</p>
+      <p className="line-clamp-1 text-sm font-semibold text-white sm:text-sm">
+        {value}
+      </p>
+      <p className="line-clamp-1 text-[0.72rem] text-white/62 sm:text-xs">
+        {detail}
+      </p>
     </div>
   )
 }

@@ -5,10 +5,12 @@ import {
   useState,
   type CSSProperties,
 } from "react"
-import { Building2, Film, Search, Tv, UserRound } from "lucide-react"
-import { Link, useRouterState } from "@tanstack/react-router"
+import { Building2, Film, LogOut, Search, Tv, UserRound } from "lucide-react"
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router"
+import { toast } from "sonner"
 
 import apiEndPoints from "@/api-fetch-endpoints/apiEndPoints.json"
+import backendApiEndPoints from "@/api-fetch-endpoints/backendApiEndPoints.json"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -17,6 +19,14 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import {
   NavigationMenu,
@@ -25,7 +35,9 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
 } from "@/components/ui/navigation-menu"
+import { clearAuthSession } from "@/lib/auth-session"
 import { cn } from "@/lib/utils"
+import { backendApiData } from "@/service/backendApiData"
 import { fetchApiData } from "@/service/fetchApiData"
 
 type EndpointConfig = {
@@ -70,10 +82,18 @@ type NavItem = {
 }
 
 type SessionUser = {
+  _id?: string
+  id?: string
   first_name?: string
   last_name?: string
   user_name?: string
   email?: string
+}
+
+type BackendApiEndPoints = {
+  auth: {
+    revoke: string
+  }
 }
 
 const navItems: NavItem[] = [
@@ -84,6 +104,7 @@ const navItems: NavItem[] = [
 ]
 
 const endpoints = apiEndPoints as ApiEndpoints
+const backendEndpoints = backendApiEndPoints as BackendApiEndPoints
 
 function getSessionUser(): SessionUser | null {
   try {
@@ -450,9 +471,32 @@ function HeaderSearch({ className }: { className?: string }) {
 }
 
 export function HeaderLayout() {
+  const navigate = useNavigate()
   const [hasScrolled, setHasScrolled] = useState(false)
   const [sessionUser, setSessionUser] = useState<SessionUser | null>(null)
   const breadcrumbItems = useBreadcrumbItems()
+
+  const handleLogout = async () => {
+    const accessToken = sessionStorage.getItem("access_token")
+    const currentUser = getSessionUser()
+    const userId = currentUser?._id ?? currentUser?.id
+
+    if (accessToken && userId) {
+      await backendApiData({
+        method: "POST",
+        url: backendEndpoints.auth.revoke,
+        payload: {
+          access_token: accessToken,
+          user_id: userId,
+        },
+      })
+    }
+
+    clearAuthSession()
+    setSessionUser(null)
+    toast.success("Logged out successfully.")
+    await navigate({ to: "/sign-in" })
+  }
 
   useEffect(() => {
     setSessionUser(getSessionUser())
@@ -583,13 +627,41 @@ export function HeaderLayout() {
             <NavigationMenuIndicator />
           </NavigationMenu>
 
-          <Link
-            to="/profile"
-            aria-label="Open profile"
-            className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--header-control-border)] bg-[var(--header-control-bg)] text-sm font-semibold text-white shadow-inner transition hover:border-white/25 hover:bg-[var(--header-control-hover-bg)]"
-          >
-            {getUserInitials(sessionUser)}
-          </Link>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                aria-label="Open account menu"
+                className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--header-control-border)] bg-[var(--header-control-bg)] text-sm font-semibold text-white shadow-inner transition hover:border-white/25 hover:bg-[var(--header-control-hover-bg)] focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:outline-none"
+              >
+                {getUserInitials(sessionUser)}
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              className="w-52 border-white/10 bg-black/92 p-1.5 text-white shadow-2xl shadow-black/35 backdrop-blur-xl"
+            >
+              <DropdownMenuLabel className="px-2 py-2 text-white/55">
+                Account
+              </DropdownMenuLabel>
+              <DropdownMenuItem asChild className="cursor-pointer px-2 py-2">
+                <Link to="/profile">
+                  <UserRound className="size-4" />
+                  Profile
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="bg-white/10" />
+              <DropdownMenuItem
+                className="cursor-pointer px-2 py-2 text-red-300 focus:bg-red-500/12 focus:text-red-200"
+                onClick={() => {
+                  void handleLogout()
+                }}
+              >
+                <LogOut className="size-4" />
+                Logout
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         <HeaderSearch className="block w-full md:hidden" />

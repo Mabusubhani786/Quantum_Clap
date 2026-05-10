@@ -14,6 +14,7 @@ import {
 } from "lucide-react"
 import { Link } from "@tanstack/react-router"
 
+import backendApiEndPoints from "@/api-fetch-endpoints/backendApiEndPoints.json"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -33,6 +34,7 @@ import {
 } from "@/components/ui/carousel"
 import { Skeleton } from "@/components/ui/skeleton"
 import { WatchListButton } from "@/components/WatchListButton"
+import { backendApiData } from "@/service/backendApiData"
 import { fetchApiData } from "@/service/fetchApiData"
 
 type EndpointConfig = {
@@ -181,11 +183,37 @@ type TmdbListResponse<TItem> = {
   results: TItem[]
 }
 
+type BackendApiEndPoints = {
+  recent: {
+    base: string
+  }
+}
+
+type StoredUser = {
+  _id?: string
+  id?: string
+}
+
 const posterBaseUrl = "https://image.tmdb.org/t/p/w342"
 const backdropBaseUrl = "https://image.tmdb.org/t/p/original"
 const fallbackPoster =
   "https://placehold.co/342x513/111111/fafafa?text=No+Poster"
 const fallbackLogo = "https://placehold.co/240x140/111111/fafafa?text=No+Logo"
+const backendEndpoints = backendApiEndPoints as BackendApiEndPoints
+
+function readStoredUser(): StoredUser | null {
+  try {
+    const storedUser = sessionStorage.getItem("user")
+    return storedUser ? (JSON.parse(storedUser) as StoredUser) : null
+  } catch {
+    return null
+  }
+}
+
+function getUserId() {
+  const user = readStoredUser()
+  return user?._id ?? user?.id
+}
 
 function getTitle(item: TmdbDetail) {
   return item.title ?? item.name ?? "Untitled"
@@ -560,6 +588,41 @@ export function MediaDetailPage({
     similarEndpoint.method,
     similarResolvedEndpoint,
   ])
+
+  useEffect(() => {
+    const userId = getUserId()
+
+    if (!userId || !detail) {
+      return
+    }
+
+    void backendApiData({
+      method: "POST",
+      url: backendEndpoints.recent.base,
+      payload: {
+        user_id: userId,
+        media_id: String(detail.id),
+        media_type:
+          detailBasePath === "/anime"
+            ? "anime"
+            : detailBasePath === "/series"
+              ? "tv"
+              : "movie",
+        title: getTitle(detail),
+        overview: detail.overview,
+        poster_url: getPosterUrl(detail.poster_path ?? null),
+        background_image_url: getBackdropUrl(detail.backdrop_path),
+        source: "tmdb",
+        metadata: {
+          rating: detail.vote_average,
+          release_year: getReleaseYear(detail),
+          status: detail.status,
+          genres: detail.genres?.map((genre) => genre.name) ?? [],
+        },
+        is_active: true,
+      },
+    })
+  }, [detail, detailBasePath])
 
   if (loading) {
     return <DetailSkeleton />

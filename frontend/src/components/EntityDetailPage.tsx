@@ -456,41 +456,45 @@ function EntityHero({
   containPoster?: boolean
 }) {
   return (
-    <section className="relative -mx-2 -mt-6 isolate min-h-[34rem] overflow-hidden bg-black text-white sm:-mx-3">
+    <section className="relative -mx-2 -mt-6 isolate min-h-[min(48rem,100svh)] overflow-hidden bg-black text-white sm:-mx-3 lg:min-h-[34rem]">
       <img
         src={imageUrl}
         alt=""
-        className="absolute inset-0 -z-20 h-full w-full object-cover opacity-45 blur-sm scale-105"
+        className="absolute inset-0 -z-20 h-full w-full scale-105 object-cover opacity-45 blur-sm"
       />
       <div className="absolute inset-0 -z-10 bg-black/62" />
-      <div className="flex min-h-[34rem] items-end px-3 pb-8 pt-24 sm:px-4 lg:pb-12">
-        <div className="grid w-full gap-6 lg:grid-cols-[18rem_minmax(0,1fr)] lg:items-end">
-          <div className="overflow-hidden rounded-lg border border-white/12 bg-white/8 p-2 shadow-2xl shadow-black/30 backdrop-blur-sm">
+      <div className="flex min-h-[min(48rem,100svh)] items-end px-5 pt-52 pb-10 sm:px-5 sm:pt-40 lg:min-h-[34rem] lg:px-4 lg:pt-28 lg:pb-12">
+        <div className="grid w-full grid-cols-[6.5rem_minmax(0,1fr)] items-end gap-4 sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-5 lg:grid-cols-[18rem_minmax(0,1fr)] lg:gap-6">
+          <div className="overflow-hidden rounded-lg border border-white/12 bg-white/8 p-1.5 shadow-2xl shadow-black/30 backdrop-blur-sm sm:p-2">
             <img
               src={posterUrl}
               alt={title}
               className={
                 containPoster
-                  ? "h-72 w-full rounded-md object-contain p-6"
-                  : "h-72 w-full rounded-md object-cover"
+                  ? "h-32 w-full rounded-md object-contain p-3 sm:h-52 sm:p-5 lg:h-72 lg:p-6"
+                  : "h-32 w-full rounded-md object-cover object-top sm:h-52 lg:h-72"
               }
             />
           </div>
-          <div className="max-w-4xl space-y-5">
-            <Badge className="rounded-md bg-white/12 text-white hover:bg-white/12">
+          <div className="min-w-0 max-w-4xl space-y-3 sm:space-y-4 lg:space-y-5">
+            <Badge className="rounded-md bg-white/12 text-xs text-white hover:bg-white/12 sm:text-sm">
               {eyebrow}
             </Badge>
-            <div className="space-y-3">
-              <h1 className="text-4xl font-bold leading-tight sm:text-6xl">
+            <div className="space-y-2 sm:space-y-3">
+              <h1 className="text-[clamp(2.1rem,10vw,4rem)] font-bold leading-[0.96] sm:text-5xl lg:text-6xl lg:leading-tight">
                 {title}
               </h1>
-              <p className="line-clamp-4 max-w-3xl text-base leading-7 text-white/76 sm:text-lg">
+              <p className="line-clamp-3 max-w-3xl text-sm leading-6 text-white/76 sm:text-base sm:leading-7 lg:line-clamp-4 lg:text-lg">
                 {description}
               </p>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2">
               {badges.map((badge) => (
-                <Badge key={badge} variant="secondary" className="rounded-md">
+                <Badge
+                  key={badge}
+                  variant="secondary"
+                  className="max-w-full truncate rounded-md text-xs sm:text-sm"
+                >
                   {badge}
                 </Badge>
               ))}

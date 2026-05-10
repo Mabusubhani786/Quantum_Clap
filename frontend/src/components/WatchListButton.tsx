@@ -39,6 +39,7 @@ export type WatchListMediaInput = {
 
 type WatchListButtonProps = {
   item: WatchListMediaInput
+  initialRecord?: WatchListRecord | null
   className?: string
 }
 
@@ -95,12 +96,16 @@ function getResponseRecord(response: BackendResponse<WatchListRecord> | null) {
   return Array.isArray(data) ? data[0] : data
 }
 
-export function WatchListButton({ item, className }: WatchListButtonProps) {
+export function WatchListButton({
+  item,
+  initialRecord,
+  className,
+}: WatchListButtonProps) {
   const userId = getUserId()
   const cacheKey = useMemo(() => getCacheKey(userId, item), [item, userId])
   const cachedRecord = cacheKey ? readWatchListCache()[cacheKey] : undefined
   const [record, setRecord] = useState<WatchListRecord | null>(
-    cachedRecord ?? null
+    initialRecord ?? cachedRecord ?? null
   )
   const [isLoading, setIsLoading] = useState(false)
   const isSaved = Boolean(record?._id && record.is_active !== false)

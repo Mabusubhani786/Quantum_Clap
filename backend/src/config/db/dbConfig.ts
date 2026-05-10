@@ -32,7 +32,9 @@ const connectDB = async () => {
   const uri = buildMongoUri();
 
   try {
-    await mongoose.connect(uri);
+    await mongoose.connect(uri, {
+      serverSelectionTimeoutMS: 10000,
+    });
     console.log("MongoDB connected");
   } catch (error) {
     console.error("MongoDB connection error:", error);

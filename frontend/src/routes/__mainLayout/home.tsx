@@ -37,6 +37,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
+import { UserMediaSections } from "@/components/UserMediaSections"
 import { WatchListButton } from "@/components/WatchListButton"
 import { fetchApiData } from "@/service/fetchApiData"
 
@@ -687,6 +688,8 @@ function RouteComponent() {
 
   return (
     <div className="mx-auto w-full space-y-10 py-8 sm:py-10">
+      <UserMediaSections className="space-y-8" />
+
       {homeSections.map((section) => (
         <MediaSection
           key={section.id}

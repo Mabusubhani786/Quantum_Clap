@@ -1,12 +1,16 @@
 {
   "auth": {
     "sign_in": "/sign-in",
-    "sign_up": "/user"
+    "sign_up": "/user",
+    "revoke": "/jwt_user/revoke"
   },
   "user": {
     "base": "/user"
   },
   "watch_list": {
     "base": "/watch-list"
+  },
+  "recent": {
+    "base": "/recent"
   }
 }
