@@ -4,6 +4,7 @@ import registerRoutes from "@/router/index.ts";
 
 const server = fastify();
 const DEFAULT_PORT = 4000;
+const DEFAULT_HOST = "0.0.0.0";
 
 const start = async () => {
   await connectDB();
@@ -20,8 +21,9 @@ const start = async () => {
 
   await registerRoutes(server);
   const port = Number(process.env.PORT) || DEFAULT_PORT;
+  const host = process.env.HOST || DEFAULT_HOST;
 
-  server.listen({ port }, (err, address) => {
+  server.listen({ port, host }, (err, address) => {
     if (err) {
       console.error(err);
       process.exit(1);
