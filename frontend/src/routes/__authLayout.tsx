@@ -6,14 +6,14 @@ import apiEndPoints from "@/api-fetch-endpoints/apiEndPoints.json"
 import { ThreeDMarquee } from "@/components/ui/3d-marquee"
 import {
   clearAuthSession,
+  ensureValidAccessToken,
   hasAccessToken,
-  isAccessTokenValid,
 } from "@/lib/auth-session"
 import { fetchApiData, type HttpMethod } from "@/service/fetchApiData"
 
 export const Route = createFileRoute("/__authLayout")({
-  beforeLoad: ({ location }) => {
-    if (isAccessTokenValid()) {
+  beforeLoad: async ({ location }) => {
+    if (await ensureValidAccessToken()) {
       throw redirect({ to: "/home" })
     }
 

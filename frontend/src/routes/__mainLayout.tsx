@@ -10,13 +10,13 @@ import { HeroSection } from "@/components/HeroSection"
 import { HeaderLayout } from "@/layout/headerLayout"
 import {
   clearAuthSession,
+  ensureValidAccessToken,
   hasAccessToken,
-  isAccessTokenValid,
 } from "@/lib/auth-session"
 
 export const Route = createFileRoute("/__mainLayout")({
-  beforeLoad: ({ location }) => {
-    if (isAccessTokenValid()) {
+  beforeLoad: async ({ location }) => {
+    if (await ensureValidAccessToken()) {
       if (location.pathname === "/") {
         throw redirect({ to: "/home" })
       }

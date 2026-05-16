@@ -6,6 +6,7 @@ import backendApiEndPoints from "@/api-fetch-endpoints/backendApiEndPoints.json"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { decodeAccessToken, storeAuthSession } from "@/lib/auth-session"
 import { backendApiData } from "@/service/backendApiData"
 
 type BackendApiEndPoints = {
@@ -29,53 +30,10 @@ type SignInResponse = {
   }>
 }
 
-type AuthSession = {
-  access_expires_at: string
-  access_token: string
-  refresh_expires_at: string
-  refresh_token: string
-  user: unknown
-  decoded_token: Record<string, unknown>
-}
-
 const endpoints = backendApiEndPoints as BackendApiEndPoints
 const initialPayload: SignInPayload = {
   login: "",
   password: "",
-}
-
-const decodeAccessToken = (token: string): Record<string, unknown> => {
-  try {
-    const payloadPart = token.split(".")[1]
-    if (!payloadPart) {
-      return {}
-    }
-
-    const base64 = payloadPart.replace(/-/g, "+").replace(/_/g, "/")
-    const decodedPayload = decodeURIComponent(
-      window
-        .atob(base64)
-        .split("")
-        .map((character) => {
-          return `%${`00${character.charCodeAt(0).toString(16)}`.slice(-2)}`
-        })
-        .join("")
-    )
-
-    return JSON.parse(decodedPayload) as Record<string, unknown>
-  } catch {
-    return {}
-  }
-}
-
-const storeAuthSession = (session: AuthSession) => {
-  sessionStorage.setItem("auth_session", JSON.stringify(session))
-  sessionStorage.setItem("access_expires_at", session.access_expires_at)
-  sessionStorage.setItem("access_token", session.access_token)
-  sessionStorage.setItem("refresh_expires_at", session.refresh_expires_at)
-  sessionStorage.setItem("refresh_token", session.refresh_token)
-  sessionStorage.setItem("user", JSON.stringify(session.user))
-  sessionStorage.setItem("decoded_token", JSON.stringify(session.decoded_token))
 }
 
 export function SignInForm() {
@@ -117,7 +75,7 @@ export function SignInForm() {
         refresh_expires_at: tokenData.refresh_expires_at,
         refresh_token: tokenData.refresh_token,
         user: tokenData.user,
-        decoded_token: decodeAccessToken(tokenData.access_token),
+        decoded_token: decodeAccessToken(tokenData.access_token) ?? {},
       })
 
       setPayload(initialPayload)

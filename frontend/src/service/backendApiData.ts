@@ -1,3 +1,5 @@
+import { ensureValidAccessToken } from "@/lib/auth-session"
+
 export type BackendHttpMethod =
   | "GET"
   | "POST"
@@ -21,6 +23,13 @@ export type BackendApiRequest = {
 
 const getBackendBaseUrl = () =>
   (import.meta.env.VITE_BACKEND_API_BASE_URL ?? "").replace(/\/+$/, "")
+
+const refreshEndpoint = "/jwt_user/refresh"
+const publicAuthEndpoints = new Set(["/sign-in", refreshEndpoint])
+
+function shouldSkipTokenRefresh(url: string, method: BackendHttpMethod) {
+  return publicAuthEndpoints.has(url) || (url === "/user" && method === "POST")
+}
 
 function getStoredUserId() {
   if (typeof window === "undefined") {
@@ -99,12 +108,23 @@ export async function backendApiData<TData = unknown>({
   signal,
 }: BackendApiRequest): Promise<TData | null> {
   try {
+    const skipTokenRefresh = shouldSkipTokenRefresh(url, method)
+
+    if (!skipTokenRefresh) {
+      await ensureValidAccessToken()
+    }
+
     const requestHeaders = new Headers(headers)
     requestHeaders.set("accept", "application/json")
     const userId = getStoredUserId()
+    const accessToken = sessionStorage.getItem("access_token")
 
     if (userId && !requestHeaders.has("x_user_id")) {
       requestHeaders.set("x_user_id", userId)
+    }
+
+    if (accessToken && !requestHeaders.has("Authorization")) {
+      requestHeaders.set("Authorization", `Bearer ${accessToken}`)
     }
 
     const hasPayload =
@@ -116,12 +136,31 @@ export async function backendApiData<TData = unknown>({
     const { resolvedUrl, remainingParams } = resolvePathParams(url, params)
     const urlWithId = appendIdParam(resolvedUrl, remainingParams, method)
 
-    const response = await fetch(buildBackendUrl(urlWithId, remainingParams), {
+    const requestUrl = buildBackendUrl(urlWithId, remainingParams)
+    let response = await fetch(requestUrl, {
       method,
       headers: requestHeaders,
       signal,
       body: hasPayload ? JSON.stringify(payload) : undefined,
     })
+
+    if (response.status === 401 && !skipTokenRefresh) {
+      const refreshed = await ensureValidAccessToken({ force: true })
+
+      if (refreshed) {
+        const nextAccessToken = sessionStorage.getItem("access_token")
+        if (nextAccessToken) {
+          requestHeaders.set("Authorization", `Bearer ${nextAccessToken}`)
+        }
+
+        response = await fetch(requestUrl, {
+          method,
+          headers: requestHeaders,
+          signal,
+          body: hasPayload ? JSON.stringify(payload) : undefined,
+        })
+      }
+    }
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => null)

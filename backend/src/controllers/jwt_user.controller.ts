@@ -20,7 +20,8 @@ interface JwtUserTokenRequestBody {
 }
 
 interface JwtUserRefreshRequestBody {
-  access_token: string;
+  access_token?: string;
+  refresh_token: string;
 }
 
 interface JwtUserRevokeRequestBody {
@@ -175,26 +176,34 @@ class JwtUserController {
     reply: FastifyReply
   ) => {
     try {
-      const accessTokenValue = request.body?.access_token?.trim();
-      if (!accessTokenValue) {
+      const refreshTokenValue = request.body?.refresh_token?.trim();
+      if (!refreshTokenValue) {
         return reply.code(400).send(
           formatFailResponse({
-            message: "access_token is required",
+            message: "refresh_token is required",
           })
         );
       }
 
       const tokenRecord = await JwtAuth.findOne({
-        access_token: accessTokenValue,
+        refresh_token: refreshTokenValue,
         is_revoked: false,
       })
-        .lean()
         .exec();
 
       if (!tokenRecord) {
         return reply.code(401).send(
           formatFailResponse({
-            message: "Invalid access token",
+            message: "Invalid refresh token",
+          })
+        );
+      }
+
+      const accessTokenValue = request.body?.access_token?.trim();
+      if (accessTokenValue && tokenRecord.access_token !== accessTokenValue) {
+        return reply.code(401).send(
+          formatFailResponse({
+            message: "Access token does not match this refresh session",
           })
         );
       }
@@ -229,18 +238,12 @@ class JwtUserController {
         user_name: user.user_name,
         user_data: userSnapshot,
       });
-      const refreshToken = generateRefreshToken({
-        sub: userId,
-        user_name: user.user_name,
-      });
 
       await JwtAuth.updateOne(
         { _id: tokenRecord._id, is_revoked: false },
         {
           access_token: accessToken.token,
-          refresh_token: refreshToken.token,
           access_expires_at: accessToken.expiresAt,
-          refresh_expires_at: refreshToken.expiresAt,
           user_data: userSnapshot,
           updated_by: user.user_name,
         }
@@ -252,9 +255,9 @@ class JwtUserController {
           data: {
             user: userSnapshot,
             access_token: accessToken.token,
-            refresh_token: refreshToken.token,
+            refresh_token: tokenRecord.refresh_token,
             access_expires_at: accessToken.expiresAt,
-            refresh_expires_at: refreshToken.expiresAt,
+            refresh_expires_at: tokenRecord.refresh_expires_at,
           },
         })
       );

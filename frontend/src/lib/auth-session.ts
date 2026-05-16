@@ -1,3 +1,39 @@
+import backendApiEndPoints from "@/api-fetch-endpoints/backendApiEndPoints.json"
+
+type BackendAuthEndpoints = {
+  auth: {
+    refresh: string
+  }
+}
+
+type AuthTokenPayload = {
+  access_expires_at?: string
+  access_token?: string
+  refresh_expires_at?: string
+  refresh_token?: string
+  user?: unknown
+}
+
+type AuthRefreshResponse = {
+  data?: AuthTokenPayload[]
+}
+
+export type AuthSession = {
+  access_expires_at: string
+  access_token: string
+  refresh_expires_at: string
+  refresh_token: string
+  user: unknown
+  decoded_token: Record<string, unknown>
+}
+
+const endpoints = backendApiEndPoints as BackendAuthEndpoints
+const ACCESS_REFRESH_WINDOW_MS = 60_000
+let refreshPromise: Promise<boolean> | null = null
+
+const getBackendBaseUrl = () =>
+  (import.meta.env.VITE_BACKEND_API_BASE_URL ?? "").replace(/\/+$/, "")
+
 export function decodeAccessToken(token: string): Record<string, unknown> | null {
   try {
     const payloadPart = token.split(".")[1]
@@ -22,26 +58,125 @@ export function decodeAccessToken(token: string): Record<string, unknown> | null
   }
 }
 
-export function hasAccessToken() {
-  return Boolean(sessionStorage.getItem("access_token"))
+export function storeAuthSession(session: AuthSession) {
+  sessionStorage.setItem("auth_session", JSON.stringify(session))
+  sessionStorage.setItem("access_expires_at", session.access_expires_at)
+  sessionStorage.setItem("access_token", session.access_token)
+  sessionStorage.setItem("refresh_expires_at", session.refresh_expires_at)
+  sessionStorage.setItem("refresh_token", session.refresh_token)
+  sessionStorage.setItem("user", JSON.stringify(session.user))
+  sessionStorage.setItem("decoded_token", JSON.stringify(session.decoded_token))
 }
 
-export function isAccessTokenValid() {
+function updateAuthTokenSession(tokenData: AuthTokenPayload) {
+  if (
+    !tokenData.access_expires_at ||
+    !tokenData.access_token ||
+    !tokenData.refresh_expires_at ||
+    !tokenData.refresh_token ||
+    !tokenData.user
+  ) {
+    return false
+  }
+
+  storeAuthSession({
+    access_expires_at: tokenData.access_expires_at,
+    access_token: tokenData.access_token,
+    refresh_expires_at: tokenData.refresh_expires_at,
+    refresh_token: tokenData.refresh_token,
+    user: tokenData.user,
+    decoded_token: decodeAccessToken(tokenData.access_token) ?? {},
+  })
+
+  return true
+}
+
+function getAccessExpiryMs() {
+  const decodedToken = decodeAccessToken(
+    sessionStorage.getItem("access_token") ?? ""
+  )
+  const expiresAt = decodedToken?.exp
+
+  if (typeof expiresAt === "number") {
+    sessionStorage.setItem("decoded_token", JSON.stringify(decodedToken))
+    return expiresAt * 1000
+  }
+
+  const storedExpiresAt = Date.parse(
+    sessionStorage.getItem("access_expires_at") ?? ""
+  )
+  return Number.isNaN(storedExpiresAt) ? 0 : storedExpiresAt
+}
+
+function isRefreshTokenValid() {
+  const refreshExpiresAt = Date.parse(
+    sessionStorage.getItem("refresh_expires_at") ?? ""
+  )
+
+  return !Number.isNaN(refreshExpiresAt) && refreshExpiresAt > Date.now()
+}
+
+async function refreshAccessToken() {
+  const refreshToken = sessionStorage.getItem("refresh_token")
+  const accessToken = sessionStorage.getItem("access_token")
+
+  if (!refreshToken || !isRefreshTokenValid()) {
+    clearAuthSession()
+    return false
+  }
+
+  const response = await fetch(`${getBackendBaseUrl()}${endpoints.auth.refresh}`, {
+    method: "POST",
+    headers: {
+      accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    }),
+  })
+
+  if (!response.ok) {
+    clearAuthSession()
+    return false
+  }
+
+  const data = (await response.json()) as AuthRefreshResponse
+  return updateAuthTokenSession(data.data?.[0] ?? {})
+}
+
+export async function ensureValidAccessToken(options?: {
+  force?: boolean
+  refreshWindowMs?: number
+}) {
   const accessToken = sessionStorage.getItem("access_token")
 
   if (!accessToken) {
     return false
   }
 
-  const decodedToken = decodeAccessToken(accessToken)
-  const expiresAt = decodedToken?.exp
+  const refreshWindowMs = options?.refreshWindowMs ?? ACCESS_REFRESH_WINDOW_MS
+  const shouldRefresh =
+    options?.force || getAccessExpiryMs() - Date.now() <= refreshWindowMs
 
-  if (typeof expiresAt !== "number") {
-    return false
+  if (!shouldRefresh) {
+    return true
   }
 
-  sessionStorage.setItem("decoded_token", JSON.stringify(decodedToken))
-  return expiresAt * 1000 > Date.now()
+  refreshPromise ??= refreshAccessToken().finally(() => {
+    refreshPromise = null
+  })
+
+  return refreshPromise
+}
+
+export function hasAccessToken() {
+  return Boolean(sessionStorage.getItem("access_token"))
+}
+
+export function isAccessTokenValid() {
+  return getAccessExpiryMs() > Date.now()
 }
 
 export function clearAuthSession() {

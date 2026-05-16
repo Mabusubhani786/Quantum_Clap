@@ -2,6 +2,7 @@
   "auth": {
     "sign_in": "/sign-in",
     "sign_up": "/user",
+    "refresh": "/jwt_user/refresh",
     "revoke": "/jwt_user/revoke"
   },
   "user": {
