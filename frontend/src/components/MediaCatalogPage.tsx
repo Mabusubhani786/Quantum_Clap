@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { useRouterState } from "@tanstack/react-router"
 
 import apiEndPoints from "@/api-fetch-endpoints/apiEndPoints.json"
-import { CardInfo } from "@/components/CardInfo"
+import { CardInfo, type ReleaseStatus } from "@/components/CardInfo"
+import { EmptyState } from "@/components/EmptyState"
 import { MediaPagination } from "@/components/MediaPagination"
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import { getCatalogFilterRequestParams } from "@/lib/catalog-filters"
 import { fetchApiData, type FetchParams } from "@/service/fetchApiData"
 
 export type EndpointConfig = {
@@ -95,6 +98,61 @@ function getReleaseYear(item: MediaCatalogItem) {
   return new Date(date).getFullYear().toString()
 }
 
+function getTodayDateKey() {
+  const today = new Date()
+  const year = today.getFullYear()
+  const month = String(today.getMonth() + 1).padStart(2, "0")
+  const day = String(today.getDate()).padStart(2, "0")
+
+  return `${year}-${month}-${day}`
+}
+
+function formatReleaseDate(dateValue: string) {
+  const date = new Date(`${dateValue}T00:00:00`)
+
+  if (Number.isNaN(date.getTime())) {
+    return dateValue
+  }
+
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  })
+}
+
+function getMovieReleaseStatus(item: MediaCatalogItem): ReleaseStatus | undefined {
+  if (!item.release_date) {
+    return undefined
+  }
+
+  const releaseDate = item.release_date
+  const releaseLabel = formatReleaseDate(releaseDate)
+  const today = getTodayDateKey()
+
+  if (releaseDate === today) {
+    return {
+      state: "releasing_today",
+      badge: "Releasing Today",
+      text: `Releasing today · ${releaseLabel}`,
+    }
+  }
+
+  if (releaseDate > today) {
+    return {
+      state: "upcoming",
+      badge: "Not Released",
+      text: `Releases ${releaseLabel}`,
+    }
+  }
+
+  return {
+    state: "released",
+    badge: "Released",
+    text: `Released ${releaseLabel}`,
+  }
+}
+
 function getPosterUrl(item: MediaCatalogItem) {
   return item.poster_path ? `${posterBaseUrl}${item.poster_path}` : fallbackPoster
 }
@@ -160,6 +218,9 @@ export function MediaCatalogPage({
   detailBasePath,
   params,
 }: MediaCatalogPageProps) {
+  const routeSearch = useRouterState({
+    select: (state) => state.location.search as Record<string, unknown>,
+  })
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [items, setItems] = useState<MediaCatalogItem[]>([])
@@ -169,7 +230,13 @@ export function MediaCatalogPage({
     movie: new Map(),
     tv: new Map(),
   })
-  const requestParams = useMemo(() => params ?? {}, [params])
+  const requestParams = useMemo(
+    () => ({
+      ...(params ?? {}),
+      ...getCatalogFilterRequestParams(routeSearch, mediaType),
+    }),
+    [mediaType, params, routeSearch]
+  )
 
   useEffect(() => {
     window.dispatchEvent(
@@ -286,20 +353,21 @@ export function MediaCatalogPage({
       </div>
 
       {error ? (
-        <Card className="rounded-lg">
-          <CardHeader>
-            <CardTitle>Unable to load {title.toLowerCase()}</CardTitle>
-            <CardDescription>
-              Check the TMDB authorization env value and try again.
-            </CardDescription>
-          </CardHeader>
-        </Card>
+        <EmptyState
+          title="No data is available"
+          description={`We could not load ${title.toLowerCase()} from TMDB. Check the API configuration and try again.`}
+        />
       ) : loading ? (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {Array.from({ length: 9 }).map((_, index) => (
             <CatalogCardSkeleton key={index} />
           ))}
         </div>
+      ) : items.length === 0 ? (
+        <EmptyState
+          title="No data is available"
+          description="No titles match the current filters. Try changing language, release status, year, rating, or genre."
+        />
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {items.map((item) => (
@@ -314,6 +382,9 @@ export function MediaCatalogPage({
               genres={getGenreNames(item, mediaType, genreMaps)}
               rating={formatRating(item.vote_average)}
               releaseDate={getReleaseYear(item)}
+              releaseStatus={
+                mediaType === "movie" ? getMovieReleaseStatus(item) : undefined
+              }
               detailTo={`${detailBasePath}/${item.id}`}
               watchListItem={{
                 media_id: item.id,

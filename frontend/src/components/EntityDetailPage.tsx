@@ -12,6 +12,7 @@ import {
 } from "lucide-react"
 import { Link } from "@tanstack/react-router"
 
+import { EmptyState } from "@/components/EmptyState"
 import { Badge } from "@/components/ui/badge"
 import {
   Card,
@@ -621,9 +622,11 @@ function CreditRail({
             </div>
           </Carousel>
         ) : (
-          <p className="text-sm text-muted-foreground">
-            Credit details are not available yet.
-          </p>
+          <EmptyState
+            compact
+            title="No data is available"
+            description="Credit details are not available yet."
+          />
         )}
       </CardContent>
     </Card>
@@ -671,7 +674,11 @@ function ImageRail({
             </div>
           </Carousel>
         ) : (
-          <p className="text-sm text-muted-foreground">Images are not available yet.</p>
+          <EmptyState
+            compact
+            title="No data is available"
+            description="Images are not available yet."
+          />
         )}
       </CardContent>
     </Card>
@@ -699,9 +706,11 @@ function AlternativeNamesSection({
             ))}
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground">
-            Alternative names are not available yet.
-          </p>
+          <EmptyState
+            compact
+            title="No data is available"
+            description="Alternative names are not available yet."
+          />
         )}
       </CardContent>
     </Card>
@@ -710,13 +719,10 @@ function AlternativeNamesSection({
 
 function EntityError({ label }: { label: string }) {
   return (
-    <Card className="my-6 rounded-lg">
-      <CardHeader>
-        <CardTitle>Unable to load {label}</CardTitle>
-        <CardDescription>
-          Check the TMDB authorization env value and try again.
-        </CardDescription>
-      </CardHeader>
-    </Card>
+    <EmptyState
+      className="my-6"
+      title="No data is available"
+      description={`We could not load this ${label} from TMDB right now.`}
+    />
   )
 }

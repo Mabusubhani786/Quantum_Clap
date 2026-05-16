@@ -113,14 +113,49 @@
       "method": "GET",
       "db_name": "discover_movies",
       "api": "https://api.themoviedb.org/3/discover/movie",
-      "comment": "Many filters: ?language=en-US&page=1&sort_by=popularity.desc&with_genres=..."
+      "comment": "Many filters: ?language=en-US&page=1&sort_by=popularity.desc&with_original_language=en&primary_release_year=2024&vote_average.gte=7&with_genres=28&release_date.gte=2024-01-01"
     },
     "tv": {
       "method": "GET",
       "db_name": "discover_tv",
       "api": "https://api.themoviedb.org/3/discover/tv",
-      "comment": "?language=en-US&page=1&sort_by=popularity.desc"
+      "comment": "?language=en-US&page=1&sort_by=popularity.desc&with_original_language=ko&vote_average.gte=7&with_genres=18"
+    },
+    "with_original_language": {
+      "movie": {
+        "method": "GET",
+        "db_name": "discover_movies_by_original_language",
+        "api": "https://api.themoviedb.org/3/discover/movie",
+        "comment": "?with_original_language={language_code}&primary_release_year={year}&vote_average.gte={rating}&with_genres={genre_id}&sort_by={sort_by}&release_date.gte={yyyy-mm-dd}"
+      },
+      "tv": {
+        "method": "GET",
+        "db_name": "discover_tv_by_original_language",
+        "api": "https://api.themoviedb.org/3/discover/tv",
+        "comment": "?with_original_language={language_code}&first_air_date_year={year}&first_air_date.gte={yyyy-mm-dd}&vote_average.gte={rating}&with_genres={genre_id}&sort_by={sort_by}"
+      }
     }
+  },
+
+  "filters": {
+    "discover_params": [
+      "movie_release_status",
+      "with_original_language",
+      "primary_release_year",
+      "vote_average.gte",
+      "with_genres",
+      "sort_by",
+      "release_date.gte",
+      "release_date.lte",
+      "primary_release_date.gte",
+      "primary_release_date.lte"
+    ],
+    "sort_by": [
+      { "label": "Popularity", "value": "popularity.desc" },
+      { "label": "Newest", "value": "release_date.desc" },
+      { "label": "Top rated", "value": "vote_average.desc" },
+      { "label": "Most voted", "value": "vote_count.desc" }
+    ]
   },
 
   "movies": {

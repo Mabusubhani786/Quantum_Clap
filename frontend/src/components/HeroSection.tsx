@@ -30,8 +30,12 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel"
 import { Skeleton } from "@/components/ui/skeleton"
-import { fetchApiData } from "@/service/fetchApiData"
+import {
+  getCatalogFilterRequestParams,
+  getCatalogFilterSearch,
+} from "@/lib/catalog-filters"
 import { cn } from "@/lib/utils"
+import { fetchApiData, type FetchParams } from "@/service/fetchApiData"
 
 type EndpointConfig = {
   method: "GET"
@@ -43,16 +47,15 @@ type ApiEndpoints = {
     all_week: EndpointConfig
   }
   movies: {
-    popular: EndpointConfig
     details: EndpointConfig
     videos: EndpointConfig
   }
   tv: {
-    popular: EndpointConfig
     details: EndpointConfig
     videos: EndpointConfig
   }
   discover: {
+    movies: EndpointConfig
     tv: EndpointConfig
   }
   genres: {
@@ -132,7 +135,7 @@ type HeroSource = {
   label: string
   mediaType?: MediaType
   detailId?: string
-  params?: Record<string, string | number | boolean>
+  params?: FetchParams
 }
 
 const endpoints = apiEndPoints as ApiEndpoints
@@ -145,6 +148,9 @@ const animeHeroParams = {
   sort_by: "popularity.desc",
   with_genres: 16,
   with_origin_country: "JP",
+}
+const defaultDiscoveryParams = {
+  sort_by: "popularity.desc",
 }
 
 function getTitle(item: TmdbMediaItem) {
@@ -225,6 +231,53 @@ function getEpisodeLabel(episode?: TmdbEpisodeSummary | null) {
 
 function createGenreMap(genres: TmdbGenre[]) {
   return new Map(genres.map((genre) => [genre.id, genre.name]))
+}
+
+function getGenreName(
+  genreId: string | number | undefined,
+  genreMap: Map<number, string>
+) {
+  if (!genreId) {
+    return null
+  }
+
+  return genreMap.get(Number(genreId)) ?? null
+}
+
+function getHeroFilterSummary(
+  search: Record<string, unknown>,
+  mediaType: MediaType | undefined,
+  genreMaps: GenreMaps
+) {
+  if (!mediaType) {
+    return []
+  }
+
+  const filters = getCatalogFilterSearch(search)
+  const summary: string[] = []
+
+  if (filters.with_original_language) {
+    summary.push(filters.with_original_language.toUpperCase())
+  }
+
+  if (filters.primary_release_year) {
+    summary.push(filters.primary_release_year)
+  }
+
+  if (filters["vote_average.gte"]) {
+    summary.push(`${filters["vote_average.gte"]}+ rating`)
+  }
+
+  const genreName = getGenreName(filters.with_genres, genreMaps[mediaType])
+  if (genreName) {
+    summary.push(genreName)
+  }
+
+  if (filters["release_date.gte"]) {
+    summary.push(`After ${formatAirDate(filters["release_date.gte"])}`)
+  }
+
+  return summary
 }
 
 function getGenreNames(
@@ -361,17 +414,19 @@ function getHeroSource(pathname: string): HeroSource {
 
   if (pathname.startsWith("/movie")) {
     return {
-      endpoint: endpoints.movies.popular,
-      label: "popular movies",
+      endpoint: endpoints.discover.movies,
+      label: "movie discovery",
       mediaType: "movie",
+      params: defaultDiscoveryParams,
     }
   }
 
   if (pathname.startsWith("/series")) {
     return {
-      endpoint: endpoints.tv.popular,
-      label: "popular series",
+      endpoint: endpoints.discover.tv,
+      label: "series discovery",
       mediaType: "tv",
+      params: defaultDiscoveryParams,
     }
   }
 
@@ -431,6 +486,29 @@ export function HeroSection() {
   const activeMediaType = activeHero?.mediaType
   const activeVideo = activeHero?.video
   const activeGenres = getGenreNames(activeItem, activeMediaType, genreMaps)
+  const routeSearch = location.search as Record<string, unknown>
+  const heroFilterParams = useMemo(
+    () =>
+      heroSource.mediaType
+        ? getCatalogFilterRequestParams(routeSearch, heroSource.mediaType)
+        : {},
+    [heroSource.mediaType, routeSearch]
+  )
+  const heroFilterSummary = useMemo(
+    () => getHeroFilterSummary(routeSearch, heroSource.mediaType, genreMaps),
+    [genreMaps, heroSource.mediaType, routeSearch]
+  )
+  const heroSourceParams = useMemo(
+    () => ({
+      ...(heroSource.params ?? {}),
+      ...heroFilterParams,
+    }),
+    [heroFilterParams, heroSource.params]
+  )
+  const heroQueueDescription =
+    heroFilterSummary.length > 0
+      ? `${heroFilterSummary.join(" · ")} · page ${sourcePage}`
+      : `Page ${sourcePage}`
   const previewItems: Array<HeroMedia | null> = isLoading
     ? Array.from({ length: 10 }, () => null)
     : heroItems
@@ -455,7 +533,7 @@ export function HeroSection() {
           method: heroSource.endpoint.method,
           params: {
             language: "en-US",
-            ...heroSource.params,
+            ...heroSourceParams,
           },
           signal,
         })
@@ -518,7 +596,7 @@ export function HeroSection() {
         params: {
           language: "en-US",
           page: sourcePage,
-          ...heroSource.params,
+          ...heroSourceParams,
         },
         signal,
       })
@@ -568,7 +646,13 @@ export function HeroSection() {
       setIsLoading(false)
       setActiveIndex(0)
     },
-    [heroSource, isEntityDetailRoute, routeRefreshKey, sourcePage]
+    [
+      heroSource,
+      heroSourceParams,
+      isEntityDetailRoute,
+      routeRefreshKey,
+      sourcePage,
+    ]
   )
 
   useEffect(() => {
@@ -715,7 +799,11 @@ export function HeroSection() {
               <div className="max-w-3xl space-y-4 sm:space-y-5">
                 <Badge className="gap-2 rounded-md border-white/12 bg-white/[0.1] px-2.5 py-1 text-xs font-medium text-white shadow-inner hover:bg-white/[0.1] sm:px-3 sm:text-sm">
                   <Play className="h-4 w-4 fill-current" />
-                  {activeVideo ? "Now playing trailer" : "Featured preview"}
+                  {heroFilterSummary.length > 0
+                    ? "Filtered preview"
+                    : activeVideo
+                      ? "Now playing trailer"
+                      : "Featured preview"}
                 </Badge>
 
                 <div className="space-y-2 sm:space-y-3">
@@ -750,6 +838,14 @@ export function HeroSection() {
                       className="rounded-md bg-white/12 text-xs text-white hover:bg-white/12 sm:text-sm"
                     >
                       {genre}
+                    </Badge>
+                  ))}
+                  {heroFilterSummary.map((filter) => (
+                    <Badge
+                      key={filter}
+                      className="rounded-md border border-white/12 bg-black/28 text-xs text-white hover:bg-black/28 sm:text-sm"
+                    >
+                      {filter}
                     </Badge>
                   ))}
                 </div>
@@ -827,7 +923,7 @@ export function HeroSection() {
                     Trailer Queue
                   </p>
                   <p className="text-xs text-white/56">
-                    Random trailers from page {sourcePage} in {heroSource.label}
+                    {heroQueueDescription} in {heroSource.label}
                   </p>
                 </div>
                 <Badge className="rounded-md bg-white/12 text-white hover:bg-white/12">

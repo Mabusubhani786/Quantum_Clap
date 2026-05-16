@@ -11,6 +11,7 @@ import {
 import { Link, createFileRoute } from "@tanstack/react-router"
 
 import apiEndPoints from "@/api-fetch-endpoints/apiEndPoints.json"
+import { EmptyState } from "@/components/EmptyState"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -521,14 +522,14 @@ function MediaSection({
       {state.loading ? (
         <LoadingCarousel />
       ) : state.error || state.items.length === 0 ? (
-        <Card className="rounded-lg">
-          <CardHeader>
-            <CardTitle>Unable to load this section</CardTitle>
-            <CardDescription>
-              Check the TMDB authorization env value and try again.
-            </CardDescription>
-          </CardHeader>
-        </Card>
+        <EmptyState
+          title="No data is available"
+          description={
+            state.error
+              ? "This section could not be loaded from TMDB right now."
+              : "This section does not have any titles to show yet."
+          }
+        />
       ) : (
         <SectionCarousel
           section={section}

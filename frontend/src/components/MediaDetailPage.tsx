@@ -15,6 +15,7 @@ import {
 import { Link } from "@tanstack/react-router"
 
 import backendApiEndPoints from "@/api-fetch-endpoints/backendApiEndPoints.json"
+import { EmptyState } from "@/components/EmptyState"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -630,14 +631,11 @@ export function MediaDetailPage({
 
   if (error || !detail) {
     return (
-      <Card className="my-6 rounded-lg">
-        <CardHeader>
-          <CardTitle>Unable to load details</CardTitle>
-          <CardDescription>
-            Check the TMDB authorization env value and try again.
-          </CardDescription>
-        </CardHeader>
-      </Card>
+      <EmptyState
+        className="my-6"
+        title="No data is available"
+        description="We could not load the details for this title from TMDB right now."
+      />
     )
   }
 
@@ -892,9 +890,11 @@ export function MediaDetailPage({
                 </article>
               ))
             ) : (
-              <p className="text-sm text-muted-foreground">
-                Reviews are not available yet.
-              </p>
+              <EmptyState
+                compact
+                title="No data is available"
+                description="Reviews are not available yet."
+              />
             )}
           </CardContent>
         </Card>
@@ -970,9 +970,11 @@ function CreditCarouselSection({
             </div>
           </Carousel>
         ) : (
-          <p className="text-sm text-muted-foreground">
-            {title} details are not available yet.
-          </p>
+          <EmptyState
+            compact
+            title="No data is available"
+            description={`${title} details are not available yet.`}
+          />
         )}
       </CardContent>
     </Card>
@@ -1097,9 +1099,11 @@ function WatchProvidersSection({
             </div>
           </Carousel>
         ) : (
-          <p className="text-sm text-muted-foreground">
-            Watch provider details are not available yet for this title.
-          </p>
+          <EmptyState
+            compact
+            title="No data is available"
+            description="Watch provider details are not available yet for this title."
+          />
         )}
       </CardContent>
     </Card>
@@ -1368,9 +1372,11 @@ function EpisodesSection({
             </CarouselContent>
           </Carousel>
         ) : (
-          <p className="text-sm text-muted-foreground">
-            Season details are not available yet.
-          </p>
+          <EmptyState
+            compact
+            title="No data is available"
+            description="Season details are not available yet."
+          />
         )}
       </CardContent>
     </Card>
@@ -1433,9 +1439,11 @@ function ProductionCompaniesSection({
             </div>
           </Carousel>
         ) : (
-          <p className="text-sm text-muted-foreground">
-            Production company details are not available yet.
-          </p>
+          <EmptyState
+            compact
+            title="No data is available"
+            description="Production company details are not available yet."
+          />
         )}
       </CardContent>
     </Card>
@@ -1605,9 +1613,11 @@ function RelatedMediaSection({
             </div>
           </Carousel>
         ) : (
-          <p className="text-sm text-muted-foreground">
-            {title} titles are not available yet.
-          </p>
+          <EmptyState
+            compact
+            title="No data is available"
+            description={`${title} titles are not available yet.`}
+          />
         )}
       </CardContent>
     </Card>

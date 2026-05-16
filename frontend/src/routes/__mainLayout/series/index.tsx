@@ -11,22 +11,24 @@ export const Route = createFileRoute("/__mainLayout/series/")({
 })
 
 type ApiEndpoints = {
-  tv: {
-    popular: EndpointConfig
+  discover: {
+    tv: EndpointConfig
   }
 }
 
 const endpoints = apiEndPoints as ApiEndpoints
+const defaultSeriesParams = { sort_by: "popularity.desc" }
 
 function RouteComponent() {
   return (
     <MediaCatalogPage
       title="Series"
       description="Browse popular series with episode-ready artwork, ratings, genres, and release years."
-      endpoint={endpoints.tv.popular}
+      endpoint={endpoints.discover.tv}
       mediaType="tv"
       mediaLabel="Series"
       detailBasePath="/series"
+      params={defaultSeriesParams}
     />
   )
 }

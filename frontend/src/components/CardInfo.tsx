@@ -10,6 +10,12 @@ import {
 } from "@/components/WatchListButton"
 import { cn } from "@/lib/utils"
 
+export type ReleaseStatus = {
+  state: "released" | "releasing_today" | "upcoming"
+  badge: string
+  text: string
+}
+
 type CardInfoProps = {
   posterImage: string
   backdropImage: string
@@ -20,10 +26,20 @@ type CardInfoProps = {
   genres?: string[]
   rating?: string
   releaseDate?: string
+  releaseStatus?: ReleaseStatus
   detailTo?: string
   watchListItem?: WatchListMediaInput
   className?: string
 }
+
+const releaseStatusStyles = {
+  released:
+    "border-emerald-300/25 bg-emerald-400/16 text-emerald-100 shadow-emerald-950/30 hover:bg-emerald-400/18",
+  releasing_today:
+    "border-cyan-200/35 bg-cyan-300/18 text-cyan-50 shadow-cyan-950/30 hover:bg-cyan-300/22",
+  upcoming:
+    "border-amber-200/35 bg-amber-300/18 text-amber-50 shadow-amber-950/30 hover:bg-amber-300/22",
+} satisfies Record<ReleaseStatus["state"], string>
 
 export function CardInfo({
   posterImage,
@@ -35,6 +51,7 @@ export function CardInfo({
   genres = [],
   rating,
   releaseDate,
+  releaseStatus,
   detailTo,
   watchListItem,
   className,
@@ -83,6 +100,16 @@ export function CardInfo({
             <Badge className="border-white/10 bg-white/12 px-2.5 py-1 text-xs text-white hover:bg-white/16 @[42rem]/card-info:text-sm">
               {mediaType}
             </Badge>
+            {releaseStatus && (
+              <Badge
+                className={cn(
+                  "ml-2 border px-2.5 py-1 text-xs shadow-lg backdrop-blur-md @[42rem]/card-info:text-sm",
+                  releaseStatusStyles[releaseStatus.state]
+                )}
+              >
+                {releaseStatus.badge}
+              </Badge>
+            )}
           </div>
 
           {genres.length > 0 && (
@@ -117,7 +144,7 @@ export function CardInfo({
               {releaseDate && (
                 <span className="inline-flex items-center gap-2">
                   <CalendarDays className="h-4 w-4 text-white/75 @[42rem]/card-info:h-5 @[42rem]/card-info:w-5" />
-                  {releaseDate}
+                  {releaseStatus?.text ?? releaseDate}
                 </span>
               )}
             </div>

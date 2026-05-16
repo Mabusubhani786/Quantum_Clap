@@ -5,7 +5,16 @@ import {
   useState,
   type CSSProperties,
 } from "react"
-import { Building2, Film, LogOut, Search, Tv, UserRound } from "lucide-react"
+import {
+  Building2,
+  Film,
+  LogOut,
+  Search,
+  SlidersHorizontal,
+  Tv,
+  UserRound,
+  X,
+} from "lucide-react"
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router"
 import { toast } from "sonner"
 
@@ -20,6 +29,14 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from "@/components/ui/combobox"
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -27,6 +44,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
   NavigationMenu,
@@ -35,7 +53,20 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
 } from "@/components/ui/navigation-menu"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { clearAuthSession } from "@/lib/auth-session"
+import {
+  clearCatalogFilterSearch,
+  getCatalogFilterSearch,
+  type CatalogFilterKey,
+  type MovieReleaseStatus,
+} from "@/lib/catalog-filters"
 import { cn } from "@/lib/utils"
 import { backendApiData } from "@/service/backendApiData"
 import { fetchApiData } from "@/service/fetchApiData"
@@ -46,12 +77,21 @@ type EndpointConfig = {
 }
 
 type ApiEndpoints = {
+  configuration: {
+    languages: EndpointConfig
+  }
   search: {
     movie: EndpointConfig
     tv: EndpointConfig
     person: EndpointConfig
     company: EndpointConfig
     multi: EndpointConfig
+  }
+  filters: {
+    sort_by: Array<{
+      label: string
+      value: string
+    }>
   }
 }
 
@@ -74,6 +114,12 @@ type SearchResult = {
 
 type SearchResponse = {
   results: SearchResult[]
+}
+
+type TmdbLanguage = {
+  english_name: string
+  iso_639_1: string
+  name: string
 }
 
 type NavItem = {
@@ -105,6 +151,54 @@ const navItems: NavItem[] = [
 
 const endpoints = apiEndPoints as ApiEndpoints
 const backendEndpoints = backendApiEndPoints as BackendApiEndPoints
+const genreOptions = [
+  { label: "Action", value: "28" },
+  { label: "Animation", value: "16" },
+  { label: "Comedy", value: "35" },
+  { label: "Crime", value: "80" },
+  { label: "Drama", value: "18" },
+  { label: "Family", value: "10751" },
+  { label: "Fantasy", value: "14" },
+  { label: "Horror", value: "27" },
+  { label: "Romance", value: "10749" },
+  { label: "Sci-Fi", value: "878" },
+  { label: "Thriller", value: "53" },
+]
+const ratingOptions = ["6", "7", "8", "9"]
+const movieReleaseTabs: Array<{
+  label: string
+  value: MovieReleaseStatus
+}> = [
+  { label: "All", value: "all" },
+  { label: "Upcoming", value: "upcoming" },
+  { label: "Today", value: "today" },
+]
+
+function getLanguageLabel(language: TmdbLanguage) {
+  const label = language.english_name || language.name || language.iso_639_1
+
+  return `${label} (${language.iso_639_1})`
+}
+
+function sortLanguages(first: TmdbLanguage, second: TmdbLanguage) {
+  return getLanguageLabel(first).localeCompare(getLanguageLabel(second))
+}
+
+function matchesLanguage(language: TmdbLanguage, query: string) {
+  const normalizedQuery = query.trim().toLowerCase()
+
+  if (!normalizedQuery) {
+    return true
+  }
+
+  const englishName = language.english_name.toLowerCase()
+  const languageCode = language.iso_639_1.toLowerCase()
+
+  return (
+    englishName.includes(normalizedQuery) ||
+    languageCode.includes(normalizedQuery)
+  )
+}
 
 function getSessionUser(): SessionUser | null {
   try {
@@ -470,6 +564,336 @@ function HeaderSearch({ className }: { className?: string }) {
   )
 }
 
+type LanguageComboboxProps = {
+  languages: TmdbLanguage[]
+  loading: boolean
+  value?: string
+  onChange: (value: string) => void
+}
+
+function LanguageCombobox({
+  languages,
+  loading,
+  value,
+  onChange,
+}: LanguageComboboxProps) {
+  const selectedLanguage = languages.find(
+    (language) => language.iso_639_1 === value
+  )
+
+  return (
+    <Combobox<TmdbLanguage>
+      items={languages}
+      value={selectedLanguage ?? null}
+      onValueChange={(language) => {
+        onChange(language?.iso_639_1 ?? "")
+      }}
+      itemToStringLabel={getLanguageLabel}
+      itemToStringValue={(language) => language.iso_639_1}
+      isItemEqualToValue={(item, selectedItem) =>
+        item.iso_639_1 === selectedItem.iso_639_1
+      }
+      filter={matchesLanguage}
+      limit={80}
+      autoHighlight
+      openOnInputClick
+    >
+      <ComboboxInput
+        placeholder={loading ? "Loading languages..." : "Any language"}
+        disabled={loading}
+        showClear
+        className="h-9 border-white/12 bg-white/8 text-white [&_input]:text-white [&_input]:placeholder:text-white/35 [&_button]:text-white/45 [&_button:hover]:bg-white/10 [&_button:hover]:text-white"
+      />
+      <ComboboxContent className="z-[90] border-white/10 bg-black/96 text-white shadow-2xl shadow-black/35 backdrop-blur-xl">
+        <ComboboxEmpty className="text-white/48">No languages found.</ComboboxEmpty>
+        <ComboboxList className="max-h-60">
+          {(language: TmdbLanguage) => (
+            <ComboboxItem
+              key={language.iso_639_1}
+              value={language}
+              onClick={() => onChange(language.iso_639_1)}
+              className="text-white/82 hover:bg-white/10 data-highlighted:bg-white/12 data-highlighted:text-white data-selected:text-white"
+            >
+              <span className="min-w-0 truncate">
+                {getLanguageLabel(language)}
+              </span>
+            </ComboboxItem>
+          )}
+        </ComboboxList>
+      </ComboboxContent>
+    </Combobox>
+  )
+}
+
+function HeaderFilters() {
+  const navigate = useNavigate()
+  const pathname = useRouterState({
+    select: (state) => state.location.pathname,
+  })
+  const search = useRouterState({
+    select: (state) => state.location.search as Record<string, unknown>,
+  })
+  const isCatalogRoute =
+    pathname.startsWith("/movie") ||
+    pathname.startsWith("/series") ||
+    pathname.startsWith("/anime")
+  const isMovieCatalogRoute = pathname.startsWith("/movie")
+  const [languages, setLanguages] = useState<TmdbLanguage[]>([])
+  const [isLoadingLanguages, setIsLoadingLanguages] = useState(false)
+
+  const values = useMemo(() => getCatalogFilterSearch(search), [search])
+  const activeCount = Object.keys(values).length
+
+  useEffect(() => {
+    if (!isCatalogRoute || languages.length > 0) {
+      return
+    }
+
+    const abortController = new AbortController()
+    const timer = window.setTimeout(async () => {
+      setIsLoadingLanguages(true)
+
+      const response = await fetchApiData<TmdbLanguage[]>({
+        endpoint: endpoints.configuration.languages.api,
+        method: endpoints.configuration.languages.method,
+        signal: abortController.signal,
+      })
+
+      if (abortController.signal.aborted) {
+        return
+      }
+
+      setLanguages(
+        (response ?? [])
+          .filter((language) => Boolean(language.iso_639_1))
+          .sort(sortLanguages)
+      )
+      setIsLoadingLanguages(false)
+    }, 0)
+
+    return () => {
+      window.clearTimeout(timer)
+      abortController.abort()
+    }
+  }, [isCatalogRoute, languages.length])
+
+  const updateFilter = (key: CatalogFilterKey, value: string) => {
+    const nextSearch = { ...search }
+
+    if (value) {
+      nextSearch[key] = value
+    } else {
+      delete nextSearch[key]
+    }
+
+    void navigate({ to: pathname, search: nextSearch } as never)
+  }
+
+  const clearFilters = () => {
+    void navigate({
+      to: pathname,
+      search: clearCatalogFilterSearch(search),
+    } as never)
+  }
+
+  if (!isCatalogRoute) {
+    return null
+  }
+
+  return (
+    <DropdownMenu modal={false}>
+      <DropdownMenuTrigger asChild>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="border-[var(--header-control-border)] bg-[var(--header-control-bg)] text-white hover:border-white/20 hover:bg-[var(--header-control-hover-bg)] hover:text-white"
+          aria-label="Open catalog filters"
+        >
+          <SlidersHorizontal className="size-4" />
+          <span className="hidden sm:inline">Filters</span>
+          {activeCount > 0 ? (
+            <span className="rounded-full bg-white/18 px-1.5 text-[0.68rem] leading-5 text-white">
+              {activeCount}
+            </span>
+          ) : null}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="end"
+        className="w-80 border-white/10 bg-black/94 p-3 text-white shadow-2xl shadow-black/35 backdrop-blur-xl"
+      >
+        <div className="flex items-center justify-between gap-3">
+          <DropdownMenuLabel className="px-0 py-0 text-white/62">
+            Catalog filters
+          </DropdownMenuLabel>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-white/62 hover:bg-white/10 hover:text-white"
+            onClick={clearFilters}
+            disabled={activeCount === 0}
+          >
+            <X className="size-3.5" />
+            Clear
+          </Button>
+        </div>
+        <DropdownMenuSeparator className="bg-white/10" />
+        <div className="grid gap-3 py-1">
+          {isMovieCatalogRoute && (
+            <div className="grid gap-1.5 text-xs text-white/60">
+              Release status
+              <div className="grid grid-cols-3 rounded-lg border border-white/12 bg-white/8 p-1">
+                {movieReleaseTabs.map((tab) => {
+                  const isActive =
+                    (values.movie_release_status ?? "all") === tab.value
+
+                  return (
+                    <button
+                      key={tab.value}
+                      type="button"
+                      className={cn(
+                        "h-8 rounded-md px-1 text-[0.72rem] font-medium text-white/58 transition hover:bg-white/10 hover:text-white",
+                        isActive &&
+                          "bg-white text-black shadow-sm hover:bg-white hover:text-black"
+                      )}
+                      onClick={() =>
+                        updateFilter(
+                          "movie_release_status",
+                          tab.value === "all" ? "" : tab.value
+                        )
+                      }
+                    >
+                      {tab.label}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          <label className="grid gap-1.5 text-xs text-white/60">
+            Original language
+            <LanguageCombobox
+              languages={languages}
+              loading={isLoadingLanguages}
+              value={values.with_original_language ?? "all"}
+              onChange={(value) =>
+                updateFilter(
+                  "with_original_language",
+                  value === "all" ? "" : value
+                )
+              }
+            />
+          </label>
+
+          <div className="grid grid-cols-2 gap-3">
+            <label className="grid gap-1.5 text-xs text-white/60">
+              Release year
+              <Input
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={4}
+                placeholder="2024"
+                value={values.primary_release_year ?? ""}
+                onChange={(event) =>
+                  updateFilter(
+                    "primary_release_year",
+                    event.target.value.replace(/\D/g, "").slice(0, 4)
+                  )
+                }
+                className="h-9 border-white/12 bg-white/8 text-white placeholder:text-white/35"
+              />
+            </label>
+            <label className="grid gap-1.5 text-xs text-white/60">
+              Released after
+              <Input
+                type="date"
+                value={values["release_date.gte"] ?? ""}
+                onChange={(event) =>
+                  updateFilter("release_date.gte", event.target.value)
+                }
+                className="h-9 border-white/12 bg-white/8 text-white"
+              />
+            </label>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <label className="grid gap-1.5 text-xs text-white/60">
+              Rating
+              <Select
+                value={values["vote_average.gte"] ?? "all"}
+                onValueChange={(value) =>
+                  updateFilter(
+                    "vote_average.gte",
+                    value === "all" ? "" : value
+                  )
+                }
+              >
+                <SelectTrigger className="h-9 w-full border-white/12 bg-white/8 text-white">
+                  <SelectValue placeholder="Any rating" />
+                </SelectTrigger>
+                <SelectContent className="border-white/10 bg-black text-white">
+                  <SelectItem value="all">Any rating</SelectItem>
+                  {ratingOptions.map((rating) => (
+                    <SelectItem key={rating} value={rating}>
+                      {rating}+ rating
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </label>
+            <label className="grid gap-1.5 text-xs text-white/60">
+              Genre
+              <Select
+                value={values.with_genres ?? "all"}
+                onValueChange={(value) =>
+                  updateFilter("with_genres", value === "all" ? "" : value)
+                }
+              >
+                <SelectTrigger className="h-9 w-full border-white/12 bg-white/8 text-white">
+                  <SelectValue placeholder="Any genre" />
+                </SelectTrigger>
+                <SelectContent className="border-white/10 bg-black text-white">
+                  <SelectItem value="all">Any genre</SelectItem>
+                  {genreOptions.map((genre) => (
+                    <SelectItem key={genre.value} value={genre.value}>
+                      {genre.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </label>
+          </div>
+
+          <label className="grid gap-1.5 text-xs text-white/60">
+            Sort by
+            <Select
+              value={values.sort_by ?? "all"}
+              onValueChange={(value) =>
+                updateFilter("sort_by", value === "all" ? "" : value)
+              }
+            >
+              <SelectTrigger className="h-9 w-full border-white/12 bg-white/8 text-white">
+                <SelectValue placeholder="Default sort" />
+              </SelectTrigger>
+              <SelectContent className="border-white/10 bg-black text-white">
+                <SelectItem value="all">Default sort</SelectItem>
+                {endpoints.filters.sort_by.map((sortOption) => (
+                  <SelectItem key={sortOption.value} value={sortOption.value}>
+                    {sortOption.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </label>
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
 export function HeaderLayout() {
   const navigate = useNavigate()
   const [hasScrolled, setHasScrolled] = useState(false)
@@ -598,6 +1022,7 @@ export function HeaderLayout() {
           </div>
 
           <HeaderSearch className="hidden w-64 shrink-0 md:block xl:w-80" />
+          <HeaderFilters />
 
           <NavigationMenu
             viewport={false}

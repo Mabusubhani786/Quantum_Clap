@@ -11,6 +11,7 @@ import {
 } from "lucide-react"
 import { Link } from "@tanstack/react-router"
 
+import { EmptyState } from "@/components/EmptyState"
 import {
   Accordion,
   AccordionContent,
@@ -333,12 +334,11 @@ export function SeriesOverviewPage({
   if (error || !detail) {
     return (
       <section className="-mx-2 -mt-6 min-h-screen bg-background px-3 py-24 sm:-mx-3 sm:px-4">
-        <div className="mx-auto max-w-2xl rounded-lg border bg-card p-6">
-          <h1 className="text-2xl font-bold">Unable to load overview</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Check the TMDB authorization env value and try again.
-          </p>
-        </div>
+        <EmptyState
+          className="mx-auto max-w-2xl"
+          title="No data is available"
+          description="We could not load this overview from TMDB right now."
+        />
       </section>
     )
   }

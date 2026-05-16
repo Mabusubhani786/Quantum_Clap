@@ -2,11 +2,11 @@ import { useEffect, useState, type ReactNode } from "react"
 import { BookmarkCheck, Clock3 } from "lucide-react"
 
 import backendApiEndPoints from "@/api-fetch-endpoints/backendApiEndPoints.json"
+import { EmptyState } from "@/components/EmptyState"
 import { WatchListButton } from "@/components/WatchListButton"
 import { Badge } from "@/components/ui/badge"
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
@@ -121,11 +121,11 @@ function UserMediaRail({
       </div>
 
       {items.length === 0 ? (
-        <Card className="rounded-lg border-dashed">
-          <CardContent className="p-5 text-sm text-muted-foreground">
-            {emptyText}
-          </CardContent>
-        </Card>
+        <EmptyState
+          compact
+          title="No data is available"
+          description={emptyText}
+        />
       ) : (
         <div className="grid gap-4 min-[520px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
           {items.map((item) => (
