@@ -36,6 +36,10 @@ type SeriesOverviewPageProps = {
   detailBasePath: "/series" | "/anime"
 }
 
+type SeasonDetailPageProps = SeriesOverviewPageProps & {
+  seasonNumber: string
+}
+
 type TmdbSeriesDetail = {
   id: number
   name?: string
@@ -218,6 +222,18 @@ function SeriesOverviewSkeleton() {
       <div className="mx-auto max-w-7xl space-y-4 px-3 py-8 sm:px-4">
         <Skeleton className="h-20 rounded-lg" />
         <Skeleton className="h-80 rounded-lg" />
+      </div>
+    </section>
+  )
+}
+
+function SeasonDetailSkeleton() {
+  return (
+    <section className="-mx-2 -mt-6 bg-background sm:-mx-3">
+      <Skeleton className="h-[34rem] w-full rounded-none" />
+      <div className="mx-auto max-w-7xl space-y-4 px-3 py-8 sm:px-4">
+        <Skeleton className="h-28 rounded-lg" />
+        <Skeleton className="h-96 rounded-lg" />
       </div>
     </section>
   )
@@ -531,6 +547,246 @@ export function SeriesOverviewPage({
   )
 }
 
+export function SeasonDetailPage({
+  id,
+  seasonNumber,
+  detailEndpoint,
+  seasonEndpoint,
+  mediaLabel,
+  detailBasePath,
+}: SeasonDetailPageProps) {
+  const [detail, setDetail] = useState<TmdbSeriesDetail | null>(null)
+  const [season, setSeason] = useState<TmdbSeasonDetail | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
+  const numericSeasonNumber = Number(seasonNumber)
+  const detailUrl = useMemo(
+    () => resolveEndpoint(detailEndpoint.api, id),
+    [detailEndpoint.api, id]
+  )
+  const seasonUrl = useMemo(
+    () =>
+      Number.isFinite(numericSeasonNumber)
+        ? resolveSeasonEndpoint(seasonEndpoint.api, id, numericSeasonNumber)
+        : "",
+    [id, numericSeasonNumber, seasonEndpoint.api]
+  )
+
+  useEffect(() => {
+    const abortController = new AbortController()
+
+    async function loadSeasonDetail() {
+      if (!seasonUrl) {
+        setLoading(false)
+        setError(true)
+        return
+      }
+
+      setLoading(true)
+      setError(false)
+
+      const [detailResponse, seasonResponse] = await Promise.all([
+        fetchApiData<TmdbSeriesDetail>({
+          endpoint: detailUrl,
+          method: detailEndpoint.method,
+          params: {
+            language: "en-US",
+            append_to_response: "images",
+          },
+          signal: abortController.signal,
+        }),
+        fetchApiData<TmdbSeasonDetail>({
+          endpoint: seasonUrl,
+          method: seasonEndpoint.method,
+          params: {
+            language: "en-US",
+            append_to_response: "credits,images,videos",
+          },
+          signal: abortController.signal,
+        }),
+      ])
+
+      if (abortController.signal.aborted) {
+        return
+      }
+
+      setDetail(detailResponse)
+      setSeason(seasonResponse)
+      setError(!detailResponse || !seasonResponse)
+      setLoading(false)
+    }
+
+    void loadSeasonDetail()
+
+    return () => abortController.abort()
+  }, [
+    detailEndpoint.method,
+    detailUrl,
+    seasonEndpoint.method,
+    seasonUrl,
+  ])
+
+  if (loading) {
+    return <SeasonDetailSkeleton />
+  }
+
+  if (error || !detail || !season) {
+    return (
+      <section className="-mx-2 -mt-6 min-h-screen bg-background px-3 py-24 sm:-mx-3 sm:px-4">
+        <EmptyState
+          className="mx-auto max-w-2xl"
+          title="No data is available"
+          description="We could not load this season from TMDB right now."
+        />
+      </section>
+    )
+  }
+
+  const backdropUrl = getBackdropUrl(detail.backdrop_path)
+  const episodeCount = season.episodes?.length ?? season.episode_count
+  const averageRuntime = getAverageRuntime(season.episodes ?? [])
+
+  return (
+    <section className="-mx-2 -mt-6 bg-background sm:-mx-3">
+      <section className="relative isolate min-h-[min(56rem,100svh)] overflow-hidden bg-black text-white sm:min-h-[42rem] lg:min-h-[38rem]">
+        {backdropUrl && (
+          <img
+            src={backdropUrl}
+            alt=""
+            className="absolute inset-0 -z-20 h-full w-full object-cover"
+          />
+        )}
+        <div className="absolute inset-0 -z-10 bg-black/45" />
+        <div className="absolute inset-x-0 bottom-0 -z-10 h-40 bg-gradient-to-t from-background to-transparent" />
+
+        <div className="mx-auto grid min-h-[min(56rem,100svh)] max-w-7xl content-end gap-6 px-5 pt-52 pb-24 sm:min-h-[42rem] sm:px-5 sm:pt-36 lg:min-h-[38rem] lg:grid-cols-[16rem_minmax(0,1fr)] lg:items-end lg:px-4 lg:pt-32 lg:pb-18">
+          <img
+            src={getPosterUrl(season.poster_path ?? detail.poster_path)}
+            alt={season.name}
+            className="hidden aspect-[2/3] w-full rounded-lg border border-white/15 object-cover shadow-2xl shadow-black/50 lg:block"
+          />
+
+          <div className="max-w-4xl space-y-4 lg:pb-4">
+            <div className="flex flex-wrap gap-2">
+              <Badge className="rounded-md border border-white/15 bg-white/12 text-white hover:bg-white/12">
+                {mediaLabel}
+              </Badge>
+              <Badge className="rounded-md border border-white/15 bg-white/12 text-white hover:bg-white/12">
+                Season {season.season_number}
+              </Badge>
+              <Badge className="rounded-md border border-white/15 bg-white/12 text-white hover:bg-white/12">
+                ID {season.id}
+              </Badge>
+            </div>
+
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/60">
+                {getTitle(detail)}
+              </p>
+              <h1 className="mt-2 max-w-4xl text-[clamp(2.75rem,12vw,5.25rem)] font-bold leading-[0.94] sm:text-7xl sm:leading-none">
+                {season.name}
+              </h1>
+              <p className="mt-3 line-clamp-3 max-w-2xl text-base leading-6 text-white/74 sm:text-lg sm:leading-7">
+                {season.overview || detail.overview || "Season overview is not available yet."}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 text-sm sm:gap-3">
+              <span className="inline-flex items-center gap-1.5 rounded-md bg-white px-2 py-1 font-bold text-black">
+                <Star className="h-4 w-4 fill-yellow-400 text-yellow-500" />
+                {formatRating(season.vote_average)}
+              </span>
+              <span className="inline-flex items-center gap-1.5 text-white/72">
+                <CalendarDays className="h-4 w-4" />
+                {formatDate(season.air_date)}
+              </span>
+              <span className="text-white/58">{episodeCount} episodes</span>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <Button asChild className="h-10 rounded-md bg-white px-4 text-sm text-black hover:bg-white/90">
+                <Link
+                  to={
+                    detailBasePath === "/anime"
+                      ? "/anime/$mediaId"
+                      : "/series/$mediaId"
+                  }
+                  params={{ mediaId: id }}
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to details
+                </Link>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                className="h-10 rounded-md border-white/20 bg-white/10 px-4 text-sm text-white hover:bg-white/18 hover:text-white"
+              >
+                <Link
+                  to={
+                    detailBasePath === "/anime"
+                      ? "/anime/$mediaId/overview"
+                      : "/series/$mediaId/overview"
+                  }
+                  params={{ mediaId: id }}
+                >
+                  <Layers3 className="h-4 w-4" />
+                  Series overview
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl space-y-5 px-3 py-8 sm:px-4 lg:py-10">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <SeasonMetricCard label="Season id" value={`${season.id}`} detail="TMDB season reference" />
+          <SeasonMetricCard label="Air date" value={formatDate(season.air_date)} detail="First episode air date" />
+          <SeasonMetricCard label="Episodes" value={`${episodeCount}`} detail="Loaded from season details" />
+          <SeasonMetricCard label="Runtime" value={averageRuntime ? `${averageRuntime} min avg` : "TBA"} detail="Average episode runtime" />
+        </div>
+
+        <section className="overflow-hidden rounded-lg border bg-card shadow-sm">
+          <div className="border-b p-4 sm:p-5">
+            <Badge variant="secondary" className="mb-3 gap-1 rounded-md">
+              <Clapperboard className="h-3.5 w-3.5" />
+              Season details
+            </Badge>
+            <h2 className="text-2xl font-bold tracking-tight">
+              Episodes in {season.name}
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+              Episode artwork, air dates, runtime, ratings, crew, and guest stars from TMDB.
+            </p>
+          </div>
+
+          <div className="p-4 sm:p-5">
+            {season.episodes && season.episodes.length > 0 ? (
+              <Accordion
+                type="multiple"
+                className="space-y-2"
+                defaultValue={season.episodes
+                  .slice(0, 1)
+                  .map((episode) => `${episode.id}`)}
+              >
+                {season.episodes.map((episode) => (
+                  <EpisodeAccordionItem key={episode.id} episode={episode} />
+                ))}
+              </Accordion>
+            ) : (
+              <EmptyState
+                title="No data is available"
+                description="Episode details are not available for this season yet."
+              />
+            )}
+          </div>
+        </section>
+      </section>
+    </section>
+  )
+}
+
 function CreatorList({ creators }: { creators: TmdbCreator[] }) {
   if (creators.length === 0) {
     return null
@@ -577,6 +833,26 @@ function CreatorList({ creators }: { creators: TmdbCreator[] }) {
   )
 }
 
+function SeasonMetricCard({
+  label,
+  value,
+  detail,
+}: {
+  label: string
+  value: string
+  detail: string
+}) {
+  return (
+    <div className="rounded-lg border bg-card p-4 shadow-sm">
+      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        {label}
+      </p>
+      <p className="mt-2 text-2xl font-bold">{value}</p>
+      <p className="mt-1 text-sm text-muted-foreground">{detail}</p>
+    </div>
+  )
+}
+
 function RatingTrendsPanel({
   seasons,
   detail,
@@ -613,7 +889,7 @@ function RatingTrendsPanel({
               </p>
             </div>
             <div className="rounded-lg border bg-background px-3 py-2">
-              <p className="text-base font-bold tracking-[0.16em]">VEXTO GRAPH</p>
+              <p className="text-base font-bold tracking-[0.16em]">Quantum Clap</p>
               <p className="mt-1 text-sm text-muted-foreground">
                 Episode rating trends
               </p>
@@ -732,6 +1008,20 @@ function getSeasonAverage(season: TmdbSeasonDetail) {
   }
 
   return ratings.reduce((total, rating) => total + rating, 0) / ratings.length
+}
+
+function getAverageRuntime(episodes: TmdbEpisode[]) {
+  const runtimes = episodes
+    .map((episode) => episode.runtime ?? 0)
+    .filter((runtime) => runtime > 0)
+
+  if (runtimes.length === 0) {
+    return 0
+  }
+
+  return Math.round(
+    runtimes.reduce((total, runtime) => total + runtime, 0) / runtimes.length
+  )
 }
 
 function getRatingClass(rating?: number) {

@@ -415,10 +415,6 @@ function HeaderSearch({ className }: { className?: string }) {
   const placeholder = placeholders[placeholderIndex] ?? getSearchCopy(scope)
 
   useEffect(() => {
-    setPlaceholderIndex(0)
-  }, [pathname, scope])
-
-  useEffect(() => {
     if (query.trim().length > 0 || isFocused || placeholders.length < 2) {
       return
     }
@@ -897,7 +893,9 @@ function HeaderFilters() {
 export function HeaderLayout() {
   const navigate = useNavigate()
   const [hasScrolled, setHasScrolled] = useState(false)
-  const [sessionUser, setSessionUser] = useState<SessionUser | null>(null)
+  const [sessionUser, setSessionUser] = useState<SessionUser | null>(() =>
+    getSessionUser()
+  )
   const breadcrumbItems = useBreadcrumbItems()
 
   const handleLogout = async () => {
@@ -921,10 +919,6 @@ export function HeaderLayout() {
     toast.success("Logged out successfully.")
     await navigate({ to: "/sign-in" })
   }
-
-  useEffect(() => {
-    setSessionUser(getSessionUser())
-  }, [])
 
   useEffect(() => {
     const handleScroll = () => {

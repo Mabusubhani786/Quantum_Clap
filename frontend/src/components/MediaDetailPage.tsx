@@ -4,8 +4,9 @@ import {
   Building2,
   CalendarDays,
   Clock,
+  ArrowRight,
   ExternalLink,
-  Grid3X3,
+  Info,
   Languages,
   PenLine,
   Star,
@@ -34,6 +35,12 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel"
 import { Skeleton } from "@/components/ui/skeleton"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { WatchListButton } from "@/components/WatchListButton"
 import { backendApiData } from "@/service/backendApiData"
 import { fetchApiData } from "@/service/fetchApiData"
@@ -1214,6 +1221,11 @@ function EpisodesSection({
   detailBasePath: "/movie" | "/series" | "/anime"
   isLoading: boolean
 }) {
+  const seasonRoute =
+    detailBasePath === "/anime"
+      ? "/anime/$mediaId/season/$seasonNumber"
+      : "/series/$mediaId/season/$seasonNumber"
+
   return (
     <Card className="rounded-lg">
       <CardHeader>
@@ -1235,19 +1247,29 @@ function EpisodesSection({
             </Badge>
           ) : null}
           {detailBasePath !== "/movie" && (
-            <Button asChild size="sm" variant="outline" className="rounded-md">
-              <Link
-                to={
-                  detailBasePath === "/anime"
-                    ? "/anime/$mediaId/overview"
-                    : "/series/$mediaId/overview"
-                }
-                params={{ mediaId }}
-              >
-                <Grid3X3 className="h-4 w-4" />
-                View overview
-              </Link>
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button asChild size="sm" variant="outline" className="rounded-md">
+                    <Link
+                      to={
+                        detailBasePath === "/anime"
+                          ? "/anime/$mediaId/overview"
+                          : "/series/$mediaId/overview"
+                      }
+                      params={{ mediaId }}
+                    >
+                      <Info className="h-4 w-4" />
+                      View overview
+                    </Link>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top" sideOffset={8} className="max-w-64">
+                  Open the overview page for season artwork, episode details,
+                  air dates, and rating trends.
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
         </div>
       </CardHeader>
@@ -1292,11 +1314,18 @@ function EpisodesSection({
               <CarouselContent className="-ml-3">
                 {seasonSummaries.map((season) => (
                   <CarouselItem key={season.id} className="basis-auto pl-3">
-                    <article className="flex h-44 w-[20rem] overflow-hidden rounded-lg border bg-card sm:w-[24rem]">
+                    <Link
+                      to={seasonRoute}
+                      params={{
+                        mediaId,
+                        seasonNumber: String(season.season_number),
+                      }}
+                      className="group flex h-44 w-[20rem] overflow-hidden rounded-lg border bg-card text-card-foreground transition duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg sm:w-[24rem]"
+                    >
                       <img
                         src={getPosterUrl(season.poster_path)}
                         alt={season.name}
-                        className="h-full w-28 object-cover sm:w-32"
+                        className="h-full w-28 object-cover transition duration-300 group-hover:brightness-105 sm:w-32"
                         loading="lazy"
                       />
                       <div className="flex min-w-0 flex-1 flex-col justify-between p-3">
@@ -1317,12 +1346,18 @@ function EpisodesSection({
                               S{season.season_number}
                             </Badge>
                           </div>
+                          <Badge
+                            variant="secondary"
+                            className="w-fit rounded-md px-1.5 py-0 text-[0.68rem]"
+                          >
+                            ID {season.id}
+                          </Badge>
                           <p className="line-clamp-3 text-xs leading-5 text-muted-foreground">
                             {season.overview ||
                               "Season overview is not available yet."}
                           </p>
                         </div>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                           <Badge variant="secondary" className="rounded-md">
                             {season.episode_count} episodes
                           </Badge>
@@ -1333,9 +1368,13 @@ function EpisodesSection({
                             <Star className="h-3 w-3 fill-current" />
                             {formatRating(season.vote_average)}
                           </Badge>
+                          <span className="ml-auto inline-flex items-center gap-1 text-xs font-semibold text-primary opacity-0 transition group-hover:opacity-100">
+                            Details
+                            <ArrowRight className="h-3.5 w-3.5" />
+                          </span>
                         </div>
                       </div>
-                    </article>
+                    </Link>
                   </CarouselItem>
                 ))}
               </CarouselContent>
@@ -1536,6 +1575,31 @@ function RelatedMediaSection({
                       params={{ mediaId: String(item.id) }}
                       className="absolute inset-0 z-10 rounded-lg"
                     />
+                    <div className="absolute top-2 right-2 z-30">
+                      <WatchListButton
+                        item={{
+                          media_id: item.id,
+                          media_type:
+                            detailBasePath === "/anime"
+                              ? "anime"
+                              : detailBasePath === "/series"
+                                ? "tv"
+                                : "movie",
+                          title: getRelatedTitle(item),
+                          overview: item.overview,
+                          poster_url: getPosterUrl(item.poster_path),
+                          background_image_url: getBackdropUrl(
+                            item.backdrop_path
+                          ),
+                          metadata: {
+                            rating: item.vote_average,
+                            release_year:
+                              item.release_date?.slice(0, 4) ??
+                              item.first_air_date?.slice(0, 4),
+                          },
+                        }}
+                      />
+                    </div>
                     <div className="h-[25rem] overflow-hidden rounded-lg border bg-card transition duration-300 group-hover:-translate-y-0.5 group-hover:shadow-lg sm:h-[26rem]">
                       <div className="relative">
                       <img
@@ -1544,31 +1608,6 @@ function RelatedMediaSection({
                         className="h-[16.5rem] w-full object-cover sm:h-[18rem]"
                         loading="lazy"
                       />
-                        <div className="absolute top-2 right-2 z-20">
-                          <WatchListButton
-                            item={{
-                              media_id: item.id,
-                              media_type:
-                                detailBasePath === "/anime"
-                                  ? "anime"
-                                  : detailBasePath === "/series"
-                                    ? "tv"
-                                    : "movie",
-                              title: getRelatedTitle(item),
-                              overview: item.overview,
-                              poster_url: getPosterUrl(item.poster_path),
-                              background_image_url: getBackdropUrl(
-                                item.backdrop_path
-                              ),
-                              metadata: {
-                                rating: item.vote_average,
-                                release_year:
-                                  item.release_date?.slice(0, 4) ??
-                                  item.first_air_date?.slice(0, 4),
-                              },
-                            }}
-                          />
-                        </div>
                       </div>
                       <div className="space-y-2 p-3">
                         <div className="flex items-center justify-between gap-2">

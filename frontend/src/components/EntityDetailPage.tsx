@@ -566,6 +566,25 @@ function CreditRail({
                       params={{ mediaId: String(item.id) }}
                       className="absolute inset-0 z-10 rounded-lg"
                     />
+                    <div className="absolute top-2 right-2 z-30">
+                      <WatchListButton
+                        item={{
+                          media_id: item.id,
+                          media_type:
+                            item.media_type === "tv" ? "tv" : "movie",
+                          title: getCreditTitle(item),
+                          poster_url: getPosterUrl(item.poster_path),
+                          background_image_url: getBackdropUrl(
+                            item.backdrop_path
+                          ),
+                          metadata: {
+                            role: item.character || item.job,
+                            rating: item.vote_average,
+                            release_year: getCreditYear(item),
+                          },
+                        }}
+                      />
+                    </div>
                     <div className="h-[25rem] overflow-hidden rounded-lg border bg-card transition duration-300 group-hover:-translate-y-0.5 group-hover:shadow-lg sm:h-[26rem]">
                       <div className="relative">
                       <img
@@ -574,25 +593,6 @@ function CreditRail({
                         className="h-[16.5rem] w-full object-cover sm:h-[18rem]"
                         loading="lazy"
                       />
-                        <div className="absolute top-2 right-2 z-20">
-                          <WatchListButton
-                            item={{
-                              media_id: item.id,
-                              media_type:
-                                item.media_type === "tv" ? "tv" : "movie",
-                              title: getCreditTitle(item),
-                              poster_url: getPosterUrl(item.poster_path),
-                              background_image_url: getBackdropUrl(
-                                item.backdrop_path
-                              ),
-                              metadata: {
-                                role: item.character || item.job,
-                                rating: item.vote_average,
-                                release_year: getCreditYear(item),
-                              },
-                            }}
-                          />
-                        </div>
                       </div>
                       <div className="space-y-2 p-3">
                         <div className="flex items-center justify-between gap-2">

@@ -25,7 +25,7 @@ function RouteComponent() {
   const { mediaId } = Route.useParams()
   const location = useLocation()
 
-  if (location.pathname.endsWith("/overview")) {
+  if (location.pathname !== `/anime/${mediaId}`) {
     return <Outlet />
   }
 

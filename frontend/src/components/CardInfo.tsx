@@ -66,7 +66,7 @@ export function CardInfo({
     >
       <div className="absolute inset-0 -z-10 bg-gradient-to-r from-black via-black/75 to-black/35" />
       <div className="absolute inset-0 -z-10 bg-black/20" />
-      {watchListItem && (
+      {watchListItem && !detailTo && (
         <div className="absolute top-3 right-3 z-20">
           <WatchListButton item={watchListItem} />
         </div>
@@ -165,6 +165,11 @@ export function CardInfo({
         to={detailTo}
         className="absolute inset-0 z-10 rounded-lg"
       />
+      {watchListItem && (
+        <div className="absolute top-3 right-3 z-30">
+          <WatchListButton item={watchListItem} />
+        </div>
+      )}
       {card}
     </div>
   )

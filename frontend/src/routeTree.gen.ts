@@ -26,6 +26,8 @@ import { Route as _mainLayoutCompanyCompanyIdRouteImport } from './routes/__main
 import { Route as _mainLayoutAnimeMediaIdRouteImport } from './routes/__mainLayout/anime/$mediaId'
 import { Route as _mainLayoutSeriesMediaIdOverviewRouteImport } from './routes/__mainLayout/series/$mediaId/overview'
 import { Route as _mainLayoutAnimeMediaIdOverviewRouteImport } from './routes/__mainLayout/anime/$mediaId/overview'
+import { Route as _mainLayoutSeriesMediaIdSeasonSeasonNumberIndexRouteImport } from './routes/__mainLayout/series/$mediaId/season/$seasonNumber/index'
+import { Route as _mainLayoutAnimeMediaIdSeasonSeasonNumberIndexRouteImport } from './routes/__mainLayout/anime/$mediaId/season/$seasonNumber/index'
 
 const _mainLayoutRoute = _mainLayoutRouteImport.update({
   id: '/__mainLayout',
@@ -115,6 +117,18 @@ const _mainLayoutAnimeMediaIdOverviewRoute =
     path: '/overview',
     getParentRoute: () => _mainLayoutAnimeMediaIdRoute,
   } as any)
+const _mainLayoutSeriesMediaIdSeasonSeasonNumberIndexRoute =
+  _mainLayoutSeriesMediaIdSeasonSeasonNumberIndexRouteImport.update({
+    id: '/season/$seasonNumber/',
+    path: '/season/$seasonNumber/',
+    getParentRoute: () => _mainLayoutSeriesMediaIdRoute,
+  } as any)
+const _mainLayoutAnimeMediaIdSeasonSeasonNumberIndexRoute =
+  _mainLayoutAnimeMediaIdSeasonSeasonNumberIndexRouteImport.update({
+    id: '/season/$seasonNumber/',
+    path: '/season/$seasonNumber/',
+    getParentRoute: () => _mainLayoutAnimeMediaIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof _authLayoutIndexRoute
@@ -132,6 +146,8 @@ export interface FileRoutesByFullPath {
   '/series/': typeof _mainLayoutSeriesIndexRoute
   '/anime/$mediaId/overview': typeof _mainLayoutAnimeMediaIdOverviewRoute
   '/series/$mediaId/overview': typeof _mainLayoutSeriesMediaIdOverviewRoute
+  '/anime/$mediaId/season/$seasonNumber/': typeof _mainLayoutAnimeMediaIdSeasonSeasonNumberIndexRoute
+  '/series/$mediaId/season/$seasonNumber/': typeof _mainLayoutSeriesMediaIdSeasonSeasonNumberIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof _authLayoutIndexRoute
@@ -149,6 +165,8 @@ export interface FileRoutesByTo {
   '/series': typeof _mainLayoutSeriesIndexRoute
   '/anime/$mediaId/overview': typeof _mainLayoutAnimeMediaIdOverviewRoute
   '/series/$mediaId/overview': typeof _mainLayoutSeriesMediaIdOverviewRoute
+  '/anime/$mediaId/season/$seasonNumber': typeof _mainLayoutAnimeMediaIdSeasonSeasonNumberIndexRoute
+  '/series/$mediaId/season/$seasonNumber': typeof _mainLayoutSeriesMediaIdSeasonSeasonNumberIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -169,6 +187,8 @@ export interface FileRoutesById {
   '/__mainLayout/series/': typeof _mainLayoutSeriesIndexRoute
   '/__mainLayout/anime/$mediaId/overview': typeof _mainLayoutAnimeMediaIdOverviewRoute
   '/__mainLayout/series/$mediaId/overview': typeof _mainLayoutSeriesMediaIdOverviewRoute
+  '/__mainLayout/anime/$mediaId/season/$seasonNumber/': typeof _mainLayoutAnimeMediaIdSeasonSeasonNumberIndexRoute
+  '/__mainLayout/series/$mediaId/season/$seasonNumber/': typeof _mainLayoutSeriesMediaIdSeasonSeasonNumberIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -188,6 +208,8 @@ export interface FileRouteTypes {
     | '/series/'
     | '/anime/$mediaId/overview'
     | '/series/$mediaId/overview'
+    | '/anime/$mediaId/season/$seasonNumber/'
+    | '/series/$mediaId/season/$seasonNumber/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -205,6 +227,8 @@ export interface FileRouteTypes {
     | '/series'
     | '/anime/$mediaId/overview'
     | '/series/$mediaId/overview'
+    | '/anime/$mediaId/season/$seasonNumber'
+    | '/series/$mediaId/season/$seasonNumber'
   id:
     | '__root__'
     | '/__authLayout'
@@ -224,6 +248,8 @@ export interface FileRouteTypes {
     | '/__mainLayout/series/'
     | '/__mainLayout/anime/$mediaId/overview'
     | '/__mainLayout/series/$mediaId/overview'
+    | '/__mainLayout/anime/$mediaId/season/$seasonNumber/'
+    | '/__mainLayout/series/$mediaId/season/$seasonNumber/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -352,6 +378,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof _mainLayoutAnimeMediaIdOverviewRouteImport
       parentRoute: typeof _mainLayoutAnimeMediaIdRoute
     }
+    '/__mainLayout/series/$mediaId/season/$seasonNumber/': {
+      id: '/__mainLayout/series/$mediaId/season/$seasonNumber/'
+      path: '/season/$seasonNumber'
+      fullPath: '/series/$mediaId/season/$seasonNumber/'
+      preLoaderRoute: typeof _mainLayoutSeriesMediaIdSeasonSeasonNumberIndexRouteImport
+      parentRoute: typeof _mainLayoutSeriesMediaIdRoute
+    }
+    '/__mainLayout/anime/$mediaId/season/$seasonNumber/': {
+      id: '/__mainLayout/anime/$mediaId/season/$seasonNumber/'
+      path: '/season/$seasonNumber'
+      fullPath: '/anime/$mediaId/season/$seasonNumber/'
+      preLoaderRoute: typeof _mainLayoutAnimeMediaIdSeasonSeasonNumberIndexRouteImport
+      parentRoute: typeof _mainLayoutAnimeMediaIdRoute
+    }
   }
 }
 
@@ -373,11 +413,14 @@ const _authLayoutRouteWithChildren = _authLayoutRoute._addFileChildren(
 
 interface _mainLayoutAnimeMediaIdRouteChildren {
   _mainLayoutAnimeMediaIdOverviewRoute: typeof _mainLayoutAnimeMediaIdOverviewRoute
+  _mainLayoutAnimeMediaIdSeasonSeasonNumberIndexRoute: typeof _mainLayoutAnimeMediaIdSeasonSeasonNumberIndexRoute
 }
 
 const _mainLayoutAnimeMediaIdRouteChildren: _mainLayoutAnimeMediaIdRouteChildren =
   {
     _mainLayoutAnimeMediaIdOverviewRoute: _mainLayoutAnimeMediaIdOverviewRoute,
+    _mainLayoutAnimeMediaIdSeasonSeasonNumberIndexRoute:
+      _mainLayoutAnimeMediaIdSeasonSeasonNumberIndexRoute,
   }
 
 const _mainLayoutAnimeMediaIdRouteWithChildren =
@@ -387,12 +430,15 @@ const _mainLayoutAnimeMediaIdRouteWithChildren =
 
 interface _mainLayoutSeriesMediaIdRouteChildren {
   _mainLayoutSeriesMediaIdOverviewRoute: typeof _mainLayoutSeriesMediaIdOverviewRoute
+  _mainLayoutSeriesMediaIdSeasonSeasonNumberIndexRoute: typeof _mainLayoutSeriesMediaIdSeasonSeasonNumberIndexRoute
 }
 
 const _mainLayoutSeriesMediaIdRouteChildren: _mainLayoutSeriesMediaIdRouteChildren =
   {
     _mainLayoutSeriesMediaIdOverviewRoute:
       _mainLayoutSeriesMediaIdOverviewRoute,
+    _mainLayoutSeriesMediaIdSeasonSeasonNumberIndexRoute:
+      _mainLayoutSeriesMediaIdSeasonSeasonNumberIndexRoute,
   }
 
 const _mainLayoutSeriesMediaIdRouteWithChildren =

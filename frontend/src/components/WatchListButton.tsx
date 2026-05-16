@@ -1,8 +1,15 @@
 import { useMemo, useState, type MouseEvent } from "react"
+import type { PointerEvent } from "react"
 import { BookmarkCheck, BookmarkPlus, Loader2 } from "lucide-react"
 
 import backendApiEndPoints from "@/api-fetch-endpoints/backendApiEndPoints.json"
 import { Button } from "@/components/ui/button"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import { backendApiData } from "@/service/backendApiData"
 
@@ -109,6 +116,7 @@ export function WatchListButton({
   )
   const [isLoading, setIsLoading] = useState(false)
   const isSaved = Boolean(record?._id && record.is_active !== false)
+  const tooltipLabel = isSaved ? "Remove from Watch list" : "Add to Watch list"
 
   async function findExistingRecord() {
     if (!userId) {
@@ -198,27 +206,49 @@ export function WatchListButton({
     setIsLoading(false)
   }
 
+  function stopCardPointerEvent(event: PointerEvent<HTMLSpanElement>) {
+    event.stopPropagation()
+  }
+
   return (
-    <Button
-      aria-label={isSaved ? "Remove from watch list" : "Add to watch list"}
-      className={cn(
-        "size-9 rounded-full border border-white/20 bg-black/55 p-0 text-white shadow-lg backdrop-blur-md transition hover:bg-black/75",
-        isSaved && "bg-white text-black hover:bg-white/90",
-        className
-      )}
-      disabled={!userId || isLoading}
-      onClick={handleWatchListClick}
-      title={isSaved ? "Remove from watch list" : "Add to watch list"}
-      type="button"
-      variant="ghost"
-    >
-      {isLoading ? (
-        <Loader2 className="size-4 animate-spin" />
-      ) : isSaved ? (
-        <BookmarkCheck className="size-4" />
-      ) : (
-        <BookmarkPlus className="size-4" />
-      )}
-    </Button>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span
+            className="relative z-[80] inline-flex rounded-full"
+            onPointerDown={stopCardPointerEvent}
+            onPointerUp={stopCardPointerEvent}
+          >
+            <Button
+              aria-label={tooltipLabel}
+              className={cn(
+                "size-9 rounded-full border border-white/20 bg-black/55 p-0 text-white shadow-lg backdrop-blur-md transition hover:bg-black/75",
+                isSaved && "bg-white text-black hover:bg-white/90",
+                className
+              )}
+              disabled={!userId || isLoading}
+              onClick={handleWatchListClick}
+              type="button"
+              variant="ghost"
+            >
+              {isLoading ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : isSaved ? (
+                <BookmarkCheck className="size-4" />
+              ) : (
+                <BookmarkPlus className="size-4" />
+              )}
+            </Button>
+          </span>
+        </TooltipTrigger>
+        <TooltipContent
+          side="top"
+          sideOffset={8}
+          className="z-[9999] border border-white/10 bg-black/95 text-white shadow-xl shadow-black/30"
+        >
+          {tooltipLabel}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   )
 }
