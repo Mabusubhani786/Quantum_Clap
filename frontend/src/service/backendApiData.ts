@@ -22,6 +22,24 @@ export type BackendApiRequest = {
 const getBackendBaseUrl = () =>
   (import.meta.env.VITE_BACKEND_API_BASE_URL ?? "").replace(/\/+$/, "")
 
+function getStoredUserId() {
+  if (typeof window === "undefined") {
+    return undefined
+  }
+
+  try {
+    const storedUser = sessionStorage.getItem("user")
+    if (!storedUser) {
+      return undefined
+    }
+
+    const user = JSON.parse(storedUser) as { _id?: string; id?: string }
+    return user._id ?? user.id
+  } catch {
+    return undefined
+  }
+}
+
 const resolvePathParams = (url: string, params?: BackendParams) => {
   const remainingParams = { ...(params ?? {}) }
   const resolvedUrl = url.replace(/\{([^}]+)\}/g, (_, key: string) => {
@@ -83,6 +101,11 @@ export async function backendApiData<TData = unknown>({
   try {
     const requestHeaders = new Headers(headers)
     requestHeaders.set("accept", "application/json")
+    const userId = getStoredUserId()
+
+    if (userId && !requestHeaders.has("x_user_id")) {
+      requestHeaders.set("x_user_id", userId)
+    }
 
     const hasPayload =
       payload !== undefined && method !== "GET" && method !== "HEAD"

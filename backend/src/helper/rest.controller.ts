@@ -98,6 +98,38 @@ export default abstract class RestController<
     return [];
   }
 
+  protected getRequestUserId(request: FastifyRequest): string | undefined {
+    const headerValue =
+      request.headers["x_user_id"] ?? request.headers["x-user-id"];
+    const firstHeaderValue = Array.isArray(headerValue)
+      ? headerValue[0]
+      : headerValue;
+    const queryValue = (request.query as Record<string, unknown> | undefined)
+      ?.user_id;
+    const bodyValue = (request.body as Record<string, unknown> | undefined)
+      ?.user_id;
+    const rawValue = firstHeaderValue ?? queryValue ?? bodyValue;
+
+    if (typeof rawValue !== "string") {
+      return undefined;
+    }
+
+    const userId = rawValue.trim();
+    return userId || undefined;
+  }
+
+  protected getBaseQuery(_request: FastifyRequest): Record<string, unknown> {
+    return {};
+  }
+
+  protected preparePayloadForSave(
+    payload: TCreate | TUpdate,
+    _request: FastifyRequest,
+    _operation: SaveOperation
+  ): TCreate | TUpdate {
+    return payload;
+  }
+
   public readonly create = async (
     request: FastifyRequest<{ Body: TCreate }>,
     reply: FastifyReply
@@ -109,7 +141,12 @@ export default abstract class RestController<
         "create"
       )) as TCreate;
 
-      const created = await this.model.create(payload);
+      const preparedPayload = this.preparePayloadForSave(
+        payload,
+        request,
+        "create"
+      ) as TCreate;
+      const created = await this.model.create(preparedPayload);
       const response = await this.postSave(created, request, "create");
       return reply.code(201).send(
         formatSuccessResponse({
@@ -177,7 +214,10 @@ export default abstract class RestController<
   ) => {
     return this.withErrorHandling(reply, async () => {
       const lookupValue = this.getLookupValue(request);
-      const identifierFilter = this.buildIdentifierFilter(lookupValue);
+      const identifierFilter = this.combineQueryParts([
+        this.getBaseQuery(request),
+        this.buildIdentifierFilter(lookupValue),
+      ]);
       const record = await this.model
         .findOne(identifierFilter)
         .lean()
@@ -210,15 +250,23 @@ export default abstract class RestController<
   ) => {
     return this.withErrorHandling(reply, async () => {
       const lookupValue = this.getLookupValue(request);
-      const identifierFilter = this.buildIdentifierFilter(lookupValue);
+      const identifierFilter = this.combineQueryParts([
+        this.getBaseQuery(request),
+        this.buildIdentifierFilter(lookupValue),
+      ]);
       const payload = (await this.preSave(
         request.body as TUpdate,
         request,
         "update"
       )) as TUpdate;
+      const preparedPayload = this.preparePayloadForSave(
+        payload,
+        request,
+        "update"
+      ) as TUpdate;
 
       const updated = await this.model
-        .findOneAndUpdate(identifierFilter, payload, {
+        .findOneAndUpdate(identifierFilter, preparedPayload, {
           new: true,
           runValidators: true,
           lean: true,
@@ -253,7 +301,10 @@ export default abstract class RestController<
   ) => {
     return this.withErrorHandling(reply, async () => {
       const lookupValue = this.getLookupValue(request);
-      const identifierFilter = this.buildIdentifierFilter(lookupValue);
+      const identifierFilter = this.combineQueryParts([
+        this.getBaseQuery(request),
+        this.buildIdentifierFilter(lookupValue),
+      ]);
       const deleted = await this.model
         .findOneAndDelete(identifierFilter)
         .lean()
@@ -291,7 +342,7 @@ export default abstract class RestController<
     return lookupValue;
   }
 
-  private buildSearchQuery(request: FastifyRequest): Record<string, unknown> {
+  protected buildSearchQuery(request: FastifyRequest): Record<string, unknown> {
     const query = this.normalizeQueryFilters(
       request.query as Record<string, unknown>
     );
@@ -301,8 +352,13 @@ export default abstract class RestController<
     delete query.page;
     delete query.page_count;
     delete query.limit;
+    delete query.range;
+    delete query.period;
+    delete query.recent_range;
+    delete query.from_date;
+    delete query.to_date;
 
-    const queryParts: Record<string, unknown>[] = [];
+    const queryParts: Record<string, unknown>[] = [this.getBaseQuery(request)];
     if (Object.keys(query).length > 0) {
       queryParts.push(query);
     }
@@ -457,11 +513,16 @@ export default abstract class RestController<
     delete query.page_count;
     delete query.limit;
     delete query.q;
+    delete query.range;
+    delete query.period;
+    delete query.recent_range;
+    delete query.from_date;
+    delete query.to_date;
 
     return query;
   }
 
-  private async withErrorHandling(
+  protected async withErrorHandling(
     reply: FastifyReply,
     executor: () => Promise<FastifyReply>
   ): Promise<FastifyReply> {

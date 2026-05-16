@@ -11,6 +11,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { backendApiData } from "@/service/backendApiData"
 
 type BackendApiEndPoints = {
@@ -51,9 +58,16 @@ type UserMediaSectionsProps = {
   className?: string
 }
 
+type RecentRange = "today" | "week" | "month"
+
 const endpoints = backendApiEndPoints as BackendApiEndPoints
 const fallbackPoster =
   "https://placehold.co/342x513/111111/fafafa?text=No+Poster"
+const recentRangeOptions: Array<{ value: RecentRange; label: string }> = [
+  { value: "today", label: "Today" },
+  { value: "week", label: "1 Week" },
+  { value: "month", label: "1 Month" },
+]
 
 function readStoredUser(): StoredUser | null {
   try {
@@ -99,16 +113,18 @@ function UserMediaRail({
   icon,
   items,
   emptyText,
+  action,
 }: {
   title: string
   description: string
   icon: ReactNode
   items: UserMediaRecord[]
   emptyText: string
+  action?: ReactNode
 }) {
   return (
     <section className="space-y-4">
-      <div className="flex items-end justify-between gap-4">
+      <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="space-y-1">
           <Badge variant="secondary" className="gap-2 rounded-md px-3 py-1">
             {icon}
@@ -118,6 +134,7 @@ function UserMediaRail({
             {description}
           </p>
         </div>
+        {action}
       </div>
 
       {items.length === 0 ? (
@@ -196,6 +213,7 @@ function UserMediaRail({
 export function UserMediaSections({ className }: UserMediaSectionsProps) {
   const [watchList, setWatchList] = useState<UserMediaRecord[]>([])
   const [recent, setRecent] = useState<UserMediaRecord[]>([])
+  const [recentRange, setRecentRange] = useState<RecentRange>("today")
 
   useEffect(() => {
     const userId = getUserId()
@@ -214,7 +232,12 @@ export function UserMediaSections({ className }: UserMediaSectionsProps) {
         backendApiData<BackendResponse<UserMediaRecord>>({
           method: "GET",
           url: endpoints.recent.base,
-          params: { user_id: userId, is_active: true, limit: 8 },
+          params: {
+            user_id: userId,
+            is_active: true,
+            limit: 8,
+            range: recentRange,
+          },
         }),
       ])
 
@@ -223,7 +246,7 @@ export function UserMediaSections({ className }: UserMediaSectionsProps) {
     }
 
     void loadUserMedia()
-  }, [])
+  }, [recentRange])
 
   return (
     <div className={className}>
@@ -237,10 +260,27 @@ export function UserMediaSections({ className }: UserMediaSectionsProps) {
 
       <UserMediaRail
         title="Recent"
-        description="The latest titles you opened from your account."
+        description="Titles opened from your account for the selected time window."
         icon={<Clock3 className="h-4 w-4" />}
         items={recent}
         emptyText="No recent activity yet. Open a movie, series, or anime detail page to start this list."
+        action={
+          <Select
+            value={recentRange}
+            onValueChange={(value) => setRecentRange(value as RecentRange)}
+          >
+            <SelectTrigger className="h-9 min-w-32 rounded-md">
+              <SelectValue placeholder="Recent range" />
+            </SelectTrigger>
+            <SelectContent align="end">
+              {recentRangeOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        }
       />
     </div>
   )
