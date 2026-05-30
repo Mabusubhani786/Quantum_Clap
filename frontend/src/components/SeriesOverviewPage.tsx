@@ -1029,37 +1029,42 @@ function getRatingClass(rating?: number) {
     return ""
   }
 
+  if (rating >= 9.6) {
+    return "bg-[#006dff] text-slate-100"
+  }
+
   if (rating >= 9) {
-    return "bg-[#187a3f] text-slate-100"
+    return "bg-[#007814] text-slate-100"
   }
 
   if (rating >= 8) {
-    return "bg-[#2cbc68] text-[#1f2937]"
+    return "bg-[#00d821] text-[#06210b]"
   }
 
   if (rating >= 7) {
-    return "bg-[#f0d23b] text-[#1f2937]"
+    return "bg-[#ffc51b] text-[#1f2937]"
   }
 
   if (rating >= 6) {
-    return "bg-[#f2a91b] text-[#1f2937]"
+    return "bg-[#ff8417] text-[#1f2937]"
   }
 
   if (rating >= 5) {
-    return "bg-[#ef5538] text-slate-100"
+    return "bg-[#ff1010] text-slate-100"
   }
 
-  return "bg-[#5b2e82] text-slate-100"
+  return "bg-[#8d16ff] text-slate-100"
 }
 
 function RatingLegend() {
   const items = [
-    { label: "Awesome", color: "#187a3f" },
-    { label: "Great", color: "#2cbc68" },
-    { label: "Good", color: "#f0d23b" },
-    { label: "Regular", color: "#f2a91b" },
-    { label: "Bad", color: "#ef5538" },
-    { label: "Garbage", color: "#5b2e82" },
+    { label: "Absolute Cinema", color: "#006dff" },
+    { label: "Awesome", color: "#007814" },
+    { label: "Great", color: "#00d821" },
+    { label: "Good", color: "#ffc51b" },
+    { label: "Average", color: "#ff8417" },
+    { label: "Bad", color: "#ff1010" },
+    { label: "Garbage", color: "#8d16ff" },
   ]
 
   return (
