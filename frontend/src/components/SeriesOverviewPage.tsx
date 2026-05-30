@@ -251,9 +251,9 @@ export function SeriesOverviewPage({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [activeSlide, setActiveSlide] = useState(0)
-  const [activeTab, setActiveTab] = useState<"overview" | "rating-trends">(
-    "overview"
-  )
+  const [activeTab, setActiveTab] = useState<
+    "overview" | "season-ratings" | "rating-trends"
+  >("overview")
   const detailUrl = useMemo(
     () => resolveEndpoint(detailEndpoint.api, id),
     [detailEndpoint.api, id]
@@ -476,7 +476,7 @@ export function SeriesOverviewPage({
 
       <section className="mx-auto max-w-7xl space-y-5 px-3 py-8 sm:px-4 lg:py-10">
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-card p-2 shadow-sm">
-          <div className="grid grid-cols-2 gap-1">
+          <div className="grid grid-cols-1 gap-1 sm:grid-cols-3">
             <Button
               type="button"
               variant={activeTab === "overview" ? "default" : "ghost"}
@@ -489,6 +489,19 @@ export function SeriesOverviewPage({
             >
               <Layers3 className="h-4 w-4" />
               Overview
+            </Button>
+            <Button
+              type="button"
+              variant={activeTab === "season-ratings" ? "default" : "ghost"}
+              className={`rounded-md ${
+                activeTab === "season-ratings"
+                  ? ""
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              }`}
+              onClick={() => setActiveTab("season-ratings")}
+            >
+              <Clapperboard className="h-4 w-4" />
+              Season Ratings
             </Button>
             <Button
               type="button"
@@ -509,7 +522,7 @@ export function SeriesOverviewPage({
           </Badge>
         </div>
 
-        {activeTab === "overview" ? (
+        {activeTab === "overview" && (
           <div className="space-y-5">
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
@@ -539,7 +552,13 @@ export function SeriesOverviewPage({
               </div>
             )}
           </div>
-        ) : (
+        )}
+
+        {activeTab === "season-ratings" && (
+          <SeasonRatingsPanel seasons={seasons} detail={detail} />
+        )}
+
+        {activeTab === "rating-trends" && (
           <RatingTrendsPanel seasons={seasons} detail={detail} />
         )}
       </section>
@@ -850,6 +869,125 @@ function SeasonMetricCard({
       <p className="mt-2 text-2xl font-bold">{value}</p>
       <p className="mt-1 text-sm text-muted-foreground">{detail}</p>
     </div>
+  )
+}
+
+function SeasonRatingsPanel({
+  seasons,
+  detail,
+}: {
+  seasons: TmdbSeasonDetail[]
+  detail: TmdbSeriesDetail
+}) {
+  return (
+    <section className="overflow-hidden rounded-lg border bg-card text-card-foreground shadow-sm">
+      <div className="grid gap-0 lg:grid-cols-[12rem_minmax(0,1fr)] xl:grid-cols-[13rem_minmax(0,1fr)]">
+        <aside className="border-b bg-muted/25 p-4 lg:border-b-0 lg:border-r">
+          <img
+            src={getPosterUrl(detail.poster_path)}
+            alt={getTitle(detail)}
+            className="aspect-[2/3] w-32 rounded-lg border object-cover shadow-sm sm:w-40 lg:w-full"
+          />
+          <div className="mt-4 space-y-3">
+            <div className="flex items-center gap-2 text-lg font-bold">
+              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+              <span>{formatRating(detail.vote_average)}</span>
+              <span className="text-sm font-medium text-muted-foreground">
+                ({detail.vote_count?.toLocaleString() ?? 0})
+              </span>
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold leading-none">{getTitle(detail)}</h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {getYear(detail.first_air_date)} - {getYear(detail.last_air_date)}
+              </p>
+            </div>
+            <div className="rounded-lg border bg-background px-3 py-2">
+              <p className="text-base font-bold tracking-[0.16em]">Quantum Clap</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Season rating cards
+              </p>
+            </div>
+          </div>
+        </aside>
+
+        <div className="min-w-0 p-4 sm:p-6">
+          <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <Badge variant="secondary" className="mb-3 gap-1 rounded-md">
+                <Clapperboard className="h-3.5 w-3.5" />
+                Season Ratings
+              </Badge>
+              <h3 className="text-xl font-bold sm:text-2xl">
+                Episode ratings by season
+              </h3>
+              <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+                Clean season groups with every episode score and season average.
+              </p>
+            </div>
+            <RatingLegend />
+          </div>
+
+          {seasons.length > 0 ? (
+            <div className="space-y-5">
+              {seasons.map((season) => {
+                const average = getSeasonAverage(season)
+
+                return (
+                  <section key={season.id} className="space-y-2">
+                    <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                      <h4 className="text-base font-semibold">
+                        Season {season.season_number}
+                      </h4>
+                      <span className="text-sm text-muted-foreground">
+                        avg {formatTrendRating(average) || "NR"}
+                      </span>
+                    </div>
+
+                    {season.episodes && season.episodes.length > 0 ? (
+                      <div className="flex flex-wrap gap-1.5">
+                        {season.episodes.map((episode) => {
+                          const hasEpisodeRating = hasRating(episode.vote_average)
+
+                          return (
+                            <div
+                              key={episode.id}
+                              className={
+                                hasEpisodeRating
+                                  ? `grid h-12 w-16 grid-rows-[0.85rem_minmax(0,1fr)] rounded-md px-2 py-1 shadow-sm ${getRatingClass(
+                                      episode.vote_average
+                                    )}`
+                                  : "grid h-12 w-16 grid-rows-[0.85rem_minmax(0,1fr)] rounded-md border bg-muted/35 px-2 py-1 text-muted-foreground"
+                              }
+                              title={episode.name}
+                            >
+                              <span className="text-[0.64rem] font-medium leading-none opacity-80">
+                                E{episode.episode_number}
+                              </span>
+                              <span className="self-center text-center text-base font-bold leading-none tabular-nums">
+                                {formatTrendRating(episode.vote_average) || "NR"}
+                              </span>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    ) : (
+                      <p className="rounded-md border bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
+                        Episode ratings are not available for this season.
+                      </p>
+                    )}
+                  </section>
+                )
+              })}
+            </div>
+          ) : (
+            <p className="rounded-lg border bg-muted/30 p-6 text-sm text-muted-foreground">
+              Season rating data is not available yet.
+            </p>
+          )}
+        </div>
+      </div>
+    </section>
   )
 }
 

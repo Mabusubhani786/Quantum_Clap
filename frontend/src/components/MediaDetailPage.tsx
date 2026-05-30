@@ -365,7 +365,7 @@ function getWatchRegions(detail: TmdbDetail) {
   const regions = Object.entries(detail["watch/providers"]?.results ?? {})
 
   return regions.sort(([firstRegionCode], [secondRegionCode]) => {
-    const priorityRegions = ["US", "IN", "GB", "CA", "AU"]
+    const priorityRegions = ["IN", "US", "GB", "CA", "AU"]
     const firstPriority = priorityRegions.indexOf(firstRegionCode)
     const secondPriority = priorityRegions.indexOf(secondRegionCode)
 
