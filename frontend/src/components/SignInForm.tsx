@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { decodeAccessToken, storeAuthSession } from "@/lib/auth-session"
+import { warmBackendConnection } from "@/service/backend-health"
 import { backendApiData } from "@/service/backendApiData"
 
 type BackendApiEndPoints = {
@@ -55,6 +56,8 @@ export function SignInForm() {
     setIsSubmitting(true)
     setMessage("")
 
+    await warmBackendConnection()
+
     const response = await backendApiData<SignInResponse>({
       method: "POST",
       url: endpoints.auth.sign_in,
@@ -82,7 +85,9 @@ export function SignInForm() {
       setMessage("Signed in successfully.")
       await navigate({ to: "/home" })
     } else {
-      setMessage("Invalid user name/email or password.")
+      setMessage(
+        "Sign-in failed. Please verify your credentials and retry in a moment."
+      )
     }
 
     setIsSubmitting(false)

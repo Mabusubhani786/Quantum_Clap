@@ -9,6 +9,7 @@ import {
   ensureValidAccessToken,
   hasAccessToken,
 } from "@/lib/auth-session"
+import { warmBackendConnection } from "@/service/backend-health"
 import { fetchApiData, type HttpMethod } from "@/service/fetchApiData"
 
 export const Route = createFileRoute("/__authLayout")({
@@ -113,6 +114,10 @@ function RouteComponent() {
     fallbackMarqueeImages
   )
   const [shuffleSeed, setShuffleSeed] = useState(0)
+
+  useEffect(() => {
+    void warmBackendConnection()
+  }, [])
 
   useEffect(() => {
     let isMounted = true

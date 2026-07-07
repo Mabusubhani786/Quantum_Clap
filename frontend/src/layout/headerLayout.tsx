@@ -921,14 +921,33 @@ export function HeaderLayout() {
   }
 
   useEffect(() => {
+    let animationFrameId = 0
+
     const handleScroll = () => {
-      setHasScrolled(window.scrollY > 12)
+      if (animationFrameId) {
+        return
+      }
+
+      animationFrameId = window.requestAnimationFrame(() => {
+        animationFrameId = 0
+        const nextHasScrolled = window.scrollY > 12
+
+        setHasScrolled((currentValue) =>
+          currentValue === nextHasScrolled ? currentValue : nextHasScrolled
+        )
+      })
     }
 
     handleScroll()
     window.addEventListener("scroll", handleScroll, { passive: true })
 
-    return () => window.removeEventListener("scroll", handleScroll)
+    return () => {
+      if (animationFrameId) {
+        window.cancelAnimationFrame(animationFrameId)
+      }
+
+      window.removeEventListener("scroll", handleScroll)
+    }
   }, [])
 
   return (

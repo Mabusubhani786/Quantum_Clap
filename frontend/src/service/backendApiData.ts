@@ -1,4 +1,11 @@
 import { ensureValidAccessToken } from "@/lib/auth-session"
+import { buildBackendUrl } from "@/lib/backend-url"
+import {
+  clearInFlightRequest,
+  getInFlightRequest,
+  setInFlightRequest,
+  withAbortSignal,
+} from "@/lib/request-cache"
 
 export type BackendHttpMethod =
   | "GET"
@@ -19,13 +26,24 @@ export type BackendApiRequest = {
   payload?: unknown
   headers?: HeadersInit
   signal?: AbortSignal
+  timeoutMs?: number
 }
-
-const getBackendBaseUrl = () =>
-  (import.meta.env.VITE_BACKEND_API_BASE_URL ?? "").replace(/\/+$/, "")
 
 const refreshEndpoint = "/jwt_user/refresh"
 const publicAuthEndpoints = new Set(["/sign-in", refreshEndpoint])
+const DEFAULT_BACKEND_TIMEOUT_MS = 20000
+
+function buildRequestKey(
+  method: BackendHttpMethod,
+  requestUrl: string,
+  payload?: unknown
+) {
+  return JSON.stringify({
+    method,
+    url: requestUrl,
+    payload: payload ?? null,
+  })
+}
 
 function shouldSkipTokenRefresh(url: string, method: BackendHttpMethod) {
   return publicAuthEndpoints.has(url) || (url === "/user" && method === "POST")
@@ -81,14 +99,11 @@ const appendIdParam = (
   return `${url.replace(/\/+$/, "")}/${encodeURIComponent(String(id))}`
 }
 
-const buildBackendUrl = (url: string, params?: BackendParams) => {
-  const baseUrl = getBackendBaseUrl()
+const buildRequestUrl = (url: string, params?: BackendParams) => {
   const method = "GET"
   const { resolvedUrl, remainingParams } = resolvePathParams(url, params)
   const urlWithId = appendIdParam(resolvedUrl, remainingParams, method)
-  const requestUrl = new URL(
-    urlWithId.startsWith("http") ? urlWithId : `${baseUrl}${urlWithId}`
-  )
+  const requestUrl = new URL(buildBackendUrl(urlWithId))
 
   Object.entries(remainingParams).forEach(([key, value]) => {
     if (value !== null && value !== undefined) {
@@ -106,7 +121,10 @@ export async function backendApiData<TData = unknown>({
   payload,
   headers,
   signal,
+  timeoutMs = DEFAULT_BACKEND_TIMEOUT_MS,
 }: BackendApiRequest): Promise<TData | null> {
+  let timeoutId: number | null = null
+
   try {
     const skipTokenRefresh = shouldSkipTokenRefresh(url, method)
 
@@ -136,13 +154,35 @@ export async function backendApiData<TData = unknown>({
     const { resolvedUrl, remainingParams } = resolvePathParams(url, params)
     const urlWithId = appendIdParam(resolvedUrl, remainingParams, method)
 
-    const requestUrl = buildBackendUrl(urlWithId, remainingParams)
-    let response = await fetch(requestUrl, {
-      method,
-      headers: requestHeaders,
-      signal,
-      body: hasPayload ? JSON.stringify(payload) : undefined,
-    })
+    const requestUrl = buildRequestUrl(urlWithId, remainingParams)
+    const abortController = signal ? null : new AbortController()
+    timeoutId = abortController
+      ? window.setTimeout(() => abortController.abort(), timeoutMs)
+      : null
+    const requestKey = buildRequestKey(method, requestUrl, payload)
+    const requestSignal = signal ?? abortController?.signal
+    const executeRequest = () =>
+      fetch(requestUrl, {
+        method,
+        headers: requestHeaders,
+        signal: requestSignal,
+        body: hasPayload ? JSON.stringify(payload) : undefined,
+      })
+
+    const inFlightRequest =
+      method === "GET" ? getInFlightRequest<Response>(requestKey) : null
+
+    let response = inFlightRequest
+      ? await withAbortSignal(inFlightRequest, signal)
+      : await (async () => {
+          const nextRequest = executeRequest()
+          if (method === "GET") {
+            setInFlightRequest(requestKey, nextRequest)
+            nextRequest.finally(() => clearInFlightRequest(requestKey))
+          }
+
+          return await withAbortSignal(nextRequest, signal)
+        })()
 
     if (response.status === 401 && !skipTokenRefresh) {
       const refreshed = await ensureValidAccessToken({ force: true })
@@ -153,12 +193,7 @@ export async function backendApiData<TData = unknown>({
           requestHeaders.set("Authorization", `Bearer ${nextAccessToken}`)
         }
 
-        response = await fetch(requestUrl, {
-          method,
-          headers: requestHeaders,
-          signal,
-          body: hasPayload ? JSON.stringify(payload) : undefined,
-        })
+        response = await executeRequest()
       }
     }
 
@@ -176,7 +211,16 @@ export async function backendApiData<TData = unknown>({
 
     return (await response.json()) as TData
   } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      console.error("Backend API Fetch Error: request timed out")
+      return null
+    }
+
     console.error("Backend API Fetch Error:", error)
     return null
+  } finally {
+    if (!signal) {
+      window.clearTimeout(timeoutId ?? undefined)
+    }
   }
 }

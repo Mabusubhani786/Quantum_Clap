@@ -1,4 +1,5 @@
 import backendApiEndPoints from "@/api-fetch-endpoints/backendApiEndPoints.json"
+import { buildBackendUrl } from "@/lib/backend-url"
 
 type BackendAuthEndpoints = {
   auth: {
@@ -30,9 +31,6 @@ export type AuthSession = {
 const endpoints = backendApiEndPoints as BackendAuthEndpoints
 const ACCESS_REFRESH_WINDOW_MS = 60_000
 let refreshPromise: Promise<boolean> | null = null
-
-const getBackendBaseUrl = () =>
-  (import.meta.env.VITE_BACKEND_API_BASE_URL ?? "").replace(/\/+$/, "")
 
 export function decodeAccessToken(token: string): Record<string, unknown> | null {
   try {
@@ -125,7 +123,7 @@ async function refreshAccessToken() {
     return false
   }
 
-  const response = await fetch(`${getBackendBaseUrl()}${endpoints.auth.refresh}`, {
+  const response = await fetch(buildBackendUrl(endpoints.auth.refresh), {
     method: "POST",
     headers: {
       accept: "application/json",
