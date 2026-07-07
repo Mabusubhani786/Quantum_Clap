@@ -1,108 +1,227 @@
 # Quantum Clap
 
-Quantum Clap is an entertainment discovery application designed to help users explore movies, series, and anime in one place. It delivers a smooth browsing experience with curated trending sections, rich media details, and easy access to cast and company information.
+Quantum Clap is a full-stack entertainment discovery platform for exploring movies, series, and anime with a polished browsing experience, authenticated user flows, and personalized watch activity.
 
-## Summary
+## Overview
 
-- Unified movie, series, and anime discovery experience
-- Responsive browsing with carousels, cards, and pagination
-- Rich detail pages for media, people, and companies
-- Discover trending titles, top picks, and new releases
+- Discover movies, TV series, and anime from TMDB
+- Explore rich media, person, and company detail pages
+- Sign up, sign in, refresh sessions, and revoke auth tokens
+- Save titles to a watch list and track recent activity
+- Browse curated home sections with trending, upcoming, top-rated, and on-air content
+- Filter catalog pages by language, year, rating, release date, genre, and sort order
 
-## Page Overview
+## Architecture
 
-### Home (`/home`)
+- `frontend/` — React 19 + Vite + TypeScript single-page app
+- `backend/` — Fastify + TypeScript REST API
+- `MongoDB` — persistence for users, JWT sessions, watch list, recent activity, and roles
+- `TMDB API` — upstream content source for media discovery and metadata
 
-- Hero landing section with featured content and quick navigation
-- Trending media sections with filters for all media, movies, and TV
-- Top rated and upcoming sections for easy discovery
-- Cards link directly to media detail pages
+## Tech Stack
 
-### Movies (`/movie/`)
+- Frontend: `React`, `TypeScript`, `Vite`, `@tanstack/react-router`, `Tailwind CSS`, `shadcn/ui`, `Sonner`
+- Backend: `Fastify`, `TypeScript`, `Mongoose`, `bcryptjs`
+- Database: `MongoDB Atlas` or any MongoDB connection exposed through `MONGODB_URI`
+- Deployment: frontend configured for SPA hosting with `frontend/vercel.json`
 
-- Movie catalog listing with genre mapping and title cards
-- Poster preview, rating, release year, and overview snippets
-- Pagination support for browsing large datasets
+## Features
 
-### Series (`/series/`)
+### Discovery Experience
 
-- TV series catalog listing with responsive cards
-- Genre details and media metadata
-- Links to series detail pages for deeper information
+- Home experience with hero media preview and curated rails
+- Dedicated catalog pages for movies, series, and anime
+- Search across movies, series, people, and companies
+- Detail pages with metadata, cast, recommendations, images, reviews, and related content
+- Series and anime overview pages for season-level exploration
 
-### Anime (`/anime/`)
+### Personalization
 
-- Anime catalog and browse experience
-- Same polished presentation as movies and series
-- Anime detail pages with season and episode metadata
+- User registration and sign-in
+- Session-based auth with access token refresh support
+- Watch list save/remove flows
+- Recent activity tracking for authenticated users
+- Profile screen for user account data
 
-### Movie Detail (`/movie/:mediaId`)
+### Performance-Oriented Client Behavior
 
-- Movie poster, synopsis, runtime, rating, and release date
-- Cast and crew highlights
-- Similar recommendations and related content
-- Watch provider and external links when available
+- Shared request deduplication for repeated API calls
+- Short-lived GET response caching for smoother navigation
+- Backend warm-up check before sign-in on cold deployments
+- Request timeout handling for backend API calls
 
-### Series Detail (`/series/:mediaId`)
+## Route Map
 
-- Series overview with seasons, creators, genres, and status
-- Ratings, summary, and release timeline
-- Season and episode details using the overview page
+### Public Auth Routes
 
-### Anime Detail (`/anime/:mediaId`)
+- `/sign-in`
+- `/sign-up`
 
-- Anime series details with cast and reviews
-- Related content and recommended watch suggestions
-- Seasonal overview for anime-specific metadata
+### Main App Routes
 
-### Overview Pages (`/series/:mediaId/overview`, `/anime/:mediaId/overview`)
+- `/home`
+- `/movie`
+- `/movie/:mediaId`
+- `/series`
+- `/series/:mediaId`
+- `/series/:mediaId/overview`
+- `/series/:mediaId/season/:seasonNumber`
+- `/anime`
+- `/anime/:mediaId`
+- `/anime/:mediaId/overview`
+- `/anime/:mediaId/season/:seasonNumber`
+- `/person/:personId`
+- `/company/:companyId`
+- `/profile`
 
-- Season guides and episode breakdowns
-- Visual galleries, episode summaries, and review content
+## Backend API
 
-### Person Detail (`/person/:personId`)
+### System
 
-- Biography and profile information
-- Combined acting and crew credits
-- Image gallery and known-for highlights
+- `GET /ping`
+- `GET /health`
 
-### Company Detail (`/company/:companyId`)
+### Auth
 
-- Company profile, headquarters, and origin country
-- Logo gallery and alternative names
-- Homepage and external company links
+- `POST /sign-in`
+- `POST /jwt_user/token`
+- `POST /jwt_user/refresh`
+- `POST /jwt_user/revoke`
+
+### Resources
+
+- `POST /user`
+- `GET /user`
+- `GET /user/:id`
+- `PUT /user/:id`
+- `PATCH /user/:id`
+- `DELETE /user/:id`
+
+- `POST /watch-list`
+- `GET /watch-list`
+- `GET /watch-list/:id`
+- `PUT /watch-list/:id`
+- `PATCH /watch-list/:id`
+- `DELETE /watch-list/:id`
+
+- `POST /recent`
+- `GET /recent`
+- `GET /recent/:id`
+- `PUT /recent/:id`
+- `PATCH /recent/:id`
+- `DELETE /recent/:id`
+
+- `POST /roles`
+- `GET /roles`
+- `GET /roles/:id`
+- `PUT /roles/:id`
+- `PATCH /roles/:id`
+- `DELETE /roles/:id`
 
 ## Project Structure
 
-- `frontend/`
-  - `src/routes/` — route definitions and page wiring
-  - `src/components/` — page components, reusable UI, and shared widgets
-  - `src/service/` — centralized API fetch helper
-  - `src/api-fetch-endpoints/` — TMDB endpoint definitions in JSON
-  - `src/layout/` — header and layout wrappers
-  - `src/components/ui/` — shared shadcn-style UI components
+- `README.md` — root project documentation
+- `frontend/` — client application
+- `frontend/src/routes/` — TanStack file-based routes
+- `frontend/src/components/` — feature components and page building blocks
+- `frontend/src/components/ui/` — shared UI primitives
+- `frontend/src/layout/` — app layout and header shell
+- `frontend/src/lib/` — auth helpers, filter helpers, URL helpers, request cache
+- `frontend/src/service/` — TMDB fetch layer and backend API layer
+- `frontend/src/api-fetch-endpoints/` — endpoint contracts for TMDB and backend
+- `backend/` — API server
+- `backend/src/controllers/` — route handlers and resource logic
+- `backend/src/modules/` — Mongoose models
+- `backend/src/config/` — DB configuration
+- `backend/src/helper/` — password, JWT, response, and REST helpers
+- `backend/src/router/` — route registration
 
-## Setup
+## Environment Variables
 
-1. `cd frontend`
-2. `npm install`
-3. Create a `.env` file or set environment variables:
-   - `VITE_TMDB_AUTHORIZATION` — TMDB authorization header string
-   - `VITE_API_ACCEPT` — usually `application/json`
-4. `npm run dev`
+### Frontend
 
-## Available Scripts
+Set these in `frontend/.env` for local development or in your deployment platform for production builds:
 
-- `npm run dev` — start local development server
-- `npm run build` — build production bundle
-- `npm run preview` — preview production build
-- `npm run lint` — run ESLint across the frontend
-- `npm run format` — format code with Prettier
-- `npm run typecheck` — run TypeScript type checking
+- `VITE_API_ACCEPT` — usually `application/json`
+- `VITE_TMDB_AUTHORIZATION` — TMDB bearer token
+- `VITE_BACKEND_API_BASE_URL` — backend base URL, such as `http://localhost:8002`
 
-## Notes
+### Backend
 
-- The app uses file-based routing via `@tanstack/react-router`.
-- `fetchApiData` centralizes all TMDB fetch logic and query parameters.
-- The UI is powered by Tailwind CSS and shadcn/ui components.
-- Root `/` redirects to `/home`.
+Use either `MONGODB_URI` or the individual MongoDB settings below:
+
+- `MONGODB_URI`
+- `DB_USER`
+- `DB_PASSWORD`
+- `DB_HOST`
+- `DB_NAME`
+- `DB_OPTIONS`
+- `PORT`
+- `HOST` (optional)
+- `JWT_SECRET`
+- `JWT_ACCESS_EXPIRES_IN_SECONDS`
+- `JWT_REFRESH_EXPIRES_IN_SECONDS`
+
+## Local Development
+
+### 1. Start the backend
+
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+### 2. Start the frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### 3. Open the app
+
+- Frontend default: `http://localhost:5173`
+- Backend default from env: `http://localhost:8002`
+
+## Scripts
+
+### Frontend Scripts
+
+- `npm run dev`
+- `npm run build`
+- `npm run preview`
+- `npm run lint`
+- `npm run format`
+- `npm run typecheck`
+
+### Backend Scripts
+
+- `npm run dev`
+- `npm run build`
+- `npm run start`
+
+## Deployment Notes
+
+- The frontend is configured as an SPA with rewrite support in `frontend/vercel.json`
+- `VITE_BACKEND_API_BASE_URL` must point to the deployed backend URL at build time
+- The backend waits for MongoDB connection before serving requests
+- Cold-started backend environments may respond slower on the first request, so frontend auth warm-up logic helps reduce sign-in friction
+
+## Current Implementation Notes
+
+- Auth state is stored in `sessionStorage`
+- TMDB endpoint metadata is centralized in JSON files for consistency
+- Backend CORS headers are applied in the Fastify `onRequest` hook
+- Health checks expose DB collection visibility and runtime status
+
+## Validation
+
+Recommended verification commands:
+
+```bash
+cd frontend && npm run typecheck
+cd frontend && npm run lint
+cd backend && npm run build
+```
