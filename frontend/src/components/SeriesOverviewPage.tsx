@@ -3,6 +3,7 @@ import {
   ArrowLeft,
   CalendarDays,
   Clapperboard,
+  Grid3x3,
   Layers3,
   Play,
   TrendingUp,
@@ -252,7 +253,7 @@ export function SeriesOverviewPage({
   const [error, setError] = useState(false)
   const [activeSlide, setActiveSlide] = useState(0)
   const [activeTab, setActiveTab] = useState<
-    "overview" | "season-ratings" | "rating-trends"
+    "overview" | "season-ratings" | "rating-trends" | "rating-heatmap"
   >("overview")
   const detailUrl = useMemo(
     () => resolveEndpoint(detailEndpoint.api, id),
@@ -476,7 +477,7 @@ export function SeriesOverviewPage({
 
       <section className="mx-auto max-w-7xl space-y-5 px-3 py-8 sm:px-4 lg:py-10">
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-card p-2 shadow-sm">
-          <div className="grid grid-cols-1 gap-1 sm:grid-cols-3">
+          <div className="grid grid-cols-2 gap-1 sm:grid-cols-2 lg:grid-cols-4">
             <Button
               type="button"
               variant={activeTab === "overview" ? "default" : "ghost"}
@@ -515,6 +516,19 @@ export function SeriesOverviewPage({
             >
               <TrendingUp className="h-4 w-4" />
               Rating Trends
+            </Button>
+            <Button
+              type="button"
+              variant={activeTab === "rating-heatmap" ? "default" : "ghost"}
+              className={`rounded-md ${
+                activeTab === "rating-heatmap"
+                  ? ""
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              }`}
+              onClick={() => setActiveTab("rating-heatmap")}
+            >
+              <Grid3x3 className="h-4 w-4" />
+              Rating Heatmap
             </Button>
           </div>
           <Badge variant="outline" className="rounded-md">
@@ -560,6 +574,10 @@ export function SeriesOverviewPage({
 
         {activeTab === "rating-trends" && (
           <RatingTrendsPanel seasons={seasons} detail={detail} />
+        )}
+
+        {activeTab === "rating-heatmap" && (
+          <RatingHeatmapPanel seasons={seasons} detail={detail} />
         )}
       </section>
     </section>
@@ -945,7 +963,7 @@ function SeasonRatingsPanel({
                     </div>
 
                     {season.episodes && season.episodes.length > 0 ? (
-                      <div className="flex flex-wrap gap-1.5">
+                      <div className="flex flex-wrap gap-1">
                         {season.episodes.map((episode) => {
                           const hasEpisodeRating = hasRating(episode.vote_average)
 
@@ -954,17 +972,17 @@ function SeasonRatingsPanel({
                               key={episode.id}
                               className={
                                 hasEpisodeRating
-                                  ? `grid h-12 w-16 grid-rows-[0.85rem_minmax(0,1fr)] rounded-md px-2 py-1 shadow-sm ${getRatingClass(
+                                  ? `grid h-9 w-12 grid-rows-[0.6rem_minmax(0,1fr)] rounded-sm px-1.5 py-0.5 shadow-sm ${getRatingClass(
                                       episode.vote_average
                                     )}`
-                                  : "grid h-12 w-16 grid-rows-[0.85rem_minmax(0,1fr)] rounded-md border bg-muted/35 px-2 py-1 text-muted-foreground"
+                                  : "grid h-9 w-12 grid-rows-[0.6rem_minmax(0,1fr)] rounded-sm border bg-muted/35 px-1.5 py-0.5 text-muted-foreground"
                               }
                               title={episode.name}
                             >
-                              <span className="text-[0.64rem] font-medium leading-none opacity-80">
+                              <span className="text-[0.55rem] font-medium leading-none opacity-80">
                                 E{episode.episode_number}
                               </span>
-                              <span className="self-center text-center text-base font-bold leading-none tabular-nums">
+                              <span className="self-center text-center text-[0.7rem] font-bold leading-none tabular-nums">
                                 {formatTrendRating(episode.vote_average) || "NR"}
                               </span>
                             </div>
@@ -1055,18 +1073,18 @@ function RatingTrendsPanel({
           {seasons.length > 0 ? (
             <div className="overflow-x-auto pb-2">
               <div
-                className="grid min-w-max gap-x-[2px] gap-y-[2px]"
+                className="grid min-w-max gap-[1px]"
                 style={{
-                  gridTemplateColumns: `minmax(1rem, 5ch) repeat(${seasons.length}, minmax(4rem, 5rem))`,
+                  gridTemplateColumns: `minmax(1rem, 4.5ch) repeat(${seasons.length}, minmax(3.5rem, 4rem))`,
                 }}
               >
                 <div />
                 {seasons.map((season) => (
                   <div
                     key={season.id}
-                    className="flex h-8 items-center justify-center rounded-md border border-border/70 bg-muted/40 px-1 text-center shadow-sm"
+                    className="flex h-8 items-center justify-center rounded-sm border border-border/70 bg-muted/40 px-1 text-center shadow-sm"
                   >
-                    <p className="text-[0.68rem] font-medium leading-none text-foreground/90 sm:text-xs">
+                    <p className="text-[0.7rem] font-medium leading-none text-foreground/90">
                       S{season.season_number}
                     </p>
                   </div>
@@ -1074,7 +1092,7 @@ function RatingTrendsPanel({
 
                 {Array.from({ length: maxEpisodeCount }).map((_, episodeIndex) => (
                   <Fragment key={episodeIndex}>
-                    <div className="flex h-8 items-center justify-start pl-1 text-left text-base font-medium leading-none uppercase tabular-nums text-foreground/85 sm:text-lg">
+                    <div className="flex h-8 items-center justify-start pl-1 text-left text-[0.7rem] font-medium leading-none uppercase tabular-nums text-foreground/85">
                       E{episodeIndex + 1}
                     </div>
                     {seasons.map((season) => {
@@ -1086,10 +1104,10 @@ function RatingTrendsPanel({
                           key={`${season.id}-${episodeIndex}`}
                           className={
                             hasEpisodeRating
-                              ? `flex h-8 items-center justify-center rounded-md text-lg font-semibold leading-none sm:text-xl ${getRatingClass(
+                              ? `flex h-8 items-center justify-center rounded-sm text-[0.7rem] font-semibold leading-none ${getRatingClass(
                                   episode?.vote_average
                                 )}`
-                              : "h-8 rounded-md"
+                              : "h-8 rounded-sm"
                           }
                           title={hasEpisodeRating ? episode?.name : undefined}
                         >
@@ -1100,7 +1118,7 @@ function RatingTrendsPanel({
                   </Fragment>
                 ))}
 
-                <div className="flex h-8 items-center justify-start pl-1 text-left text-[0.58rem] font-semibold uppercase tracking-[0.12em] tabular-nums text-muted-foreground sm:text-[0.62rem]">
+                <div className="flex h-8 items-center justify-start pl-1 text-left text-[0.58rem] font-semibold uppercase tracking-[0.12em] tabular-nums text-muted-foreground">
                   AVG.
                 </div>
                 {seasons.map((season) => {
@@ -1112,10 +1130,10 @@ function RatingTrendsPanel({
                       key={`avg-${season.id}`}
                       className={
                         hasAverage
-                          ? `flex h-8 items-center justify-center rounded-md text-base font-semibold leading-none sm:text-lg ${getRatingClass(
+                          ? `flex h-8 items-center justify-center rounded-sm text-[0.7rem] font-semibold leading-none ${getRatingClass(
                               average
                             )}`
-                          : "h-8 rounded-md"
+                          : "h-8 rounded-sm"
                       }
                     >
                       {formatTrendRating(average)}
@@ -1133,6 +1151,169 @@ function RatingTrendsPanel({
       </div>
     </section>
   )
+}
+
+function RatingHeatmapPanel({
+  seasons,
+  detail,
+}: {
+  seasons: TmdbSeasonDetail[]
+  detail: TmdbSeriesDetail
+}) {
+  const maxEpisodeCount = Math.max(
+    ...seasons.map((season) => season.episodes?.length ?? 0),
+    0
+  )
+
+  return (
+    <section className="overflow-hidden rounded-lg border bg-card text-card-foreground shadow-sm">
+      <div className="grid gap-0 lg:grid-cols-[12rem_minmax(0,1fr)] xl:grid-cols-[13rem_minmax(0,1fr)]">
+        <aside className="border-b bg-muted/25 p-4 lg:border-b-0 lg:border-r">
+          <img
+            src={getPosterUrl(detail.poster_path)}
+            alt={getTitle(detail)}
+            className="aspect-[2/3] w-32 rounded-lg border object-cover shadow-sm sm:w-40 lg:w-full"
+          />
+          <div className="mt-4 space-y-3">
+            <div className="flex items-center gap-2 text-lg font-bold">
+              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+              <span>{formatRating(detail.vote_average)}</span>
+              <span className="text-sm font-medium text-muted-foreground">
+                ({detail.vote_count?.toLocaleString() ?? 0})
+              </span>
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold leading-none">{getTitle(detail)}</h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {getYear(detail.first_air_date)} - {getYear(detail.last_air_date)}
+              </p>
+            </div>
+            <div className="rounded-lg border bg-background px-3 py-2">
+              <p className="text-base font-bold tracking-[0.16em]">Quantum Clap</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Rating heatmap
+              </p>
+            </div>
+          </div>
+        </aside>
+
+        <div className="min-w-0 p-4 sm:p-6">
+          <div className="mb-4">
+            <Badge variant="secondary" className="mb-2 rounded-md">
+              <Grid3x3 className="mr-1 h-3.5 w-3.5" />
+              Rating Heatmap
+            </Badge>
+            <p className="text-sm text-muted-foreground">
+              Rows are seasons, columns are episodes. Hover a cell for rating.
+            </p>
+          </div>
+
+          {seasons.length > 0 ? (
+            <div className="overflow-visible">
+              <table className="border-separate border-spacing-[1px]">
+                <thead>
+                  <tr>
+                    <th />
+                    {Array.from({ length: maxEpisodeCount }).map((_, i) => (
+                      <th
+                        key={i}
+                        className="px-1 text-center text-[0.65rem] font-bold text-muted-foreground"
+                      >
+                        E{i + 1}
+                      </th>
+                    ))}
+                    <th className="px-1 text-center text-[0.55rem] font-bold uppercase tracking-widest text-muted-foreground">
+                      AVG
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {seasons.map((season) => {
+                    const avg = getSeasonAverage(season)
+
+                    return (
+                      <tr key={season.id}>
+                        <td className="pr-1.5 text-right text-[0.65rem] font-bold tabular-nums text-muted-foreground">
+                          S{season.season_number}
+                        </td>
+                        {Array.from({ length: maxEpisodeCount }).map((_, ei) => {
+                          const ep = season.episodes?.[ei]
+                          const r = ep?.vote_average ?? 0
+
+                          return (
+                            <td
+                              key={ei}
+                              className="group/cell relative h-7 w-7 cursor-default"
+                            >
+                              <div
+                                className="h-full w-full rounded-[2px] transition"
+                                style={
+                                  r > 0
+                                    ? { backgroundColor: getRatingClassColor(r) }
+                                    : { backgroundColor: "hsl(var(--muted))" }
+                                }
+                              >
+                                {r > 0 && ep && (
+                                  <span className="absolute top-full left-1/2 z-50 mt-1 hidden -translate-x-1/2 whitespace-nowrap rounded-md border bg-popover px-2 py-1.5 text-popover-foreground shadow-md group-hover/cell:block">
+                                    <span className="block text-[0.6rem] font-bold leading-tight">
+                                      S{season.season_number} E{ep.episode_number}
+                                    </span>
+                                    <span className="block truncate text-[0.58rem] leading-tight text-muted-foreground">
+                                      {ep.name}
+                                    </span>
+                                    <span className="mt-0.5 block text-[0.6rem] font-bold">
+                                      {r.toFixed(1)}/10
+                                    </span>
+                                    <span className="block text-[0.55rem] text-muted-foreground">
+                                      {formatDate(ep.air_date)}
+                                    </span>
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                      )
+                    })}
+                    <td className="group/cell relative h-7 w-7">
+                          <div
+                            className="h-full w-full rounded-[2px]"
+                            style={
+                              avg > 0
+                                ? { backgroundColor: getRatingClassColor(avg) }
+                                : { backgroundColor: "hsl(var(--muted))" }
+                            }
+                          >
+                            {avg > 0 && (
+                              <span className="absolute top-full left-1/2 z-50 mt-1 hidden -translate-x-1/2 whitespace-nowrap rounded-md border bg-popover px-2 py-1 text-[0.58rem] font-semibold text-popover-foreground shadow-md group-hover/cell:block">
+                                S{season.season_number} avg · {avg.toFixed(1)}/10
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+            <p className="rounded-lg border bg-muted/30 p-4 text-sm text-muted-foreground">
+              No data available.
+            </p>
+          )}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function getRatingClassColor(rating: number): string {
+  if (rating >= 9.6) return "#006dff"
+  if (rating >= 9) return "#007814"
+  if (rating >= 8) return "#00d821"
+  if (rating >= 7) return "#ffc51b"
+  if (rating >= 6) return "#ff8417"
+  if (rating >= 5) return "#ff1010"
+  return "#8d16ff"
 }
 
 function getSeasonAverage(season: TmdbSeasonDetail) {

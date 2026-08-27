@@ -13,6 +13,7 @@ import {
 import { Link } from "@tanstack/react-router"
 
 import { EmptyState } from "@/components/EmptyState"
+import TiltedCard from "@/components/TiltedCard"
 import { Badge } from "@/components/ui/badge"
 import {
   Card,
@@ -586,13 +587,19 @@ function CreditRail({
                       />
                     </div>
                     <div className="h-[25rem] overflow-hidden rounded-lg border bg-card transition duration-300 group-hover:-translate-y-0.5 group-hover:shadow-lg sm:h-[26rem]">
-                      <div className="relative">
-                      <img
-                        src={getPosterUrl(item.poster_path)}
-                        alt={getCreditTitle(item)}
-                        className="h-[16.5rem] w-full object-cover sm:h-[18rem]"
-                        loading="lazy"
-                      />
+                      <div className="relative h-[16.5rem] sm:h-[18rem]">
+                        <TiltedCard
+                          imageSrc={getPosterUrl(item.poster_path)}
+                          altText={getCreditTitle(item)}
+                          containerHeight="100%"
+                          containerWidth="100%"
+                          imageHeight="100%"
+                          imageWidth="100%"
+                          scaleOnHover={1.05}
+                          rotateAmplitude={8}
+                          showMobileWarning={false}
+                          showTooltip={false}
+                        />
                       </div>
                       <div className="space-y-2 p-3">
                         <div className="flex items-center justify-between gap-2">

@@ -10,9 +10,13 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Separator } from "@/components/ui/separator"
+import { Switch } from "@/components/ui/switch"
 import { backendApiData } from "@/service/backendApiData"
 
 export const Route = createFileRoute("/__mainLayout/profile/")({
@@ -177,9 +181,11 @@ function RouteComponent() {
           <Card className="w-full max-w-[min(100%,420px)] rounded-xl border-white/14 bg-white/[0.075] text-white shadow-2xl ring-1 shadow-black/35 ring-white/10 backdrop-blur-2xl">
             <CardContent className="space-y-4 p-4 sm:space-y-5 sm:p-6">
               <div className="flex min-w-0 items-center gap-3 sm:gap-4">
-                <div className="flex size-16 shrink-0 items-center justify-center rounded-xl border border-white/18 bg-[linear-gradient(135deg,rgba(255,255,255,0.22),rgba(255,255,255,0.06))] text-2xl font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_18px_45px_rgba(0,0,0,0.24)] sm:size-20 sm:text-3xl">
-                  {initials}
-                </div>
+                <Avatar className="size-16 shrink-0 border border-white/18 shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_18px_45px_rgba(0,0,0,0.24)] sm:size-20">
+                  <AvatarFallback className="bg-gradient-to-br from-white/22 to-white/6 rounded-xl text-2xl font-semibold sm:text-3xl">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
 
                 <div className="min-w-0">
                   <h1 className="truncate text-xl font-semibold tracking-normal sm:text-3xl">
@@ -309,12 +315,12 @@ function RouteComponent() {
                         onSubmit={handlePasswordUpdate}
                       >
                         <div className="space-y-2">
-                          <label
+                          <Label
                             className="text-sm font-medium text-foreground"
                             htmlFor="new_password"
                           >
                             New password
-                          </label>
+                          </Label>
                           <Input
                             id="new_password"
                             autoComplete="new-password"
@@ -334,12 +340,12 @@ function RouteComponent() {
                         </div>
 
                         <div className="space-y-2">
-                          <label
+                          <Label
                             className="text-sm font-medium text-foreground"
                             htmlFor="confirm_password"
                           >
                             Confirm password
-                          </label>
+                          </Label>
                           <Input
                             id="confirm_password"
                             autoComplete="new-password"
@@ -381,6 +387,43 @@ function RouteComponent() {
           </Card>
         </div>
 
+        <Card className="mt-6 rounded-xl border-border/70 bg-card/90 shadow-sm">
+          <CardContent className="space-y-5 p-5 sm:p-6">
+            <div>
+              <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                Preferences
+              </p>
+              <h2 className="mt-1 text-lg font-semibold">Notifications</h2>
+            </div>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between gap-4">
+                <div className="space-y-0.5">
+                  <Label className="text-sm font-medium">
+                    Email notifications
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    Receive updates about your watch list and new releases.
+                  </p>
+                </div>
+                <Switch defaultChecked />
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between gap-4">
+                <div className="space-y-0.5">
+                  <Label className="text-sm font-medium">
+                    Recommendation alerts
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    Get notified when new titles match your preferences.
+                  </p>
+                </div>
+                <Switch />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Separator className="my-8" />
         <UserMediaSections className="mt-8 space-y-8" />
       </section>
     </main>

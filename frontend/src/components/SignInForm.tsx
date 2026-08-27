@@ -6,6 +6,7 @@ import backendApiEndPoints from "@/api-fetch-endpoints/backendApiEndPoints.json"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { decodeAccessToken, storeAuthSession } from "@/lib/auth-session"
 import { warmBackendConnection } from "@/service/backend-health"
 import { backendApiData } from "@/service/backendApiData"
@@ -113,12 +114,12 @@ export function SignInForm() {
 
         <form className="space-y-5" onSubmit={handleSubmit}>
           <div className="space-y-2">
-            <label
+            <Label
               className="text-sm font-medium text-white/86"
               htmlFor="signin-login"
             >
               User name or email
-            </label>
+            </Label>
             <div className="relative">
               <Mail className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-white/45" />
               <Input
@@ -136,9 +137,9 @@ export function SignInForm() {
 
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-3">
-              <label className="text-sm font-medium" htmlFor="signin-password">
+              <Label className="text-sm font-medium" htmlFor="signin-password">
                 Password
-              </label>
+              </Label>
               <button
                 type="button"
                 className="text-sm font-medium text-white/55 transition-colors hover:text-white"

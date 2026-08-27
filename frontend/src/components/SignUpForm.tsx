@@ -6,6 +6,7 @@ import backendApiEndPoints from "@/api-fetch-endpoints/backendApiEndPoints.json"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { backendApiData } from "@/service/backendApiData"
 
 type BackendApiEndPoints = {
@@ -89,12 +90,12 @@ export function SignUpForm() {
         <form className="space-y-5" onSubmit={handleSubmit}>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <label
+              <Label
                 className="text-sm font-medium text-white/86"
                 htmlFor="signup-first-name"
               >
                 First name
-              </label>
+              </Label>
               <div className="relative">
                 <User className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-white/45" />
                 <Input
@@ -111,12 +112,12 @@ export function SignUpForm() {
             </div>
 
             <div className="space-y-2">
-              <label
+              <Label
                 className="text-sm font-medium text-white/86"
                 htmlFor="signup-last-name"
               >
                 Last name
-              </label>
+              </Label>
               <Input
                 id="signup-last-name"
                 type="text"
@@ -131,12 +132,12 @@ export function SignUpForm() {
           </div>
 
           <div className="space-y-2">
-            <label
+            <Label
               className="text-sm font-medium text-white/86"
               htmlFor="signup-user-name"
             >
               User name
-            </label>
+            </Label>
             <div className="relative">
               <User className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-white/45" />
               <Input
@@ -153,12 +154,12 @@ export function SignUpForm() {
           </div>
 
           <div className="space-y-2">
-            <label
+            <Label
               className="text-sm font-medium text-white/86"
               htmlFor="signup-email"
             >
               Email
-            </label>
+            </Label>
             <div className="relative">
               <Mail className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-white/45" />
               <Input
@@ -175,12 +176,12 @@ export function SignUpForm() {
           </div>
 
           <div className="space-y-2">
-            <label
+            <Label
               className="text-sm font-medium text-white/86"
               htmlFor="signup-password"
             >
               Password
-            </label>
+            </Label>
             <div className="relative">
               <LockKeyhole className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-white/45" />
               <Input

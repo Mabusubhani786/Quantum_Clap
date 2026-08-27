@@ -3,6 +3,7 @@ import { BookmarkCheck, Clock3 } from "lucide-react"
 
 import backendApiEndPoints from "@/api-fetch-endpoints/backendApiEndPoints.json"
 import { EmptyState } from "@/components/EmptyState"
+import TiltedCard from "@/components/TiltedCard"
 import { WatchListButton } from "@/components/WatchListButton"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -152,11 +153,17 @@ function UserMediaRail({
             >
               <div className="relative aspect-[16/9] overflow-hidden bg-muted">
                 <a href={getMediaHref(item)} aria-label={`Open ${item.title}`}>
-                  <img
-                    src={item.background_image_url || item.poster_url || fallbackPoster}
-                    alt={item.title}
-                    className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                    loading="lazy"
+                  <TiltedCard
+                    imageSrc={item.background_image_url || item.poster_url || fallbackPoster}
+                    altText={item.title}
+                    containerHeight="100%"
+                    containerWidth="100%"
+                    imageHeight="100%"
+                    imageWidth="100%"
+                    scaleOnHover={1.05}
+                    rotateAmplitude={8}
+                    showMobileWarning={false}
+                    showTooltip={false}
                   />
                 </a>
                 <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/80 to-transparent" />

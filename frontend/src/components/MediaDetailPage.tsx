@@ -17,6 +17,7 @@ import { Link } from "@tanstack/react-router"
 
 import backendApiEndPoints from "@/api-fetch-endpoints/backendApiEndPoints.json"
 import { EmptyState } from "@/components/EmptyState"
+import TiltedCard from "@/components/TiltedCard"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -34,7 +35,14 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs"
 import {
   Tooltip,
   TooltipContent,
@@ -822,90 +830,124 @@ export function MediaDetailPage({
         />
       )}
 
-      {creators.length > 0 && (
-        <CreatorsSection creators={creators} mediaLabel={mediaLabel} />
-      )}
+      <Tabs defaultValue="cast" className="w-full">
+        <TabsList className="w-full justify-start gap-1 rounded-lg border bg-muted/40 p-1">
+          <TabsTrigger value="cast" className="rounded-md">
+            Cast & Crew
+          </TabsTrigger>
+          {(creators.length > 0 || productionCompanies.length > 0) && (
+            <TabsTrigger value="production" className="rounded-md">
+              Production
+            </TabsTrigger>
+          )}
+          <TabsTrigger value="similar" className="rounded-md">
+            Similar & Recommended
+          </TabsTrigger>
+          <TabsTrigger value="reviews" className="rounded-md">
+            Reviews
+          </TabsTrigger>
+        </TabsList>
 
-      <CreditCarouselSection
-        title="Cast"
-        description="Featured performers from this title"
-        icon={<UsersRound className="h-5 w-5" />}
-        people={cast}
-        roleFallback="Cast"
-        getRole={(person) => person.character}
-      />
+        <TabsContent value="cast" className="mt-4 space-y-6">
+          {creators.length > 0 && (
+            <CreatorsSection creators={creators} mediaLabel={mediaLabel} />
+          )}
 
-      <RelatedMediaSection
-        title="Recommended"
-        description="More titles suggested from this record"
-        items={recommendedItems}
-        detailBasePath={detailBasePath}
-        mediaLabel={mediaLabel}
-        hasMore={recommendedHasMore}
-        isLoadingMore={recommendedLoadingMore}
-        onLoadMore={loadNextRecommended}
-      />
+          <CreditCarouselSection
+            title="Cast"
+            description="Featured performers from this title"
+            icon={<UsersRound className="h-5 w-5" />}
+            people={cast}
+            roleFallback="Cast"
+            getRole={(person) => person.character}
+          />
 
-      <RelatedMediaSection
-        title="Similar"
-        description="Titles with nearby themes and audience signals"
-        items={similarItems}
-        detailBasePath={detailBasePath}
-        mediaLabel={mediaLabel}
-        hasMore={similarHasMore}
-        isLoadingMore={similarLoadingMore}
-        onLoadMore={loadNextSimilar}
-      />
+          <CreditCarouselSection
+            title="Crew"
+            description="Creative and production team members"
+            icon={<UserRound className="h-5 w-5" />}
+            people={crew}
+            roleFallback="Crew"
+            getRole={(person) => person.job || person.department}
+          />
+        </TabsContent>
 
-      <CreditCarouselSection
-        title="Crew"
-        description="Creative and production team members"
-        icon={<UserRound className="h-5 w-5" />}
-        people={crew}
-        roleFallback="Crew"
-        getRole={(person) => person.job || person.department}
-      />
-
-      <ProductionCompaniesSection companies={productionCompanies} />
-
-      <div className="grid gap-4">
-        <Card className="rounded-lg">
-          <CardHeader>
-            <CardTitle>Reviews</CardTitle>
-            <CardDescription>Audience and critic impressions</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {reviews.length > 0 ? (
-              reviews.map((review) => (
-                <article key={review.id} className="rounded-lg border p-4">
-                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                    <div>
-                      <p className="font-medium">{review.author}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatReviewDate(review.created_at)}
-                      </p>
-                    </div>
-                    {review.author_details?.rating && (
-                      <Badge variant="secondary" className="rounded-md">
-                        {review.author_details.rating}/10
-                      </Badge>
-                    )}
-                  </div>
-                  <p className="line-clamp-5 text-sm leading-6 text-muted-foreground">
-                    {review.content}
-                  </p>
-                </article>
-              ))
-            ) : (
-              <EmptyState
-                compact
-                title="No data is available"
-                description="Reviews are not available yet."
-              />
+        {(creators.length > 0 || productionCompanies.length > 0) && (
+          <TabsContent value="production" className="mt-4 space-y-6">
+            {creators.length > 0 && (
+              <CreatorsSection creators={creators} mediaLabel={mediaLabel} />
             )}
-          </CardContent>
-        </Card>
-      </div>
+            <ProductionCompaniesSection companies={productionCompanies} />
+          </TabsContent>
+        )}
+
+        <TabsContent value="similar" className="mt-4 space-y-6">
+          <RelatedMediaSection
+            title="Recommended"
+            description="More titles suggested from this record"
+            items={recommendedItems}
+            detailBasePath={detailBasePath}
+            mediaLabel={mediaLabel}
+            hasMore={recommendedHasMore}
+            isLoadingMore={recommendedLoadingMore}
+            onLoadMore={loadNextRecommended}
+          />
+
+          <RelatedMediaSection
+            title="Similar"
+            description="Titles with nearby themes and audience signals"
+            items={similarItems}
+            detailBasePath={detailBasePath}
+            mediaLabel={mediaLabel}
+            hasMore={similarHasMore}
+            isLoadingMore={similarLoadingMore}
+            onLoadMore={loadNextSimilar}
+          />
+        </TabsContent>
+
+        <TabsContent value="reviews" className="mt-4">
+          <Card className="rounded-lg">
+            <CardHeader>
+              <CardTitle>Reviews</CardTitle>
+              <CardDescription>Audience and critic impressions</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {reviews.length > 0 ? (
+                <ScrollArea className="h-auto max-h-[40rem] pr-4">
+                  <div className="space-y-3">
+                    {reviews.map((review) => (
+                      <article key={review.id} className="rounded-lg border p-4">
+                        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                          <div>
+                            <p className="font-medium">{review.author}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {formatReviewDate(review.created_at)}
+                            </p>
+                          </div>
+                          {review.author_details?.rating && (
+                            <Badge variant="secondary" className="rounded-md">
+                              {review.author_details.rating}/10
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="line-clamp-5 text-sm leading-6 text-muted-foreground">
+                          {review.content}
+                        </p>
+                      </article>
+                    ))}
+                  </div>
+                </ScrollArea>
+              ) : (
+                <EmptyState
+                  compact
+                  title="No data is available"
+                  description="Reviews are not available yet."
+                />
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </section>
   )
 }
@@ -1307,6 +1349,7 @@ function EpisodesSection({
                 Browse season posters, dates, ratings, and episode counts.
               </p>
             </div>
+
             <Carousel
               opts={{ align: "start", dragFree: true }}
               className="w-full"
@@ -1601,13 +1644,19 @@ function RelatedMediaSection({
                       />
                     </div>
                     <div className="h-[25rem] overflow-hidden rounded-lg border bg-card transition duration-300 group-hover:-translate-y-0.5 group-hover:shadow-lg sm:h-[26rem]">
-                      <div className="relative">
-                      <img
-                        src={getPosterUrl(item.poster_path)}
-                        alt={`${getRelatedTitle(item)} poster`}
-                        className="h-[16.5rem] w-full object-cover sm:h-[18rem]"
-                        loading="lazy"
-                      />
+                      <div className="relative h-[16.5rem] sm:h-[18rem]">
+                        <TiltedCard
+                          imageSrc={getPosterUrl(item.poster_path)}
+                          altText={`${getRelatedTitle(item)} poster`}
+                          containerHeight="100%"
+                          containerWidth="100%"
+                          imageHeight="100%"
+                          imageWidth="100%"
+                          scaleOnHover={1.05}
+                          rotateAmplitude={8}
+                          showMobileWarning={false}
+                          showTooltip={false}
+                        />
                       </div>
                       <div className="space-y-2 p-3">
                         <div className="flex items-center justify-between gap-2">

@@ -31,6 +31,11 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel"
 import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card"
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -39,6 +44,8 @@ import {
 } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
 import { UserMediaSections } from "@/components/UserMediaSections"
+import TiltedCard from "@/components/TiltedCard"
+import { ThinkingOrb } from "thinking-orbs"
 import { WatchListButton } from "@/components/WatchListButton"
 import { fetchApiData } from "@/service/fetchApiData"
 
@@ -204,63 +211,109 @@ function MediaCard({
   const detailTo = `/${resolvedMediaType === "movie" ? "movie" : "series"}/${item.id}`
 
   return (
-    <div className="group/card relative block h-full">
-      <Link
-        aria-label={`Open ${getTitle(item)}`}
-        to={detailTo}
-        className="absolute inset-0 z-10 rounded-lg"
-      />
-      <div className="absolute top-2 right-2 z-30">
-        <WatchListButton
-          item={{
-            media_id: item.id,
-            media_type: resolvedMediaType,
-            title: getTitle(item),
-            overview: item.overview,
-            poster_url: getPosterUrl(item),
-            background_image_url: item.backdrop_path
-              ? `https://image.tmdb.org/t/p/original${item.backdrop_path}`
-              : undefined,
-            metadata: {
-              rank,
-              rating: item.vote_average,
-              release_year: getReleaseYear(item),
-            },
-          }}
-        />
-      </div>
-      <Card className="h-full rounded-lg py-0 transition duration-300 group-hover/card:-translate-y-0.5 group-hover/card:shadow-xl">
-        <div className="relative aspect-[2/3] overflow-hidden rounded-t-lg bg-muted">
+    <HoverCard openDelay={300} closeDelay={100}>
+      <HoverCardTrigger asChild>
+        <div className="group/card relative block h-full">
+          <Link
+            aria-label={`Open ${getTitle(item)}`}
+            to={detailTo}
+            className="absolute inset-0 z-10 rounded-lg"
+          />
+          <div className="absolute top-2 right-2 z-30">
+            <WatchListButton
+              item={{
+                media_id: item.id,
+                media_type: resolvedMediaType,
+                title: getTitle(item),
+                overview: item.overview,
+                poster_url: getPosterUrl(item),
+                background_image_url: item.backdrop_path
+                  ? `https://image.tmdb.org/t/p/original${item.backdrop_path}`
+                  : undefined,
+                metadata: {
+                  rank,
+                  rating: item.vote_average,
+                  release_year: getReleaseYear(item),
+                },
+              }}
+            />
+          </div>
+          <Card className="h-full rounded-lg py-0 transition duration-300 group-hover/card:-translate-y-0.5 group-hover/card:shadow-xl">
+            <div className="relative aspect-[2/3] overflow-hidden rounded-t-lg bg-muted">
+              <TiltedCard
+                imageSrc={getPosterUrl(item)}
+                altText={`${getTitle(item)} poster`}
+                containerHeight="100%"
+                containerWidth="100%"
+                imageHeight="100%"
+                imageWidth="100%"
+                scaleOnHover={1.05}
+                rotateAmplitude={10}
+                showMobileWarning={false}
+                showTooltip={false}
+              />
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/45 to-transparent p-2 text-white">
+                <Badge className="rounded-md bg-white px-1.5 py-0.5 text-[10px] text-black hover:bg-white">
+                  #{rank}
+                </Badge>
+              </div>
+            </div>
+
+            <CardHeader className="gap-1 pb-2">
+              <CardTitle className="line-clamp-1 text-sm leading-tight sm:text-[0.95rem]">
+                {getTitle(item)}
+              </CardTitle>
+              <CardDescription className="line-clamp-2 min-h-6 text-[10px] leading-relaxed">
+                {item.overview || "No description available yet."}
+              </CardDescription>
+              <CardAction>
+                <Badge variant="secondary" className="gap-1 rounded-md px-1.5 py-0.5 text-[10px]">
+                  <Star className="h-2.5 w-2.5 fill-current" />
+                  {formatRating(item.vote_average)}
+                </Badge>
+              </CardAction>
+            </CardHeader>
+
+            <CardContent className="pb-2">
+              <div className="flex flex-wrap gap-1">
+                <Badge variant="secondary" className="gap-1 rounded-md px-1.5 py-0.5 text-[10px]">
+                  <MediaIcon className="h-2.5 w-2.5" />
+                  {resolvedMediaType === "movie" ? "Movie" : "Series"}
+                </Badge>
+                <Badge variant="secondary" className="gap-1 rounded-md px-1.5 py-0.5 text-[10px]">
+                  <CalendarDays className="h-2.5 w-2.5" />
+                  {getReleaseYear(item)}
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </HoverCardTrigger>
+      <HoverCardContent
+        side="right"
+        align="start"
+        sideOffset={8}
+        className="w-80 overflow-hidden rounded-xl border-white/10 bg-black/95 p-0 text-white shadow-2xl backdrop-blur-xl"
+      >
+        <div className="relative h-36 w-full overflow-hidden">
           <img
             src={getPosterUrl(item)}
-            alt={`${getTitle(item)} poster`}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover/card:scale-105"
-            loading="lazy"
+            alt={getTitle(item)}
+            className="h-full w-full object-cover"
           />
-          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/45 to-transparent p-2 text-white">
-            <Badge className="rounded-md bg-white px-1.5 py-0.5 text-[10px] text-black hover:bg-white">
-              #{rank}
-            </Badge>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent" />
+          <div className="absolute bottom-2 left-3 right-3">
+            <p className="text-sm font-semibold leading-tight">
+              {getTitle(item)}
+            </p>
           </div>
         </div>
-
-        <CardHeader className="gap-1 pb-2">
-          <CardTitle className="line-clamp-1 text-sm leading-tight sm:text-[0.95rem]">
-            {getTitle(item)}
-          </CardTitle>
-          <CardDescription className="line-clamp-2 min-h-6 text-[10px] leading-relaxed">
-            {item.overview || "No description available yet."}
-          </CardDescription>
-          <CardAction>
+        <div className="space-y-2 p-3">
+          <div className="flex items-center gap-2">
             <Badge variant="secondary" className="gap-1 rounded-md px-1.5 py-0.5 text-[10px]">
               <Star className="h-2.5 w-2.5 fill-current" />
               {formatRating(item.vote_average)}
             </Badge>
-          </CardAction>
-        </CardHeader>
-
-        <CardContent className="pb-2">
-          <div className="flex flex-wrap gap-1">
             <Badge variant="secondary" className="gap-1 rounded-md px-1.5 py-0.5 text-[10px]">
               <MediaIcon className="h-2.5 w-2.5" />
               {resolvedMediaType === "movie" ? "Movie" : "Series"}
@@ -270,39 +323,19 @@ function MediaCard({
               {getReleaseYear(item)}
             </Badge>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+          <p className="line-clamp-3 text-xs leading-5 text-white/62">
+            {item.overview || "No description available yet."}
+          </p>
+        </div>
+      </HoverCardContent>
+    </HoverCard>
   )
 }
 
 function LoadingCarousel() {
   return (
-    <div className="grid grid-cols-1 gap-3 overflow-hidden min-[420px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
-      {Array.from({ length: 5 }).map((_, index) => (
-        <Card
-          key={index}
-          className="h-[16.25rem] overflow-hidden rounded-lg py-0 sm:h-[18rem]"
-        >
-          <Skeleton className="aspect-[2/3] w-full rounded-b-none rounded-t-lg" />
-          <CardHeader className="gap-1 pb-2">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0 flex-1 space-y-2">
-                <Skeleton className="h-4 w-4/5" />
-                <Skeleton className="h-2.5 w-full" />
-                <Skeleton className="h-2.5 w-3/4" />
-              </div>
-              <Skeleton className="h-4 w-9 shrink-0" />
-            </div>
-          </CardHeader>
-          <CardContent className="pb-2">
-            <div className="flex flex-wrap gap-1">
-              <Skeleton className="h-4 w-12" />
-              <Skeleton className="h-4 w-10" />
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+    <div className="flex items-center justify-center py-16">
+      <ThinkingOrb state="searching" size={64} />
     </div>
   )
 }
@@ -310,7 +343,9 @@ function LoadingCarousel() {
 function LoadingMoreCard() {
   return (
     <Card className="h-full min-h-[18rem] overflow-hidden rounded-lg py-0">
-      <Skeleton className="aspect-[2/3] w-full rounded-b-none rounded-t-lg" />
+      <div className="flex aspect-[2/3] w-full items-center justify-center rounded-t-lg bg-muted">
+        <ThinkingOrb state="working" size={20} />
+      </div>
       <CardHeader className="gap-1 pb-2">
         <Skeleton className="h-4 w-3/4" />
         <Skeleton className="h-2.5 w-full" />

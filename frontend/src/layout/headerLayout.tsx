@@ -9,6 +9,7 @@ import {
   Building2,
   Film,
   LogOut,
+  Menu,
   Search,
   SlidersHorizontal,
   Tv,
@@ -21,6 +22,21 @@ import { toast } from "sonner"
 import apiEndPoints from "@/api-fetch-endpoints/apiEndPoints.json"
 import backendApiEndPoints from "@/api-fetch-endpoints/backendApiEndPoints.json"
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import {
+  Avatar,
+  AvatarFallback,
+} from "@/components/ui/avatar"
+import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
@@ -28,6 +44,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   Combobox,
   ComboboxContent,
@@ -54,12 +71,19 @@ import {
   NavigationMenuList,
 } from "@/components/ui/navigation-menu"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Slider } from "@/components/ui/slider"
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
 import { clearAuthSession } from "@/lib/auth-session"
 import {
   clearCatalogFilterSearch,
@@ -164,7 +188,6 @@ const genreOptions = [
   { label: "Sci-Fi", value: "878" },
   { label: "Thriller", value: "53" },
 ]
-const ratingOptions = ["6", "7", "8", "9"]
 const movieReleaseTabs: Array<{
   label: string
   value: MovieReleaseStatus
@@ -501,8 +524,13 @@ function HeaderSearch({ className }: { className?: string }) {
         onBlur={() => {
           window.setTimeout(() => setIsFocused(false), 160)
         }}
-        className="h-9 border-[var(--header-control-border)] bg-[var(--header-control-bg)] pr-3 pl-9 text-white shadow-none placeholder:text-white/45 hover:border-white/20 hover:bg-[var(--header-control-hover-bg)] focus-visible:border-white/35 focus-visible:bg-[var(--header-control-hover-bg)] focus-visible:ring-white/15"
+        className="h-9 border-[var(--header-control-border)] bg-[var(--header-control-bg)] pr-12 pl-9 text-white shadow-none placeholder:text-white/45 hover:border-white/20 hover:bg-[var(--header-control-hover-bg)] focus-visible:border-white/35 focus-visible:bg-[var(--header-control-hover-bg)] focus-visible:ring-white/15"
       />
+      {!isFocused && !query && (
+        <kbd className="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 rounded border border-white/14 bg-white/8 px-1.5 py-0.5 text-[10px] font-medium text-white/40">
+          /
+        </kbd>
+      )}
       {showResults && (
         <div className="absolute top-[calc(100%+0.5rem)] right-0 left-0 z-[70] overflow-hidden rounded-lg border border-white/12 bg-black/94 text-white shadow-2xl shadow-black/35 backdrop-blur-xl">
           <div className="border-b border-white/10 px-3 py-2 text-xs font-medium text-white/56">
@@ -816,74 +844,93 @@ function HeaderFilters() {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <label className="grid gap-1.5 text-xs text-white/60">
-              Rating
-              <Select
-                value={values["vote_average.gte"] ?? "all"}
-                onValueChange={(value) =>
+          <div className="grid gap-1.5 text-xs text-white/60">
+            Minimum rating
+            <div className="flex items-center gap-3">
+              <Slider
+                value={[Number(values["vote_average.gte"] ?? 0)]}
+                onValueChange={([value]) =>
                   updateFilter(
                     "vote_average.gte",
-                    value === "all" ? "" : value
+                    value > 0 ? String(value) : ""
                   )
                 }
-              >
-                <SelectTrigger className="h-9 w-full border-white/12 bg-white/8 text-white">
-                  <SelectValue placeholder="Any rating" />
-                </SelectTrigger>
-                <SelectContent className="border-white/10 bg-black text-white">
-                  <SelectItem value="all">Any rating</SelectItem>
-                  {ratingOptions.map((rating) => (
-                    <SelectItem key={rating} value={rating}>
-                      {rating}+ rating
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </label>
+                min={0}
+                max={9}
+                step={1}
+                className="flex-1"
+              />
+              <span className="w-8 text-right text-sm font-medium text-white/80">
+                {values["vote_average.gte"] ?? "0"}+
+              </span>
+            </div>
+          </div>
             <label className="grid gap-1.5 text-xs text-white/60">
               Genre
-              <Select
-                value={values.with_genres ?? "all"}
-                onValueChange={(value) =>
-                  updateFilter("with_genres", value === "all" ? "" : value)
-                }
-              >
-                <SelectTrigger className="h-9 w-full border-white/12 bg-white/8 text-white">
-                  <SelectValue placeholder="Any genre" />
-                </SelectTrigger>
-                <SelectContent className="border-white/10 bg-black text-white">
-                  <SelectItem value="all">Any genre</SelectItem>
-                  {genreOptions.map((genre) => (
-                    <SelectItem key={genre.value} value={genre.value}>
-                      {genre.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className="flex h-9 w-full items-center justify-between rounded-lg border border-white/12 bg-white/8 px-3 text-sm text-white/80 transition hover:bg-white/10"
+                  >
+                    {values.with_genres
+                      ? genreOptions.find((g) => g.value === values.with_genres)
+                          ?.label ?? "Select genre"
+                      : "Any genre"}
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent
+                  align="start"
+                  className="w-56 border-white/10 bg-black/96 p-3 text-white shadow-2xl backdrop-blur-xl"
+                >
+                  <div className="space-y-2">
+                    {genreOptions.map((genre) => (
+                      <label
+                        key={genre.value}
+                        className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm text-white/80 transition hover:bg-white/10"
+                      >
+                        <Checkbox
+                          checked={values.with_genres === genre.value}
+                          onCheckedChange={(checked) =>
+                            updateFilter(
+                              "with_genres",
+                              checked ? genre.value : ""
+                            )
+                          }
+                        />
+                        {genre.label}
+                      </label>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
             </label>
           </div>
 
-          <label className="grid gap-1.5 text-xs text-white/60">
+          <div className="grid gap-1.5 text-xs text-white/60">
             Sort by
-            <Select
+            <RadioGroup
               value={values.sort_by ?? "all"}
               onValueChange={(value) =>
                 updateFilter("sort_by", value === "all" ? "" : value)
               }
+              className="flex flex-wrap gap-2"
             >
-              <SelectTrigger className="h-9 w-full border-white/12 bg-white/8 text-white">
-                <SelectValue placeholder="Default sort" />
-              </SelectTrigger>
-              <SelectContent className="border-white/10 bg-black text-white">
-                <SelectItem value="all">Default sort</SelectItem>
-                {endpoints.filters.sort_by.map((sortOption) => (
-                  <SelectItem key={sortOption.value} value={sortOption.value}>
-                    {sortOption.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </label>
+              <label className="flex cursor-pointer items-center gap-1.5 rounded-md border border-white/12 bg-white/8 px-2.5 py-1.5 text-[0.72rem] text-white/58 transition hover:bg-white/10 has-[[data-state=checked]]:border-white/25 has-[[data-state=checked]]:bg-white/14 has-[[data-state=checked]]:text-white">
+                <RadioGroupItem value="all" className="sr-only" />
+                Default
+              </label>
+              {endpoints.filters.sort_by.map((sortOption) => (
+                <label
+                  key={sortOption.value}
+                  className="flex cursor-pointer items-center gap-1.5 rounded-md border border-white/12 bg-white/8 px-2.5 py-1.5 text-[0.72rem] text-white/58 transition hover:bg-white/10 has-[[data-state=checked]]:border-white/25 has-[[data-state=checked]]:bg-white/14 has-[[data-state=checked]]:text-white"
+                >
+                  <RadioGroupItem value={sortOption.value} className="sr-only" />
+                  {sortOption.label}
+                </label>
+              ))}
+            </RadioGroup>
+          </div>
         </div>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -1037,6 +1084,62 @@ export function HeaderLayout() {
           <HeaderSearch className="hidden w-64 shrink-0 md:block xl:w-80" />
           <HeaderFilters />
 
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="size-9 border-[var(--header-control-border)] bg-[var(--header-control-bg)] text-white hover:border-white/20 hover:bg-[var(--header-control-hover-bg)] md:hidden"
+                aria-label="Open navigation menu"
+              >
+                <Menu className="size-4" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent
+              side="left"
+              className="w-72 border-white/10 bg-black/96 p-0 text-white backdrop-blur-xl"
+            >
+              <SheetHeader className="border-b border-white/10 px-5 py-4">
+                <SheetTitle className="text-left text-white">
+                  Navigation
+                </SheetTitle>
+              </SheetHeader>
+              <nav className="flex flex-col gap-1 p-4">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    activeOptions={{ exact: item.to === "/home" }}
+                    activeProps={{
+                      className:
+                        "bg-white/10 font-medium text-white",
+                    }}
+                    className="rounded-lg px-4 py-3 text-sm text-white/70 transition hover:bg-white/8 hover:text-white"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+                <div className="my-2 h-px bg-white/10" />
+                <Link
+                  to="/profile"
+                  className="rounded-lg px-4 py-3 text-sm text-white/70 transition hover:bg-white/8 hover:text-white"
+                >
+                  Profile
+                </Link>
+                <button
+                  type="button"
+                  className="rounded-lg px-4 py-3 text-left text-sm text-red-300 transition hover:bg-red-500/12 hover:text-red-200"
+                  onClick={() => {
+                    void handleLogout()
+                  }}
+                >
+                  Logout
+                </button>
+              </nav>
+            </SheetContent>
+          </Sheet>
+
           <NavigationMenu
             viewport={false}
             className="max-w-full min-w-0 [&_[data-slot=navigation-menu-indicator]>div]:!bg-white/15"
@@ -1072,7 +1175,11 @@ export function HeaderLayout() {
                 aria-label="Open account menu"
                 className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--header-control-border)] bg-[var(--header-control-bg)] text-sm font-semibold text-white shadow-inner transition hover:border-white/25 hover:bg-[var(--header-control-hover-bg)] focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:outline-none"
               >
-                {getUserInitials(sessionUser)}
+                <Avatar className="size-full border-0 bg-transparent">
+                  <AvatarFallback className="bg-gradient-to-br from-white/22 to-white/6 text-xs font-semibold text-white">
+                    {getUserInitials(sessionUser)}
+                  </AvatarFallback>
+                </Avatar>
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
@@ -1089,15 +1196,38 @@ export function HeaderLayout() {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator className="bg-white/10" />
-              <DropdownMenuItem
-                className="cursor-pointer px-2 py-2 text-red-300 focus:bg-red-500/12 focus:text-red-200"
-                onClick={() => {
-                  void handleLogout()
-                }}
-              >
-                <LogOut className="size-4" />
-                Logout
-              </DropdownMenuItem>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button
+                    type="button"
+                    className="flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-2 text-sm text-red-300 outline-none transition hover:bg-red-500/12 focus:bg-red-500/12 focus:text-red-200"
+                  >
+                    <LogOut className="size-4" />
+                    Logout
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="border-white/10 bg-black/96 text-white shadow-2xl backdrop-blur-xl">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Confirm logout</AlertDialogTitle>
+                    <AlertDialogDescription className="text-white/56">
+                      You will be signed out of your Quantum Clap session.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel className="border-white/14 bg-transparent text-white hover:bg-white/10 hover:text-white">
+                      Cancel
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      className="bg-red-500/90 text-white hover:bg-red-500"
+                      onClick={() => {
+                        void handleLogout()
+                      }}
+                    >
+                      Logout
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

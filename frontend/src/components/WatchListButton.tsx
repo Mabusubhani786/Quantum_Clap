@@ -1,6 +1,6 @@
 import { useMemo, useState, type MouseEvent } from "react"
 import type { PointerEvent } from "react"
-import { BookmarkCheck, BookmarkPlus, Loader2 } from "lucide-react"
+import { BookmarkCheck, BookmarkPlus } from "lucide-react"
 
 import backendApiEndPoints from "@/api-fetch-endpoints/backendApiEndPoints.json"
 import { Button } from "@/components/ui/button"
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import { backendApiData } from "@/service/backendApiData"
+import { ThinkingOrb } from "thinking-orbs"
 
 type BackendApiEndPoints = {
   watch_list: {
@@ -232,7 +233,7 @@ export function WatchListButton({
               variant="ghost"
             >
               {isLoading ? (
-                <Loader2 className="size-4 animate-spin" />
+                <ThinkingOrb state="working" size={20} />
               ) : isSaved ? (
                 <BookmarkCheck className="size-4" />
               ) : (
